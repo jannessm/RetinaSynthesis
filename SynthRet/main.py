@@ -19,6 +19,7 @@ def generateBackgroundAndFovea():
 # generate an image containing the vessels tree
 def generateVesselsTree():
     img = [300, 300, 4]
+    #do somethings
     return img
 
 # generate an image with the optical disc
