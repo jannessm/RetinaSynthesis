@@ -1,4 +1,7 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
 from utils import merge, addIllumination
 
 def main():
