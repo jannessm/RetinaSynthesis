@@ -12,6 +12,7 @@ def merge(*args):
     # TODO merge all arguments. first is the lowest layer
     for i in args:
         # TODO
+        continue
     return finalImage
 
 #

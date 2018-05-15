@@ -1,5 +1,5 @@
-from utils import merge, addIllumination
 import numpy as np
+from utils import merge, addIllumination
 
 def main():
     bkg = generateBackgroundAndFovea()
