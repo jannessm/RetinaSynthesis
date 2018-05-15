@@ -24,6 +24,7 @@ def generateVesselsTree():
 # generate an image with the optical disc
 def generateOpticalDisc():
     img = [300, 300, 4]
+    # do something here
     return img
 
 if __name__ == '__main__':
