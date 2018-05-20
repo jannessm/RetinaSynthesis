@@ -15,8 +15,8 @@ def eval():
 #merge 3-chanel RGB images
 def merge3c(collect):
     #***the size of images***
-    ncol=128
-    nrow=128
+    ncol=300
+    nrow=300
     #initial black image
     finalimage = np.zeros((ncol, nrow, 3),np.uint8)
     #merge layers
@@ -81,29 +81,8 @@ def addIllumination(image):
 
     return img
 
+##code for merge test
 #collect = io.ImageCollection("./*.png")
 #d=merge4c(collect)
 #io.imshow(d)
-=======
-def addIllumination(image):
-    
-    # set parameters
-    brightness = 2
-    color = 3  
-    contrast = 3  
-    sharpness = 3.0
 
-    # enhance brightness
-    image1 = ImageEnhance.Brightness(image).enhance(brightness)  
-
-    # enhance color
-    image2 = ImageEnhance.Color(image1).enhance(color)   
-    
-    # enhance contrase 
-    image3 = ImageEnhance.Contrast(image2).enhance(contrast)   
-    
-    # enhance sharpness 
-    img = ImageEnhance.Sharpness(image3).enhance(sharpness)  
-
-    return img
->>>>>>> master
