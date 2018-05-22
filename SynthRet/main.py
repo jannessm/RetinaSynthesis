@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import Point.Point as Point
+from Point import Point
 
 from utils import merge, addIllumination
 
@@ -18,9 +18,9 @@ def generateBackgroundAndFovea():
     return img, Point(0,0)
 
 # generate an image containing the vessels tree
-def generateVesselsTree():
+def generateVesselsTree(fovea, od):
     img = [300, 300, 4]
-    #do somethings
+    #do some things
     return img
 
 # generate an image with the optical disc
