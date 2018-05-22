@@ -1,21 +1,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import Point.Point as Point
 
 from utils import merge, addIllumination
 
 def main():
-    bkg, fovea = generateBackgroundAndFovea()
-    od_img, od = generateOpticalDisc()
-    vt = generateVesselsTree(fovea, od)
-    merged = merge(bkg, vt, od_img)
+    bkg = generateBackgroundAndFovea()
+    vt = generateVesselsTree()
+    od = generateOpticalDisc()
+    merged = merge(bkg, vt, od)
     return addIllumination(merged)
 
 # generate an image with the background and fovea
 def generateBackgroundAndFovea():
     img = [300, 300, 4]
-    return img, Point(0,0)
+    return img
 
 # generate an image containing the vessels tree
 def generateVesselsTree():
@@ -27,7 +26,7 @@ def generateVesselsTree():
 def generateOpticalDisc():
     img = [300, 300, 4]
     # do something here
-    return img, Point(0,0)
+    return img
 
 if __name__ == '__main__':
     main()

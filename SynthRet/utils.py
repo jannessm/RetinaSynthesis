@@ -1,39 +1,16 @@
 # imports
 from PIL import Image, ImageEnhance
+
+# functions
+
+#
 import cv2
 import numpy as np
 from skimage import img_as_ubyte
 import skimage.io as io
-from Unet.unet import *
-from Unet.data import *
 
 def eval():
-    data = dataProcess(300, 300, data_path="./syntheticImages/imgs", label_path="./syntheticImages/labels", test_path="../DRIVE/test/images")
-    imgs_test = data.load_test_data()
-    #imgs_labels = 
-    unet = myUnet(300, 300)
-    unet.train()
-    model = unet.get_unet()
-    predictions = np.load('results/imgs_mask_test.npy', predictions)
-    return measure(predictions, imgs_labels)
-
-def measure(y_actual, y_hat):
-    TP = 0
-    FP = 0
-    TN = 0
-    FN = 0
-
-    for i in range(len(y_hat)): 
-        if y_actual[i]==y_hat[i]==1:
-           TP += 1
-        if y_hat[i]==1 and y_actual[i]!=y_hat[i]:
-           FP += 1
-        if y_actual[i]==y_hat[i]==0:
-           TN += 1
-        if y_hat[i]==0 and y_actual[i]!=y_hat[i]:
-           FN += 1
-
-return (TP / (TP+FN), TN / (TN+FP), (TP+TN)/(TP+TN+FP+FN))
+    return 0.0
 
 #merge 3-chanel RGB images
 def merge3c(collect):
