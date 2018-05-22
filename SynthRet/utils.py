@@ -9,12 +9,10 @@ from Unet.data import *
 
 def eval():
     data = dataProcess(300, 300, data_path="./syntheticImages/imgs", label_path="./syntheticImages/labels", test_path="../DRIVE/test/images")
-    imgs_test = data.load_test_data()
-    #imgs_labels = 
+    imgs_labels = None #TODO
     unet = myUnet(300, 300)
     unet.train()
-    model = unet.get_unet()
-    predictions = np.load('results/imgs_mask_test.npy', predictions)
+    predictions = np.load('results/imgs_mask_test.npy')
     return measure(predictions, imgs_labels)
 
 def measure(y_actual, y_hat):
@@ -33,7 +31,7 @@ def measure(y_actual, y_hat):
         if y_hat[i]==0 and y_actual[i]!=y_hat[i]:
            FN += 1
 
-return (TP / (TP+FN), TN / (TN+FP), (TP+TN)/(TP+TN+FP+FN))
+    return (TP / (TP+FN), TN / (TN+FP), (TP+TN)/(TP+TN+FP+FN))
 
 #merge 3-chanel RGB images
 def merge3c(collect):

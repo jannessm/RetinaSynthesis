@@ -20,6 +20,9 @@ def generateBackgroundAndFovea():
 # generate an image containing the vessels tree
 def generateVesselsTree(fovea, od):
     img = [300, 300, 4]
+    
+    #init
+    
     #do some things
     return img
 
