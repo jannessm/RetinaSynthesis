@@ -28,9 +28,9 @@ class Tree:
     def createTreeMap(self):
         #treeMap = np.zeros((300, 300, 4))
         # draw all branches onto treeMap
-        x,y = np.array(zip(*self.branches)   # seperate x and y coordinates from Branches
+        x,y = np.array(zip(*self.branches))   # seperate x and y coordinates from Branches
         # interpolate 
-        s = 0   # smoothing condition(0 means passing all points)
+        s = 0   # smoothing condition (0 means passing all points)
         tck, t = interpolate.splprep([x, y], s=s) 
         xi, yi = interpolate.splev(np.linspace(t[0], t[-1], 200), tck) 
         treeMap = np.array(zip(np.append(xi,x),np.append(yi,y)))
