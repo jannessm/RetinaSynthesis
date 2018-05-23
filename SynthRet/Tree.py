@@ -1,5 +1,7 @@
 from .Branch import Branch
 import numpy as np
+from matplotlib import pyplot as plt
+from scipy import interpolate
 
 class Tree:
     def __init__(self, startingPoint):
@@ -24,8 +26,14 @@ class Tree:
             cov = self.coverage()
 
     def createTreeMap(self):
-        treeMap = np.zeros((300, 300, 4))
-        #TODO draw all branches onto treeMap
+        #treeMap = np.zeros((300, 300, 4))
+        # draw all branches onto treeMap
+        x,y = np.array(zip(*self.branches)   # seperate x and y coordinates from Branches
+        # interpolate 
+        s = 0   # smoothing condition(0 means passing all points)
+        tck, t = interpolate.splprep([x, y], s=s) 
+        xi, yi = interpolate.splev(np.linspace(t[0], t[-1], 200), tck) 
+        treeMap = np.array(zip(np.append(xi,x),np.append(yi,y)))
         return treeMap
 
     def coverage(self):

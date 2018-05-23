@@ -82,11 +82,11 @@ def merge4c(collect):
 #
 def addIllumination(image):
     
-    # set parameters
-    brightness = 2
-    color = 3  
-    contrast = 3  
-    sharpness = 3.0
+    # set parameters (random)
+    brightness = np.random.uniform(1.1,4)
+    color = np.random.uniform(1.1,4)  
+    contrast = np.random.uniform(1.1,4)  
+    sharpness = np.random.uniform(1.1,4)
 
     # enhance brightness
     image1 = ImageEnhance.Brightness(image).enhance(brightness)  
