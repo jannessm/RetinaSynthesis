@@ -52,6 +52,9 @@ class Tree:
         return treeMap
 
     def coverage(self, k=10):
+        for branch in self.branches:
+            if len(branch.points) < 2:
+                return None
         treeMap = self.createTreeMap()
         binary = self.makeBinary(treeMap, 200)
         for i in range(k):

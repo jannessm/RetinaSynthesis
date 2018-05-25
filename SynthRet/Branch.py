@@ -14,6 +14,7 @@ class Branch:
         self.maxAngle = 60                              # upper boundary for random angle
         self.covThreshold = 0.9                         # threshold for total coverage
     
+
     '''
         addSegment
         adds a segment to the current branch if goal point is not reached yet (see goalThreshold)
@@ -25,9 +26,9 @@ class Branch:
             self.finished = True
             return
         
-        length = np.random.randint(5, 10)                   # set random length
+        length = np.random.randint(5, 20)                   # set random length
         i = self.getCurrentGoalPoint(x, length)             # get currentGoalPoint
-        #cov = self.tree.coverage()                           # update coverage
+        cov = self.tree.coverage()                           # update coverage
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2 # set random angle around currentGoalPoint
         
         #newBranch = np.random.rand()                        # roll the dice for new branch
@@ -36,8 +37,10 @@ class Branch:
         #    g = self.nearestUncoveredArea(cov)              # get goal point for branch
         #    self.tree.addBranch(x, g)                       # add a branch to queue
         rot = self.Rotate(angle)
-        newX = x + np.dot(i, rot)                            # calculate new Point to branch
+        newX = np.dot(rot, i - x) + x                        # calculate new Point to branch
         self.points.append(newX)                             # add new Point to queue
+
+
     '''
         getCurrenGoalPoint
         x -> starting point (x_x,x_y)
