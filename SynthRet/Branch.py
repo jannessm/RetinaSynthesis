@@ -2,9 +2,9 @@ import numpy as np
 
 class Branch:
     def __init__(self, tree, startingPoint, goalPoint):
-        self.points = [startingPoint]
-        self.goal = goalPoint
-        self.tree = tree
+        self.points = [np.array(startingPoint)]
+        self.goal = np.array(goalPoint)                 # goal point
+        self.tree = tree                                # tree object
 
         #attributes
         self.finished = False
@@ -21,29 +21,28 @@ class Branch:
     '''
     def addSegment(self):
         x = self.points[len(self.points) - 1]               # current point
-        if np.abs(self.goal - x < self.goalThreshold):      # if goal point distance < goalThreshold Branch is finished
+        if np.mean(np.abs(self.goal - x)) < self.goalThreshold:      # if goal point distance < goalThreshold Branch is finished
             self.finished = True
             return
         
-        length = np.random.randint(1, 10)                   # set random length
+        length = np.random.randint(5, 10)                   # set random length
         i = self.getCurrentGoalPoint(x, length)             # get currentGoalPoint
-        cov = self.tree.coverage()                           # update coverage
+        #cov = self.tree.coverage()                           # update coverage
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2 # set random angle around currentGoalPoint
         
-        newBranch = np.random.rand()                        # roll the dice for new branch
-        if (np.mean(cov) < self.covThreshold and            # if new Branch and some uncovered area left
-            newBranch < np.mean(cov)):
-            g = self.nearestUncoveredArea(cov)              # get goal point for branch
-            self.tree.addBranch(x, g)                       # add a branch to queue
-
-        newX = x + self.Rotate(angle) * i                   # calculate new Point to branch
-        self.points.append(newX)                            # add new Point to queue
-
+        #newBranch = np.random.rand()                        # roll the dice for new branch
+        #if (np.mean(cov) < self.covThreshold and            # if new Branch and some uncovered area left
+        #    newBranch < np.mean(cov)):
+        #    g = self.nearestUncoveredArea(cov)              # get goal point for branch
+        #    self.tree.addBranch(x, g)                       # add a branch to queue
+        rot = self.Rotate(angle)
+        newX = x + np.dot(i, rot)                            # calculate new Point to branch
+        self.points.append(newX)                             # add new Point to queue
     '''
         getCurrenGoalPoint
         x -> starting point (x_x,x_y)
         l -> length
-        if angle between x -> fovea and fovea -> goal is greater than 90° 
+        if angle between x -> fovea and fovea -> goal is greater than 90 deg
         assume circle with radius of x -> fovea around fovea
         else just use the direct line between x and g and scale it to the length l
     '''
