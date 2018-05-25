@@ -51,11 +51,13 @@ class Branch:
     '''
     def getCurrentGoalPoint(self, x, l):
         r = x - self.tree.fovea                         # radius
-
-        if np.dot(r, self.tree.fovea - self.goal) < 0:
+        rg = self.goal - self.tree.fovea                # radius to goal
+        angle = np.dot(r, rg)
+        if np.dot(r, rg) < 0: #TODO not working correctly length not guaranteed!!!
+            r = np.linalg.norm(r)
             theta = l * 180 / (np.pi * r)               # angle from fovea -> x to fovea -> goal
             s, c = np.sin(theta), np.cos(theta)         # current goal point if r=1 (identity circle)
-            i = np.array((r * c, r * s)) + self.tree.fovea # goal point shifted by fovea location
+            i = np.array([r * c, r * s]) + self.tree.fovea # goal point shifted by fovea location
         else:
             i = x - self.goal
             i = (i / np.linalg.norm(i) * l) + x         # set length to l and add vector to x

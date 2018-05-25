@@ -1,8 +1,9 @@
-from Branch import Branch
 import numpy as np
-from matplotlib import pyplot as plt
+
+from Branch import Branch
 from scipy import interpolate
 from skimage.morphology import binary_dilation
+from utils import showImage
 
 class Tree:
     def __init__(self, startingPoint, fovea):
@@ -18,6 +19,7 @@ class Tree:
         self.covThreshold = 0.9      # coverage threshold
 
     def getRandomGoal(self):
+        #TODO create algorithm for selecting 4 realistic goal points
         return np.array((100,100))
 
     def growTree(self):
@@ -73,7 +75,7 @@ class Tree:
         return grey
 
 if __name__ == '__main__':
-    t = Tree([200,200], [150, 150])
-    t.growTree()
-    plt.imshow(t.coverage())
-    plt.show()
+    for i in range(10):
+        t = Tree([200,150], [150, 150])
+        t.growTree()
+        showImage(t.coverage())

@@ -1,11 +1,13 @@
 # imports
-from PIL import Image, ImageEnhance
 import cv2
 import numpy as np
-from skimage import img_as_ubyte
 import skimage.io as io
-from Unet.unet import *
+
+from matplotlib import pyplot as plt
+from PIL import Image, ImageEnhance
+from skimage import img_as_ubyte
 from Unet.data import *
+from Unet.unet import *
 
 def eval():
     data = dataProcess(300, 300, data_path="./syntheticImages/imgs", label_path="./syntheticImages/labels", test_path="../DRIVE/test/images")
@@ -101,6 +103,10 @@ def addIllumination(image):
     img = ImageEnhance.Sharpness(image3).enhance(sharpness)  
 
     return img
+
+def showImage(img):
+    plt.imshow(img.T)   #show transposed so x is horizontal and y is vertical
+    plt.show()
 
 ##code for merge test
 #collect = io.ImageCollection("./*.png")
