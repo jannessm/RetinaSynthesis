@@ -10,7 +10,7 @@ class Tree:
         self.branches = []
         self.fovea = fovea          # fovea location [x, y]
 
-        for i in range(1):
+        for i in range(4):
             g = self.getRandomGoal()
             b = Branch(self, startingPoint, g)
             self.branches.append(b)
@@ -19,15 +19,31 @@ class Tree:
         self.covThreshold = 0.9      # coverage threshold
 
     def getRandomGoal(self):
-        #TODO create algorithm for selecting 4 realistic goal points
-        return np.array((100,100))
+        switch = {
+            0: [[0, 100], [0, 100]],
+            1: [[0, 100], [200, 300]],
+            2: [[250, 300], [0, 100]],
+            3: [[250, 300], [200, 300]]
+        }
+        boundaries = switch.get(len(self.branches))
+        if boundaries is not None:
+            goal_x = np.random.randint(boundaries[0][0], boundaries[0][1])
+            goal_y = np.random.randint(boundaries[1][0], boundaries[1][1])
+        return np.array((goal_x, goal_y))
 
     def growTree(self):
         #cov = self.coverage()
         #while np.mean(cov) < self.covThreshold:
-        for i in range(1): #debugging loop
+        for i in range(1000): #debugging loop
             for b in self.branches:
                 b.addSegment()
+            finished = True
+            for b in self.branches:
+                if not b.finished:
+                    finished = False
+            if finished:
+                break
+            self.iteration = i
             cov = self.coverage()
 
     def createTreeMap(self):
@@ -41,7 +57,7 @@ class Tree:
             
             # interpolate 
             s = 0   # smoothing condition (0 means passing all points)
-            k = 3 if x.shape[0] >= 3 else x.shape[0]-1
+            k = 3 if x.shape[0] > 3 else x.shape[0]-1
             tck, t = interpolate.splprep([x, y], s=s, k=k) 
             xi, yi = interpolate.splev(np.linspace(t[0], t[-1], 200), tck)
             xi, yi = xi.astype(int), yi.astype(int)                         # convert to int
@@ -76,6 +92,13 @@ class Tree:
 
 if __name__ == '__main__':
     for i in range(10):
-        t = Tree([200,150], [150, 150])
+        t = Tree([250,150], [150, 150])
         t.growTree()
-        showImage(t.coverage())
+        print t.iteration
+        #points = np.array([0,0])
+        #for b in t.branches:
+        #    points = np.vstack((points, b.points))
+        #    points = np.vstack((points, b.goal))
+        #points = np.vstack((points, t.fovea))
+        #showImage(t.createTreeMap(), points[1:])
+        showImage(t.createTreeMap(), None)

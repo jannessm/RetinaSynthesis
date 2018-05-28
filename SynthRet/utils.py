@@ -104,8 +104,11 @@ def addIllumination(image):
 
     return img
 
-def showImage(img):
-    plt.imshow(img.T)   #show transposed so x is horizontal and y is vertical
+def showImage(img, points):
+    plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
+    if points is not None:
+        x, y = zip(*points)
+        plt.scatter(x=x, y=y, c='r')
     plt.show()
 
 ##code for merge test
