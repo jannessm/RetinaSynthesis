@@ -29,7 +29,7 @@ def merge3c(collect):
     return finalimage
 
 #merge 4-chanel RGBA images
-def merge4c(collect):
+def merge(collect):
     #***the size of images***
     ncol=300
     nrow=300
@@ -50,7 +50,6 @@ def merge4c(collect):
                         al0 = dimg[i,j,3]/255.0
                         al1 = img[i,j,3]/255.0
                         dimg[i,j,3] = ((al1+al0*(1-al1))*255).astype(np.uint8)
-                        print dimg[i,j,3]
                         dimg[i,j,0:3] = (
                                 (img[i,j,0:3]*al1 + dimg[i,j,0:3]*al0*(1-al1))
                                 /al1+al0*(1-al1)
