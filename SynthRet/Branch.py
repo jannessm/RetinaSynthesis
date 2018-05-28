@@ -22,12 +22,12 @@ class Branch:
     '''
     def addSegment(self):
         x = self.points[len(self.points) - 1]               # current point
-        if np.mean(np.abs(self.goal - x)) < self.goalThreshold:      # if goal point distance < goalThreshold Branch is finished
+        if np.mean(np.abs(self.goal - x)) < self.goalThreshold: # if goal point distance < goalThreshold Branch is finished
             self.finished = True
             return
         
         length = np.random.randint(20, 30)                   # set random length
-        i = self.getCurrentGoalPoint(x, length)             # get currentGoalPoint
+        i = self.getCurrentGoalPoint(x, length)              # get currentGoalPoint
         cov = self.tree.coverage()                           # update coverage
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2 # set random angle around currentGoalPoint
         
@@ -52,12 +52,11 @@ class Branch:
     def getCurrentGoalPoint(self, x, l):
         r = x - self.tree.fovea                         # radius
         rg = self.goal - self.tree.fovea                # radius to goal
-        angle = np.dot(r, rg)
         if np.dot(r, rg) < 0:
-            theta = l * 180 / (np.pi * np.linalg.norm(r))               # angle from fovea -> x to fovea -> goal
+            theta = l * 180 / (np.pi * np.linalg.norm(r)) # angle from fovea -> x to fovea -> goal
             blub = self.goal[1] - self.tree.fovea[1]
             if blub < 0: 
-                Rot = self.Rotate(-theta)                    # current goal point if r=1 (identity circle)
+                Rot = self.Rotate(-theta)               # current goal point if r=1 (identity circle)
             else:
                 Rot = self.Rotate(theta)
             i = np.dot(Rot, r) + self.tree.fovea        # goal point shifted by fovea location

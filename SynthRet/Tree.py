@@ -10,7 +10,7 @@ class Tree:
         self.branches = []
         self.fovea = fovea          # fovea location [x, y]
 
-        for i in range(4):
+        for _ in range(4):
             g = self.getRandomGoal()
             b = Branch(self, startingPoint, g)
             self.branches.append(b)
@@ -75,7 +75,7 @@ class Tree:
                 return None
         treeMap = self.createTreeMap()
         binary = self.makeBinary(treeMap, 200)
-        for i in range(k):
+        for _ in range(k):
             binary = binary_dilation(binary)
         return binary
 
