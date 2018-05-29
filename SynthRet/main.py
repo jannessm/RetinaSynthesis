@@ -5,7 +5,7 @@ from Tree import Tree
 from PIL import Image, ImageDraw
 from utils import mergeLayer, addIllumination, showImage, odr, odb, odg
 import cv2 
-from skimage import io, transform
+from skimage import io, transform,draw,data
 from scipy.misc import imread
 import math
 import os 
@@ -21,26 +21,21 @@ def main():
 # generate an image with the background and fovea
 def generateBackgroundAndFovea():
     #all black background
-    img = Image.new('RGBA',(300,300),0)
-
-    eye=ImageDraw.Draw(img)
-    small=ImageDraw.Draw(img)
-    fovea=ImageDraw.Draw(img)
-    macula=ImageDraw.Draw(img)
-
-    #position of fovea macula and small part
-    PosSmall=(150+125*math.cos(45)-30,150-125*math.cos(45)-30,150+125*math.cos(45)+45,150-125*math.cos(45)+45)
-    #randomly change the position of fovea
-    change=random.randint(-5,5)
-    PosFovea=(135-change,135-change,165-change,165-change)
-    PosMacula=(115,115,185,185)
-
-    #draw
-    eye.ellipse((25,25,275,275),fill=(255,255,255))
-    small.ellipse(PosSmall,fill=(255,255,255))
-    macula.ellipse(PosMacula,fill=(277,207,87))
-    fovea.ellipse(PosFovea,fill=(237,145,33))
-    
+    img=np.zeros((300, 300, 4),np.uint8)
+    #outline
+    rr,cc=draw.circle(150,150,125)
+    draw.set_color(img,[rr,cc],[255,127,36,255])
+    #small part
+    rr,cc=draw.circle(150-125*math.cos(45),180+125*math.cos(45),22)
+    draw.set_color(img,[rr,cc],[255,127,36,255])
+    #macula
+    rr,cc=draw.circle(150,150,25)
+    draw.set_color(img,[rr,cc],[205,186,150,255])
+    #fovea
+    change=random.randint(-8,8)
+    PosFovea=(150+change,150+change)
+    rr,cc=draw.circle(150+change,150+change,15)
+    draw.set_color(img,[rr,cc],[139,126,102,255])
     return img,PosFovea
 
 # generate an image containing the vessels tree
