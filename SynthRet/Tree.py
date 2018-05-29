@@ -46,9 +46,10 @@ class Tree:
             self.iteration = i
             cov = self.coverage()
 
+    # TODO add different diameters
     def createTreeMap(self):
         treeMap = np.zeros((300, 300, 4))
-        treeMap[:,:,3] = 1
+        treeMap[:,:,3] = 255
 
         # draw all branches onto treeMap
         branches = [b.points for b in self.branches]
@@ -67,7 +68,7 @@ class Tree:
             yout = np.where( yi >= treeMap.shape[1])
             xi[xout] = 299                                                  # remove out of bounds indexes
             yi[yout] = 299                                                  # remove out of bounds indexes
-            treeMap[xi, yi] = [255, 255, 255, 1]                            # make points of branches white
+            treeMap[xi, yi] = [255, 255, 255, 255]                          # make points of branches white
 
         return treeMap
 
@@ -77,10 +78,10 @@ class Tree:
         for i in range(treeMap.shape[0]):
             for j in range(treeMap.shape[1]):
                 a = treeMap[i][j]
-                if np.array_equal(treeMap[i][j], [0,0,0,1]):
+                if np.array_equal(treeMap[i][j], [0,0,0,255]):
                     treeMap[i][j] = [0,0,0,0]
                 else:
-                    treeMap[i][j] = [200, 0, 0, 1]
+                    treeMap[i][j] = [200, 0, 0, 255]
         return treeMap
 
     def coverage(self, k=10):
@@ -112,5 +113,5 @@ if __name__ == '__main__':
         #    points = np.vstack((points, b.goal))
         #points = np.vstack((points, t.fovea))
         #showImage(t.createTreeMap(), points[1:])
-        #showImage(t.createTreeMap(), None)
-        showImage(t.coverage(), None)
+        #showImage(t.createTreeMap())
+        showImage(t.coverage())
