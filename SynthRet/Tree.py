@@ -59,7 +59,7 @@ class Tree:
             s = 0   # smoothing condition (0 means passing all points)
             k = 3 if x.shape[0] > 3 else x.shape[0]-1
             tck, t = interpolate.splprep([x, y], s=s, k=k) 
-            xi, yi = interpolate.splev(np.linspace(t[0], t[-1], 200), tck)
+            xi, yi = interpolate.splev(np.linspace(t[0], t[-1], 400), tck)
             xi, yi = xi.astype(int), yi.astype(int)                         # convert to int
             xout = np.where( xi >= treeMap.shape[0])
             yout = np.where( yi >= treeMap.shape[1])
@@ -67,6 +67,18 @@ class Tree:
             yi[yout] = 299                                                  # remove out of bounds indexes
             treeMap[xi, yi] = [255, 255, 255, 1]                            # make points of branches white
 
+        return treeMap
+
+    def createTreeImage(self):
+        treeMap = self.createTreeMap()
+        #iterate over treemap and set alpha to 0 for black points
+        for i in range(treeMap.shape[0]):
+            for j in range(treeMap.shape[1]):
+                a = treeMap[i][j]
+                if np.array_equal(treeMap[i][j], [0,0,0,1]):
+                    treeMap[i][j] = [0,0,0,0]
+                else:
+                    treeMap[i][j] = [200, 0, 0, 1]
         return treeMap
 
     def coverage(self, k=10):
@@ -102,3 +114,4 @@ if __name__ == '__main__':
         #points = np.vstack((points, t.fovea))
         #showImage(t.createTreeMap(), points[1:])
         showImage(t.createTreeMap(), None)
+        showImage(t.createTreeImage(), None)
