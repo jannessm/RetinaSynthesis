@@ -1,10 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import cv2
-import skimage.io as io
+from Tree import Tree
 
-from utils import merge, addIllumination,odr,odb,odg
+from utils import mergeLayer, addIllumination, showImage
 
 def main():
     bkg = generateBackgroundAndFovea()
@@ -17,31 +16,28 @@ def main():
     merged = merge(collect)
     io.imshow(merged)
     return addIllumination(merged)
+    bkg, fovea = generateBackgroundAndFovea()
+    od_img, od = generateOpticalDisc()
+    vt, groundTruth = generateVesselsTree(fovea, od)
+    merged = mergeLayer([bkg, vt, od_img])
+    return addIllumination(merged), groundTruth
 
 # generate an image with the background and fovea
 def generateBackgroundAndFovea():
     img = [300, 300, 4]
-    return img
+    return img, [0,0]
 
 # generate an image containing the vessels tree
-def generateVesselsTree():
-    img = [300, 300, 4]
-    #do somethings
-    return img
+def generateVesselsTree(fovea, od):
+    tree = Tree(od, fovea)
+    tree.growTree()
+    return tree.createTreeImage(), tree.createTreeMap()
 
 # generate an image with the optical disc
-#vers. 1: set alpha to 0; choose parameters by try different values  
 def generateOpticalDisc():
-    odimg = np.zeros((300, 300, 4),np.uint8)
-    odimg[::,::,3] = 255
-    cv2.ellipse(odimg,(240,150),(22,26),0,0,360,(255,255,255,255),-1,8,0)
-    for i in range(217,263):
-        for j in range(123,177):
-            if (odimg[j,i,::] == [255,255,255,255]).all():
-                odimg[j,i,0] = odr(i,j)
-                odimg[j,i,1] = odg(i,j)
-                odimg[j,i,2] = odb(i,j)
-    return odimg
+    img = [300, 300, 4]
+    # do something here
+    return img, [0,0]
 
 
 #if __name__ == '__main__':
@@ -50,3 +46,8 @@ def generateOpticalDisc():
 #od = generateOpticalDisc()
 #io.imshow(od)
 #io.imsave("./2.png",od)
+
+#code for merge test
+collect = io.ImageCollection("./*.png")
+d=merge(collect)
+io.imshow(d)
