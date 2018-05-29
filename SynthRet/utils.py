@@ -65,8 +65,9 @@ def mergeLayer(collect):
     dimg = np.zeros((ncol, nrow, 4),np.uint8)
     dimg[::,::,3] = 255
     #merge layers
-    for n in range(len(collect)):
-        img = collect[n]
+    for img in collect:
+        if img is None:
+            continue
         for i in range(ncol):
             for j in range(nrow):
                 #the pixel in new image is not black
@@ -96,18 +97,18 @@ def addIllumination(image):
     sharpness = np.random.uniform(1.1,4)
 
     # enhance brightness
-    image1 = ImageEnhance.Brightness(image).enhance(brightness)  
+    #image1 = ImageEnhance.Brightness(image).enhance(brightness)  
 
     # enhance color
-    image2 = ImageEnhance.Color(image1).enhance(color)   
+    #image2 = ImageEnhance.Color(image1).enhance(color)   
     
     # enhance contrase 
-    image3 = ImageEnhance.Contrast(image2).enhance(contrast)   
+    #image3 = ImageEnhance.Contrast(image2).enhance(contrast)   
     
     # enhance sharpness 
-    img = ImageEnhance.Sharpness(image3).enhance(sharpness)  
+    #img = ImageEnhance.Sharpness(image3).enhance(sharpness)  
 
-    return img
+    return image
 
 def odr(x,y):
     #parameters
