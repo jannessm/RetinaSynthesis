@@ -16,7 +16,7 @@ def main():
     vt, groundTruth = generateVesselsTree(fovea, od)
     merged = mergeLayer([bkg, od_img, vt])
     image = addIllumination(merged)
-    return addMask(image), groundTruth
+    return addMask(image), addMask(groundTruth)
 
 # generate an image with the background and fovea
 def generateBackgroundAndFovea():
@@ -66,7 +66,7 @@ def generateOpticalDisc():
 '''
 def addMask(image):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if not os.path.isfile(dir_path + '/mask.npy') or True:
+    if not os.path.isfile(dir_path + '/mask.npy'):
         mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
         mask = transform.resize(mask, (300, 300))
         mask = mask.T
