@@ -34,15 +34,16 @@ def merge(collect):
     nrow=300
     #initial black image
     dimg = np.zeros((ncol, nrow, 4),np.uint8)
+    dimg[::,::,3] = 255
     #merge layers
     for n in range(len(collect)):
         img = collect[n]
         for i in range(ncol):
             for j in range(nrow):
                 #the pixel in new image is not black
-                if (img[i,j,0:3].max() > 0):
+                if (img[i,j,0:2].max() > 0):
                     #the pixel in old image is black, replace directly
-                    if (dimg[i,j,0:3].max() == 0):
+                    if (dimg[i,j,0:2].max() == 0):
                         dimg[i,j,:] = img[i,j,:]
                     #the pixel in old image is not black, alpha blending
                     else:
