@@ -3,14 +3,15 @@ from PIL import Image, ImageEnhance
 
 import cv2
 import numpy as np
-import skimage.io as io
 
 from matplotlib import pyplot as plt
 from PIL import Image, ImageEnhance
-from skimage import img_as_ubyte, exposure
-import skimage.io as io
+from skimage import img_as_ubyte, exposure, io
+from scipy.misc import imread
+from skimage.morphology import binary_dilation
 import math
 import random
+import os
 #from Unet.data import *
 #from Unet.unet import *
 
@@ -157,3 +158,25 @@ def showImage(img, points=None):
         plt.scatter(x=x, y=y, c='r')
     plt.show()
 
+def calculateMeanCoverage(path, k=10):
+    images = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    means = []
+    for f in images:
+        binary = imread(path+f)
+        for _ in range(k):
+            binary = binary_dilation(binary)
+        means.append(np.mean(binary))
+    return np.mean(np.asarray(means))
+
+if __name__ == '__main__':
+    paths = [
+        '/../DRIVE/test/1st_manual/',
+        '/../DRIVE/test/2nd_manual/'
+    ]
+    means = []
+    k = 10
+    for p in paths:
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        mypath = dir_path + p
+        means.append(calculateMeanCoverage(mypath, k))
+    print("MEAN COVERAGE WITH DILATION OF " + str(k) + ": " + str(np.mean(np.asarray(means))))
