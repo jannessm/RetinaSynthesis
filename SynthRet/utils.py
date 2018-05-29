@@ -3,13 +3,42 @@ from PIL import Image, ImageEnhance
 
 import cv2
 import numpy as np
+import skimage.io as io
+
+from matplotlib import pyplot as plt
+from PIL import Image, ImageEnhance
 from skimage import img_as_ubyte
 import skimage.io as io
 import math
 import random
+from Unet.data import *
+from Unet.unet import *
 
 def eval():
-    return 0.0
+    data = dataProcess(300, 300, data_path="./syntheticImages/imgs", label_path="./syntheticImages/labels", test_path="../DRIVE/test/images")
+    imgs_labels = None #TODO
+    unet = myUnet(300, 300)
+    unet.train()
+    predictions = np.load('results/imgs_mask_test.npy')
+    return measure(predictions, imgs_labels)
+
+def measure(y_actual, y_hat):
+    TP = 0
+    FP = 0
+    TN = 0
+    FN = 0
+
+    for i in range(len(y_hat)): 
+        if y_actual[i]==y_hat[i]==1:
+           TP += 1
+        if y_hat[i]==1 and y_actual[i]!=y_hat[i]:
+           FP += 1
+        if y_actual[i]==y_hat[i]==0:
+           TN += 1
+        if y_hat[i]==0 and y_actual[i]!=y_hat[i]:
+           FN += 1
+
+    return (TP / (TP+FN), TN / (TN+FP), (TP+TN)/(TP+TN+FP+FN))
 
 #merge 3-chanel RGB images
 def merge3c(collect):
@@ -28,7 +57,7 @@ def merge3c(collect):
     return finalimage
 
 #merge 4-chanel RGBA images
-def merge(collect):
+def mergeLayer(collect):
     #***the size of images***
     ncol=300
     nrow=300
@@ -60,11 +89,11 @@ def merge(collect):
 #
 def addIllumination(image):
     
-    # set parameters
-    brightness = 2
-    color = 3  
-    contrast = 3  
-    sharpness = 3.0
+    # set parameters (random)
+    brightness = np.random.uniform(1.1,4)
+    color = np.random.uniform(1.1,4)  
+    contrast = np.random.uniform(1.1,4)  
+    sharpness = np.random.uniform(1.1,4)
 
     # enhance brightness
     image1 = ImageEnhance.Brightness(image).enhance(brightness)  
@@ -140,8 +169,13 @@ def odg(x,y):
     gb = r+k*math.exp(exponentgb)
     return gb
 
-##code for merge test
-#collect = io.ImageCollection("./*.pic")
-#d=merge(collect)
-#io.imshow(d)
+def showImage(img, points):
+    if len(img.shape) == 3:
+        plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
+    else:
+        plt.imshow(img.T)
+    if points is not None:
+        x, y = zip(*points)
+        plt.scatter(x=x, y=y, c='r')
+    plt.show()
 
