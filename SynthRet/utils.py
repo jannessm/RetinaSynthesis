@@ -7,7 +7,7 @@ import skimage.io as io
 
 from matplotlib import pyplot as plt
 from PIL import Image, ImageEnhance
-from skimage import img_as_ubyte
+from skimage import img_as_ubyte, exposure
 import skimage.io as io
 import math
 import random
@@ -88,25 +88,18 @@ def mergeLayer(collect):
     return dimg
 
 #
-def addIllumination(image):
+def addIllumination(image): # rewrite with skimage
     
     # set parameters (random)
-    brightness = np.random.uniform(1.1,4)
-    color = np.random.uniform(1.1,4)  
-    contrast = np.random.uniform(1.1,4)  
-    sharpness = np.random.uniform(1.1,4)
+    brightness = np.random.uniform(0.1,3)
+    low, high = np.random.randint(low=0,high=30), np.random.randint(low=225,high=255),
 
     # enhance brightness
-    #image1 = ImageEnhance.Brightness(image).enhance(brightness)  
-
-    # enhance color
-    #image2 = ImageEnhance.Color(image1).enhance(color)   
+    image1 = exposure.adjust_gamma(image, brightness) 
+    #exposure.adjust_log(image)   
     
-    # enhance contrase 
-    #image3 = ImageEnhance.Contrast(image2).enhance(contrast)   
-    
-    # enhance sharpness 
-    #img = ImageEnhance.Sharpness(image3).enhance(sharpness)  
+    # enhance contrast 
+    img = exposure.rescale_intensity(image1,out_range=(low,high))
 
     return image
 
