@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from Tree import Tree
 
-from utils import merge, addIllumination
+from utils import mergeLayer, addIllumination, showImage
 
 def main():
     bkg, fovea = generateBackgroundAndFovea()
     od_img, od = generateOpticalDisc()
     vt, groundTruth = generateVesselsTree(fovea, od)
-    merged = merge(bkg, vt, od_img)
-    return addIllumination(merged)
+    merged = mergeLayer([bkg, vt, od_img])
+    return addIllumination(merged), groundTruth
 
 # generate an image with the background and fovea
 def generateBackgroundAndFovea():
@@ -20,6 +20,7 @@ def generateBackgroundAndFovea():
 # generate an image containing the vessels tree
 def generateVesselsTree(fovea, od):
     tree = Tree(od, fovea)
+    tree.growTree()
     return tree.createTreeImage(), tree.createTreeMap()
 
 # generate an image with the optical disc
@@ -29,4 +30,6 @@ def generateOpticalDisc():
     return img, [0,0]
 
 if __name__ == '__main__':
-    main()
+    img, groundTruth = main()
+    showImage(img, None)
+    showImage(groundTruth, None)
