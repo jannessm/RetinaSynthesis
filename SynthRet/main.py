@@ -46,15 +46,20 @@ def generateVesselsTree(fovea, od):
 
 # generate an image with the optical disc
 def generateOpticalDisc():
+    
     odimg = np.zeros((300, 300, 4),np.uint8)
-    cv2.ellipse(odimg,(240,150),(22,26),0,0,360,(255,255,255,255),-1,8,0) 
+    odimg[::,::,3] = 255
+    
+    rr, cc=draw.ellipse(150, 240, 26, 22)
+    draw.set_color(odimg,[rr,cc],np.array([255,255,255,255]))
+    
     for i in range(217,263): 
         for j in range(123,177): 
             if np.array_equal(odimg[j,i], [255,255,255,255]): 
                 odimg[j,i,0] = odr(i,j) 
                 odimg[j,i,1] = odg(i,j) 
                 odimg[j,i,2] = odb(i,j) 
-    return np.transpose(odimg, (1,0,2)), [240, 150] #TODO select random point according to fovea pos.
+    return odimg, [240, 150] #TODO select random point according to fovea pos.
 
 '''
     add black mask on top of the image
