@@ -8,9 +8,14 @@ from utils import merge, addIllumination,odr,odb,odg
 
 def main():
     bkg = generateBackgroundAndFovea()
+    io.imsave("./1.png",bkg)
     vt = generateVesselsTree()
+    io.imsave("./2.png",vt)
     od = generateOpticalDisc()
-    merged = merge(bkg, vt, od)
+    io.imsave("./3.png",od)
+    collect = io.ImageCollection("./*.png")
+    merged = merge(collect)
+    io.imshow(merged)
     return addIllumination(merged)
 
 # generate an image with the background and fovea
@@ -45,8 +50,3 @@ def generateOpticalDisc():
 #od = generateOpticalDisc()
 #io.imshow(od)
 #io.imsave("./2.png",od)
-
-#code for merge test
-collect = io.ImageCollection("./*.png")
-d=merge(collect)
-io.imshow(d)
