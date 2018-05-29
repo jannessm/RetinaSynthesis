@@ -51,38 +51,37 @@ def generateVesselsTree(fovea, od):
 
 # generate an image with the optical disc
 def generateOpticalDisc():
-    odimg = np.zeros((300, 300, 4),np.uint8) 
-    odimg[::,::,3] = 255 
+    odimg = np.zeros((300, 300, 4),np.uint8)
     cv2.ellipse(odimg,(240,150),(22,26),0,0,360,(255,255,255,255),-1,8,0) 
     for i in range(217,263): 
         for j in range(123,177): 
-            if (odimg[j,i,::] == [255,255,255,255]).all(): 
+            if np.array_equal(odimg[j,i], [255,255,255,255]): 
                 odimg[j,i,0] = odr(i,j) 
                 odimg[j,i,1] = odg(i,j) 
                 odimg[j,i,2] = odb(i,j) 
-    return odimg, [240, 150] #TODO select random point according to fovea pos.
+    return np.transpose(odimg, (1,0,2)), [240, 150] #TODO select random point according to fovea pos.
 
+'''
+    add black mask on top of the image
+'''
 def addMask(image):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if not os.path.isfile(dir_path + '/mask.npy'):
+    if not os.path.isfile(dir_path + '/mask.npy') or True:
         mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
         mask = transform.resize(mask, (300, 300))
         mask = mask.T
         final_mask = np.zeros((300,300,4))
         black = np.where(mask < 0.5)
         transparent = np.where(mask >= 0.5)
-        final_mask[black] = [0,0,0,1]
+        final_mask[black] = [0,0,0,255]
         final_mask[transparent] = [255,255,255,0]
-        showImage(final_mask, None)
         np.save(dir_path + '/mask.npy', mask)
     else:
-        mask = np.load(dir_path + '/mask.npy')
-    
-    return image
+        final_mask = np.load(dir_path + '/mask.npy')
+    return mergeLayer([image, final_mask])
 
 
 if __name__ == '__main__':
-    #img, gt = main()
-    #showImage(img, None)
-    #showImage(gt, None)
-    addMask(None)
+    img, gt = main()
+    showImage(img)
+    showImage(gt)
