@@ -9,13 +9,13 @@ import skimage.io as io
 
 def main():
     bkg, fovea = generateBackgroundAndFovea()
-    io.imsave("./1.png",bkg)
+    
     od_img, od = generateOpticalDisc()
-    io.imsave("./2.png",vt)
+    
     vt, groundTruth = generateVesselsTree(fovea, od)
-    io.imsave("./3.png",od)
-    collect = io.ImageCollection("./*.png")
-    merged = mergeLayer(collect)
+
+    merged = mergeLayer([bkg,od_img,vt])
+    
     io.imshow(merged)
     return addIllumination(merged), groundTruth
 
@@ -41,7 +41,7 @@ def generateOpticalDisc():
                 odimg[j,i,0] = odr(i,j) 
                 odimg[j,i,1] = odg(i,j) 
                 odimg[j,i,2] = odb(i,j) 
-    return odimg
+    return odimg, [240,150]
 
 
 if __name__ == '__main__':
