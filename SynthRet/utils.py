@@ -7,20 +7,20 @@ import skimage.io as io
 
 from matplotlib import pyplot as plt
 from PIL import Image, ImageEnhance
-from skimage import img_as_ubyte
+from skimage import img_as_ubyte, exposure
 import skimage.io as io
 import math
 import random
-from Unet.data import *
-from Unet.unet import *
+#from Unet.data import *
+#from Unet.unet import *
 
-def eval():
-    data = dataProcess(300, 300, data_path="./syntheticImages/imgs", label_path="./syntheticImages/labels", test_path="../DRIVE/test/images")
-    imgs_labels = None #TODO
-    unet = myUnet(300, 300)
-    unet.train()
-    predictions = np.load('results/imgs_mask_test.npy')
-    return measure(predictions, imgs_labels)
+#def eval():
+    #data = dataProcess(300, 300, data_path="./syntheticImages/imgs", label_path="./syntheticImages/labels", test_path="../DRIVE/test/images")
+    #imgs_labels = None #TODO
+    #unet = myUnet(300, 300)
+    #unet.train()
+    #predictions = np.load('results/imgs_mask_test.npy')
+    #return measure(predictions, imgs_labels)
 
 def measure(y_actual, y_hat):
     TP = 0
@@ -61,51 +61,29 @@ def mergeLayer(collect):
     #***the size of images***
     ncol=300
     nrow=300
-    #initial black image
+    #initial transparent image
     dimg = np.zeros((ncol, nrow, 4),np.uint8)
-    dimg[::,::,3] = 255
     #merge layers
-    for n in range(len(collect)):
-        img = collect[n]
-        for i in range(ncol):
-            for j in range(nrow):
-                #the pixel in new image is not black
-                if (img[i,j,0:2].max() > 0):
-                    #the pixel in old image is black, replace directly
-                    if (dimg[i,j,0:2].max() == 0):
-                        dimg[i,j,:] = img[i,j,:]
-                    #the pixel in old image is not black, alpha blending
-                    else:
-                        al0 = dimg[i,j,3]/255.0
-                        al1 = img[i,j,3]/255.0
-                        dimg[i,j,3] = ((al1+al0*(1-al1))*255).astype(np.uint8)
-                        dimg[i,j,0:3] = (
-                                (img[i,j,0:3]*al1 + dimg[i,j,0:3]*al0*(1-al1))
-                                /al1+al0*(1-al1)
-                                ).astype(np.uint8)
-                        
+    for img in collect:
+        if img is None:
+            continue
+        ids = np.where(img[:,:,3] > 0)
+        dimg[ids] = img[ids]
     return dimg
 
 #
-def addIllumination(image):
+def addIllumination(image): # rewrite with skimage
     
     # set parameters (random)
-    brightness = np.random.uniform(1.1,4)
-    color = np.random.uniform(1.1,4)  
-    contrast = np.random.uniform(1.1,4)  
-    sharpness = np.random.uniform(1.1,4)
+    brightness = np.random.uniform(0.1,3)
+    low, high = np.random.randint(low=0,high=30), np.random.randint(low=225,high=255),
 
     # enhance brightness
-    image1 = ImageEnhance.Brightness(image).enhance(brightness)  
-
-    # enhance color
-    image2 = ImageEnhance.Color(image1).enhance(color)   
+    image1 = exposure.adjust_gamma(image, brightness) 
+    #exposure.adjust_log(image)   
     
-    # enhance contrase 
-    image3 = ImageEnhance.Contrast(image2).enhance(contrast)   
-    
-    # enhance sharpness 
-    img = ImageEnhance.Sharpness(image3).enhance(sharpness)  
+    # enhance contrast 
+    img = exposure.rescale_intensity(image1,out_range=(low,high))
 
     return img
 
@@ -169,8 +147,8 @@ def odg(x,y):
     gb = r+k*math.exp(exponentgb)
     return gb
 
-def showImage(img, points):
-    if len(img.shape) == 3:
+def showImage(img, points=None):
+    if img.ndim == 3:
         plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
     else:
         plt.imshow(img.T)
