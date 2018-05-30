@@ -12,7 +12,6 @@ import os
 
 def main():
     bkg, fovea = generateBackgroundAndFovea()
-    showImage(bkg)
     od_img, od = generateOpticalDisc()
     vt, groundTruth = generateVesselsTree(fovea, od)
     merged = mergeLayer([bkg, od_img, vt])
