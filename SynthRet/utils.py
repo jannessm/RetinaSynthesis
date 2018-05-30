@@ -77,7 +77,7 @@ def addIllumination(image): # rewrite with skimage
     
     # set parameters (random)
     brightness = np.random.uniform(0.1,3)
-    low, high = np.random.randint(low=0,high=30), np.random.randint(low=225,high=255),
+    low, high = np.random.randint(low=0,high=30), np.random.randint(low=225,high=255)
 
     # enhance brightness
     image1 = exposure.adjust_gamma(image, brightness) 
