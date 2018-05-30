@@ -5,13 +5,14 @@ from Tree import Tree
 from PIL import Image, ImageDraw
 from utils import mergeLayer, addIllumination, showImage, odr, odb, odg
 import cv2 
-from skimage import io, transform,draw,data
+from skimage import io, transform, draw, data
 from scipy.misc import imread
 import math
 import os 
 
 def main():
     bkg, fovea = generateBackgroundAndFovea()
+    showImage(bkg)
     od_img, od = generateOpticalDisc()
     vt, groundTruth = generateVesselsTree(fovea, od)
     merged = mergeLayer([bkg, od_img, vt])
@@ -19,24 +20,19 @@ def main():
     return addMask(image), addMask(groundTruth)
 
 # generate an image with the background and fovea
-def generateBackgroundAndFovea():
-    #all black background
-    img=np.zeros((300, 300, 4),np.uint8)
-    #outline
-    rr,cc=draw.circle(150,150,125)
-    draw.set_color(img,[rr,cc],[255,127,36,255])
-    #small part
-    rr,cc=draw.circle(150-125*math.cos(45),180+125*math.cos(45),22)
-    draw.set_color(img,[rr,cc],[255,127,36,255])
+def generateBackgroundAndFovea(): #TODO where is the gradient and the red tissue?
+    img=np.zeros((300, 300, 4),np.uint8)            #all black background
+    
     #macula
-    rr,cc=draw.circle(150,150,25)
+    rr,cc=draw.circle(150,150,25)   #TODO shouldnt the position of the macula be also same random as the fovea?
     draw.set_color(img,[rr,cc],[205,186,150,255])
+    
     #fovea
-    change=random.randint(-8,8)
+    change=np.random.randint(-8,8)
     PosFovea=(150+change,150+change)
     rr,cc=draw.circle(150+change,150+change,15)
     draw.set_color(img,[rr,cc],[139,126,102,255])
-    return img,PosFovea
+    return img, PosFovea
 
 # generate an image containing the vessels tree
 def generateVesselsTree(fovea, od):
@@ -48,7 +44,6 @@ def generateVesselsTree(fovea, od):
 def generateOpticalDisc():
     
     odimg = np.zeros((300, 300, 4),np.uint8)
-    odimg[::,::,3] = 255
     
     rr, cc=draw.ellipse(150, 240, 26, 22)
     draw.set_color(odimg,[rr,cc],np.array([255,255,255,255]))
@@ -59,14 +54,14 @@ def generateOpticalDisc():
                 odimg[j,i,0] = odr(i,j) 
                 odimg[j,i,1] = odg(i,j) 
                 odimg[j,i,2] = odb(i,j) 
-    return odimg, [240, 150] #TODO select random point according to fovea pos.
+    return np.transpose(odimg, (1,0,2)), [240, 150] #TODO select random point according to fovea pos.
 
 '''
     add black mask on top of the image
 '''
 def addMask(image):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if not os.path.isfile(dir_path + '/mask.npy'):
+    if not os.path.isfile(dir_path + '/mask.npy') or True:
         mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
         mask = transform.resize(mask, (300, 300))
         mask = mask.T
