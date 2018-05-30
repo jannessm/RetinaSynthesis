@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from Tree import Tree
 from PIL import Image, ImageDraw
-from utils import mergeLayer, addIllumination, showImage, odr, odb, odg
-import cv2 
+from utils import mergeLayer, addIllumination, showImage
+import cv2
 from skimage import io, transform, draw, data
 from scipy.misc import imread
 import math
 import os 
+from OpticalDisc import generateOpticalDisc
 
 def main():
     bkg, fovea = generateBackgroundAndFovea()
@@ -38,22 +39,6 @@ def generateVesselsTree(fovea, od):
     tree = Tree(od, fovea)
     tree.growTree()
     return tree.createTreeImage(), tree.createTreeMap()
-
-# generate an image with the optical disc
-def generateOpticalDisc():
-    
-    odimg = np.zeros((300, 300, 4),np.uint8)
-    
-    rr, cc=draw.ellipse(150, 240, 26, 22)
-    draw.set_color(odimg,[rr,cc],np.array([255,255,255,255]))
-    
-    for i in range(217,263): 
-        for j in range(123,177): 
-            if np.array_equal(odimg[j,i], [255,255,255,255]): 
-                odimg[j,i,0] = odr(i,j) 
-                odimg[j,i,1] = odg(i,j) 
-                odimg[j,i,2] = odb(i,j) 
-    return np.transpose(odimg, (1,0,2)), [240, 150] #TODO select random point according to fovea pos.
 
 '''
     add black mask on top of the image
