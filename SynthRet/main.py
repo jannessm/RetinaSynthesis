@@ -21,14 +21,15 @@ def main():
 
 # generate an image with the background and fovea
 def generateBackgroundAndFovea(): #TODO where is the gradient and the red tissue?
-    img=np.zeros((300, 300, 4),np.uint8)            #all black background
-    
+    img=np.zeros((300, 300, 4),np.uint8)            
+    img[:,:,]=[255,127,36,255]
     #macula
-    rr,cc=draw.circle(150,150,25)   #TODO shouldnt the position of the macula be also same random as the fovea?
-    draw.set_color(img,[rr,cc],[205,186,150,255])
+    change=np.random.randint(-20,20)
+    for i in range(100):
+        rr,cc=draw.circle(150+change,150+change,26-i/4.0)
+        draw.set_color(img,[rr,cc],[190-i,190-i,190-i,255])
     
     #fovea
-    change=np.random.randint(-8,8)
     PosFovea=(150+change,150+change)
     rr,cc=draw.circle(150+change,150+change,15)
     draw.set_color(img,[rr,cc],[139,126,102,255])
