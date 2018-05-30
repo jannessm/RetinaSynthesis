@@ -31,6 +31,7 @@ class Branch:
         cov = self.tree.coverage()                           # update coverage
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2 # set random angle around currentGoalPoint
         
+        #TODO implement new branches
         #newBranch = np.random.rand()                        # roll the dice for new branch
         #if (np.mean(cov) < self.covThreshold and            # if new Branch and some uncovered area left
         #    newBranch < np.mean(cov)):
