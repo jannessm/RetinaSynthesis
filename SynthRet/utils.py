@@ -88,66 +88,6 @@ def addIllumination(image): # rewrite with skimage
 
     return img
 
-def odr(x,y):
-    #parameters
-    zr = 220
-    xr = 240
-    yr = 150
-    A = 0.05
-    a = 0.015
-    ther = 20
-    phi = math.pi
-    
-    #calculate rchanel values
-    exponentr = -((x-xr+A*math.cos(phi))/ther)**2 - ((y-yr+A*math.cos(phi))/ther)**2
-    red =  zr - 1/(a+math.exp(exponentr))
-    
-    return red
-
-def odb(x,y):
-    #parameters
-    zr = 40
-    xr = 240
-    yr = 150
-    a = 0.015
-    ther = 30
-
-    exponentr = -((x-xr)/ther)**2 - ((y-yr)/ther)**2
-    r =  zr - 1/(a+math.exp(exponentr))
-    
-    #parameters
-    k = 40
-    xgb = 240
-    ygb = 150
-    thegb = 8
-    
-    #calculate bchanel values
-    exponentgb = -((x-xgb)/thegb)**2 - ((y-ygb)/thegb)**2
-    gb = r+k*math.exp(exponentgb)
-    return gb
-
-def odg(x,y):
-    #parameters
-    zr = 200
-    xr = 240
-    yr = 150
-    a = 0.015
-    ther = 30
-
-    exponentr = -((x-xr)/ther)**2 - ((y-yr)/ther)**2
-    r =  zr - 1/(a+math.exp(exponentr))
-    
-    #parameters
-    k = 40
-    xgb = 240
-    ygb = 150
-    thegb = 8
-    
-    #calculate gchanel values
-    exponentgb = -((x-xgb)/thegb)**2 - ((y-ygb)/thegb)**2
-    gb = r+k*math.exp(exponentgb)
-    return gb
-
 def showImage(img, points=None):
     if img.ndim == 3:
         plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
