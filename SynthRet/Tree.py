@@ -9,13 +9,7 @@ class Tree:
     def __init__(self, startingPoint, fovea):
         self.branches = []
         self.fovea = fovea          # fovea location [x, y]
-
-        # for i in range(4):
-        #     g = self.getRandomGoal(i)
-        #     b_artery = Branch(self, startingPoint, g)
-        #     b_vein = Branch(self, startingPoint, g)
-        #     self.branches.append(b_artery)
-        #     self.branches.append(b_vein)
+        self.opticaldisc = startingPoint
 
         for i in range(8):
             g = self.getRandomGoal(i)
@@ -31,10 +25,10 @@ class Tree:
 
     def getRandomGoal(self, i):
         switch = {
-            0: [[-100, 100], [0, 150]],
-            1: [[-100, 100], [150, 300]],
-            2: [[300, 400], [0, 100]],
-            3: [[300, 400], [200, 300]]
+            0: np.array([[-200, -50], [0, 100]]) + self.fovea,
+            1: np.array([[-200, -50], [-100, 0]]) + self.fovea,
+            2: np.array([[50, 200], [50, 200]]) + self.opticaldisc,
+            3: np.array([[50, 200], [-200, -50]]) + self.opticaldisc
         }
         boundaries = switch.get(i%4)
         if boundaries is not None:
@@ -109,7 +103,6 @@ if __name__ == '__main__':
     for i in range(10):
         t = Tree([250,150], [150, 150])
         t.growTree()
-        print t.iteration
         #points = np.array([0,0])
         #for b in t.branches:
         #    points = np.vstack((points, b.points))
