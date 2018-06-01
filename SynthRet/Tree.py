@@ -11,8 +11,8 @@ class Tree:
         self.fovea = fovea          # fovea location [x, y]
         self.opticaldisc = startingPoint
 
-        for _ in range(5):          # number of branches
-            g = self.getRandomGoal()
+        for i in range(1):          # number of branches
+            g = self.getRandomGoal(i)
             b = Branch(self, startingPoint, g)
             self.branches.append(b)
 
@@ -35,9 +35,6 @@ class Tree:
             goal_x = np.random.randint(boundaries[0][0], boundaries[0][1])
             goal_y = np.random.randint(boundaries[1][0], boundaries[1][1])
         return np.array((goal_x, goal_y))
-
-    def addBranch(self,startPoint,goalPoint):
-        self.branches.append(Branch(self,startPoint,goalPoint))
 
     def growTree(self):
         #cov = self.coverage()
@@ -88,9 +85,7 @@ class Tree:
     def coverage(self, k=10):
         treeMap = self.createTreeMap()
         binary = self.makeBinary(treeMap, 200)
-        for _ in range(k):
-           binary = binary_dilation(binary)
-        #print binary[:20,:]
+        binary = binary_dilation(binary, iterations=k)
         return binary
 
     def makeBinary(self, img, threshold):
