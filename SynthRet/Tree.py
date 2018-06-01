@@ -9,13 +9,15 @@ from utils import showImage, addMask, makeBinary
 class Tree:
     def __init__(self, startingPoint, fovea):
         self.branches = []
+        self.growingBranches = []
         self.fovea = fovea          # fovea location [x, y]
         self.opticaldisc = startingPoint
 
-        for i in range(8):          # number of branches
+        for i in range(1):          # number of branches
             g = self.getRandomGoal(i)
             b = Branch(self, startingPoint, g)
             self.branches.append(b)
+            self.growingBranches.append(b)
 
         # constants
         self.covThreshold = 0.9      # coverage threshold
@@ -23,6 +25,7 @@ class Tree:
     def addBranch(self, startingPoint, goalPoint):
         b = Branch(self, startingPoint, goalPoint)
         self.branches.append(b)
+        self.growingBranches.append(b)
 
     def getRandomGoal(self, i):
         switch = {
@@ -38,15 +41,12 @@ class Tree:
         return np.array((goal_x, goal_y))
 
     def growTree(self):
-        #cov = self.coverage()
-        branches = self.branches[:]
-        while len(branches) > 0:
-            for b in branches:
+        while len(self.growingBranches) > 0:
+            for b in self.growingBranches:
                 if b.finished:
-                    branches.remove(b)
+                    self.growingBranches.remove(b)
                 else:
                     b.addSegment()
-            cov = self.coverage()
 
     # TODO add different diameters
     def createTreeMap(self):
@@ -111,6 +111,6 @@ if __name__ == '__main__':
         #    points = np.vstack((points, b.points))
         #    points = np.vstack((points, b.goal))
         #points = np.vstack((points, t.fovea))
-        #showImage(t.createTreeMap(), points[1:])
+        showImage(t.createTreeMap())
         showImage(t.coverage())
         #showImage(t.coverage())
