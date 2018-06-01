@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from PIL import Image, ImageEnhance
 from skimage import img_as_ubyte, exposure, io
 from scipy.misc import imread
-from skimage.morphology import binary_dilation
+from scipy.ndimage.morphology import binary_dilation
 import math
 import random
 import os
@@ -89,22 +89,35 @@ def addIllumination(image): # rewrite with skimage
     return img
 
 def showImage(img, points=None):
+    if type(img) == list:
+        points = points if type(points) == list else [None] * len(img)
+        rows = np.floor(np.sqrt(len(img)))
+        cols = np.ceil(np.sqrt(len(img))) 
+        if not rows > 1:
+            rows = 1
+            cols = len(img)
+        for i in range(len(img)):
+            plt.subplot(int(rows), int(cols), i+1)
+            _plotHelper(img[i], points[i])
+    else:
+        _plotHelper(img, points)
+    plt.show()
+
+def _plotHelper(img, points):
     if img.ndim == 3:
         plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
     else:
         plt.imshow(img.T)
     if points is not None:
         x, y = zip(*points)
-        plt.scatter(x=x, y=y, c='r')
-    plt.show()
+        plt.scatter(x=x, y=y, c='b')
 
 def calculateMeanCoverage(path, k=10):
     images = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     means = []
     for f in images:
         binary = imread(path+f)
-        for _ in range(k):
-            binary = binary_dilation(binary)
+        binary = binary_dilation(binary, iterations=k)
         means.append(np.mean(binary))
     return np.mean(np.asarray(means))
 

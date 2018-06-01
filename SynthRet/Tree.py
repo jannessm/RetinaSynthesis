@@ -2,13 +2,14 @@ import numpy as np
 
 from Branch import Branch
 from scipy import interpolate
-from skimage.morphology import binary_dilation
+from scipy.ndimage.morphology import binary_dilation
 from utils import showImage
 
 class Tree:
     def __init__(self, startingPoint, fovea):
         self.branches = []
         self.fovea = fovea          # fovea location [x, y]
+        self.opticaldisc = startingPoint
 
         for _ in range(5):          # number of branches
             g = self.getRandomGoal()
@@ -18,14 +19,18 @@ class Tree:
         # constants
         self.covThreshold = 0.9      # coverage threshold
 
-    def getRandomGoal(self):
+    def addBranch(self, startingPoint, goalPoint):
+        b = Branch(self, startingPoint, goalPoint)
+        self.branches.append(b)
+
+    def getRandomGoal(self, i):
         switch = {
-            0: [[0, 100], [0, 100]],
-            1: [[0, 100], [200, 300]],
-            2: [[250, 300], [0, 100]],
-            3: [[250, 300], [200, 300]]
+            0: np.array([[-200, -50], [0, 100]]) + self.fovea,
+            1: np.array([[-200, -50], [-100, 0]]) + self.fovea,
+            2: np.array([[50, 200], [50, 200]]) + self.opticaldisc,
+            3: np.array([[50, 200], [-200, -50]]) + self.opticaldisc
         }
-        boundaries = switch.get(len(self.branches))
+        boundaries = switch.get(i%4)
         if boundaries is not None:
             goal_x = np.random.randint(boundaries[0][0], boundaries[0][1])
             goal_y = np.random.randint(boundaries[1][0], boundaries[1][1])
@@ -36,17 +41,13 @@ class Tree:
 
     def growTree(self):
         #cov = self.coverage()
-        #while np.mean(cov) < self.covThreshold:
-        for i in range(1000): #debugging loop
-            for b in self.branches:
-                b.addSegment()
-            finished = True
-            for b in self.branches:
-                if not b.finished:
-                    finished = False
-            if finished:
-                break
-            self.iteration = i
+        branches = self.branches[:]
+        while len(branches) > 0:
+            for b in branches:
+                if b.finished:
+                    branches.remove(b)
+                else:
+                    b.addSegment()
             cov = self.coverage()
 
     # TODO add different diameters
@@ -78,13 +79,10 @@ class Tree:
     def createTreeImage(self):
         treeMap = self.createTreeMap()
         #iterate over treemap and set alpha to 0 for black points
-        for i in range(treeMap.shape[0]):
-            for j in range(treeMap.shape[1]):
-                a = treeMap[i][j]
-                if np.array_equal(treeMap[i][j], [0,0,0,255]):
-                    treeMap[i][j] = [0,0,0,0]
-                else:
-                    treeMap[i][j] = [200, 0, 0, 255]
+        eq = np.where(np.sum(treeMap, axis=2) == 255)
+        neq = np.where(np.sum(treeMap, axis=2) > 255)
+        treeMap[eq] = [0,0,0,0]
+        treeMap[neq] = [200,0,0,255]
         return treeMap
 
     def coverage(self, k=10):
@@ -110,7 +108,6 @@ if __name__ == '__main__':
     for i in range(5):
         t = Tree([250,150], [150, 150])
         t.growTree()
-        print t.iteration
         #points = np.array([0,0])
         #for b in t.branches:
         #    points = np.vstack((points, b.points))
