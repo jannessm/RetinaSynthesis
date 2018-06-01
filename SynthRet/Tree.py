@@ -10,7 +10,7 @@ class Tree:
         self.branches = []
         self.fovea = fovea          # fovea location [x, y]
 
-        for _ in range(4):
+        for _ in range(5):          # number of branches
             g = self.getRandomGoal()
             b = Branch(self, startingPoint, g)
             self.branches.append(b)
@@ -30,6 +30,9 @@ class Tree:
             goal_x = np.random.randint(boundaries[0][0], boundaries[0][1])
             goal_y = np.random.randint(boundaries[1][0], boundaries[1][1])
         return np.array((goal_x, goal_y))
+
+    def addBranch(self,startPoint,goalPoint):
+        self.branches.append(Branch(self,startPoint,goalPoint))
 
     def growTree(self):
         #cov = self.coverage()
@@ -88,7 +91,8 @@ class Tree:
         treeMap = self.createTreeMap()
         binary = self.makeBinary(treeMap, 200)
         for _ in range(k):
-            binary = binary_dilation(binary)
+           binary = binary_dilation(binary)
+        #print binary[:20,:]
         return binary
 
     def makeBinary(self, img, threshold):
@@ -103,7 +107,7 @@ class Tree:
         return grey
 
 if __name__ == '__main__':
-    for i in range(10):
+    for i in range(5):
         t = Tree([250,150], [150, 150])
         t.growTree()
         print t.iteration
@@ -113,5 +117,5 @@ if __name__ == '__main__':
         #    points = np.vstack((points, b.goal))
         #points = np.vstack((points, t.fovea))
         #showImage(t.createTreeMap(), points[1:])
-        #showImage(t.createTreeMap())
-        showImage(t.coverage())
+        showImage(t.createTreeMap())
+        #showImage(t.coverage())

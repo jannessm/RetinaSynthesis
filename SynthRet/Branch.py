@@ -32,11 +32,16 @@ class Branch:
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2 # set random angle around currentGoalPoint
         
         #TODO implement new branches
-        #newBranch = np.random.rand()                        # roll the dice for new branch
-        #if (np.mean(cov) < self.covThreshold and            # if new Branch and some uncovered area left
-        #    newBranch < np.mean(cov)):
-        #    g = self.nearestUncoveredArea(cov)              # get goal point for branch
-        #    self.tree.addBranch(x, g)                       # add a branch to queue
+        newBranch = np.random.rand()                        # roll the dice for new branch
+        if (np.mean(cov) < self.covThreshold and            # if new Branch and some uncovered area left
+            newBranch < np.mean(cov)):
+            g = self.nearestUncoveredArea(cov)              # get goal point for branch
+            self.tree.addBranch(x, g)                       # add a branch to queue
+        #TODO set ending condition, more subbranchs
+        #####
+
+
+
         rot = self.Rotate(angle)
         newX = np.dot(rot, i - x) + x                        # calculate new Point to branch
         self.points.append(newX)                             # add new Point to queue
@@ -74,6 +79,10 @@ class Branch:
     def nearestUncoveredArea(self, coverageMap):
         x = [1, 1]
         # TODO
+        coverageMap = self.tree.coverage()
+        x = np.mean(np.where(coverageMap == 0),axis=1)
+
+        ###
         return x
 
     '''
