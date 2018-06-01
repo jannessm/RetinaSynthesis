@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from Tree import Tree
 from PIL import Image, ImageDraw
-from utils import mergeLayer, addIllumination, showImage
+from utils import mergeLayer, addIllumination, showImage, addMask
 import cv2
-from skimage import io, transform, draw, data
+from skimage import io, draw, data
 from scipy.misc import imread, imsave
 import math
 import os 
@@ -57,25 +57,6 @@ def generateVesselsTree(fovea, od):
     tree = Tree(od, fovea)
     tree.growTree()
     return tree.createTreeImage(), tree.createTreeMap()
-
-'''
-    add black mask on top of the image
-'''
-def addMask(image):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    if not os.path.isfile(dir_path + '/mask.npy'):
-        mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
-        mask = transform.resize(mask, (300, 300))
-        mask = mask.T
-        final_mask = np.zeros((300,300,4))
-        black = np.where(mask < 0.5)
-        transparent = np.where(mask >= 0.5)
-        final_mask[black] = [0,0,0,255]
-        final_mask[transparent] = [255,255,255,0]
-        np.save(dir_path + '/mask.npy', final_mask)
-    else:
-        final_mask = np.load(dir_path + '/mask.npy')
-    return mergeLayer([image, final_mask])
 
 if __name__ == '__main__':
     k = 10                               # amount of pictures to generate
