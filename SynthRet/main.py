@@ -21,27 +21,18 @@ def main():
 
 # generate an image with the background and fovea
 def generateBackgroundAndFovea():
-    #all black background
-    img = Image.new('RGBA',(300,300),0)
 
-    eye=ImageDraw.Draw(img)
-    small=ImageDraw.Draw(img)
-    fovea=ImageDraw.Draw(img)
-    macula=ImageDraw.Draw(img)
-
-    #position of fovea macula and small part
-    PosSmall=(150+125*math.cos(45)-30,150-125*math.cos(45)-30,150+125*math.cos(45)+45,150-125*math.cos(45)+45)
-    #randomly change the position of fovea
-    change=random.randint(-5,5)
-    PosFovea=(135-change,135-change,165-change,165-change)
-    PosMacula=(115,115,185,185)
-
-    #draw
-    eye.ellipse((25,25,275,275),fill=(255,255,255))
-    small.ellipse(PosSmall,fill=(255,255,255))
-    macula.ellipse(PosMacula,fill=(277,207,87))
-    fovea.ellipse(PosFovea,fill=(237,145,33))
-    
+    img=np.zeros((300, 300, 4),np.uint8)            
+    img[:,:,]=[217,61,39,255]
+    #macula
+    change=np.random.randint(-20,20)
+    for i in range(100):
+        rr,cc=draw.circle(150+change,150+change,25-i/4.0)
+        draw.set_color(img,[rr,cc],[198-i, 57-i/5.0, 35-i/10.0,255])
+    #fovea
+    PosFovea=(150+change,150+change)
+    rr,cc=draw.circle(150+change,150+change,15.4)
+    draw.set_color(img,[rr,cc],[141, 57, 30,255])
     return img,PosFovea
 
 # generate an image containing the vessels tree
