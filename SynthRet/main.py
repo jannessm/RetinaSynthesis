@@ -10,8 +10,9 @@ from scipy.misc import imread
 import math
 import os 
 from OpticalDisc import generateOpticalDisc
+from multiprocessing.dummy import Pool
 
-def main():
+def main(i=0):
     bkg, fovea = generateBackgroundAndFovea()
     od_img, od = generateOpticalDisc()
     vt, groundTruth = generateVesselsTree(fovea, od)
@@ -46,7 +47,7 @@ def generateVesselsTree(fovea, od):
 '''
 def addMask(image):
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    if not os.path.isfile(dir_path + '/mask.npy') or True:
+    if not os.path.isfile(dir_path + '/mask.npy'):
         mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
         mask = transform.resize(mask, (300, 300))
         mask = mask.T
@@ -55,13 +56,17 @@ def addMask(image):
         transparent = np.where(mask >= 0.5)
         final_mask[black] = [0,0,0,255]
         final_mask[transparent] = [255,255,255,0]
-        np.save(dir_path + '/mask.npy', mask)
+        np.save(dir_path + '/mask.npy', final_mask)
     else:
         final_mask = np.load(dir_path + '/mask.npy')
     return mergeLayer([image, final_mask])
 
-
 if __name__ == '__main__':
-    img, gt = main()
-    showImage(img)
-    showImage(gt)
+    k = 3                               # amount of pictures to generate
+    threads = Pool(k)
+    res = threads.map(main, range(k))
+    threads.close()
+    threads.join()
+
+    showImage(list(np.asarray(res)[:,0])) # imgs
+    showImage(list(np.asarray(res)[:,1])) # ground truths
