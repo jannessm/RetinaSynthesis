@@ -3,7 +3,7 @@ from sklearn.cluster import KMeans
 from utils import showImage
 
 class Branch:
-    def __init__(self, tree, startingPoint, goalPoint):
+    def __init__(self, tree, startingPoint, goalPoint, artery=True):
         self.points = [np.array(startingPoint)]
         self.start = startingPoint
         self.goal = np.array(goalPoint)                 # goal point
@@ -12,6 +12,7 @@ class Branch:
         #attributes
         self.finished = False
         self.level = 0
+        self.artery = artery
 
         #constants
         self.goalThreshold = 10                         # pixels away from goal point are sufficent
@@ -50,7 +51,7 @@ class Branch:
         if newBranch <  0.5:
             self.tree.nbranches += 1
             g = self.nearestUncoveredArea(x)                # get goal point for branch
-            self.tree.addBranch(x, g)                       # add a branch to queue
+            self.tree.addBranch(x, g, self.artery)                       # add a branch to queue
 
 
     '''

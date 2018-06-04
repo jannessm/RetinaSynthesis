@@ -14,17 +14,22 @@ class Tree:
         self.opticaldisc = startingPoint
         self.nbranches = 0
 
-        for i in range(4):          # number of branches
+        for i in range(1):          # number of arteries
             g = self.getRandomGoal(i)
-            b = Branch(self, startingPoint, g)
+            b = Branch(self, startingPoint, g, artery=True)
+            self.branches.append(b)
+            self.growingBranches.append(b)
+        for i in range(1):          # number of veins
+            g = self.getRandomGoal(i)
+            b = Branch(self, startingPoint, g, artery=False)
             self.branches.append(b)
             self.growingBranches.append(b)
 
         # constants
         self.covThreshold = 0.9      # coverage threshold
 
-    def addBranch(self, startingPoint, goalPoint):
-        b = Branch(self, startingPoint, goalPoint)
+    def addBranch(self, startingPoint, goalPoint, artery):
+        b = Branch(self, startingPoint, goalPoint, artery=artery)
         self.branches.append(b)
         self.growingBranches.append(b)
 
@@ -66,6 +71,7 @@ class Tree:
         # draw all branches onto treeMap
         for branch in self.branches:
             diameter = 4 - (branch.level)
+            color = 255 if branch.artery else 150
             x,y = np.array(zip(*branch.points))     # seperate x and y coordinates from Branches
             
             # interpolate 
@@ -87,10 +93,10 @@ class Tree:
 
             branchImage = np.zeros((300,300,4))
             branchImage[:,:,3] = 255
-            branchImage[xi, yi] = [255, 255, 255, 255]                          # make points of branches white
+            branchImage[xi, yi] = [255, 255, 255, 255]                      # make points of branches white
             bina = makeBinary(branchImage, 200)
             bina = binary_dilation(bina, iterations=diameter)
-            treeMap[bina] = 255
+            treeMap[bina] = color
 
         return treeMap
 
@@ -98,10 +104,12 @@ class Tree:
         treeMap = self.createTreeMap()
         #iterate over treemap and set alpha to 0 for black points
         eq = np.where(np.sum(treeMap, axis=2) == 255)
-        neq = np.where(np.sum(treeMap, axis=2) > 255)
+        arteries = np.where(np.sum(treeMap, axis=2) == 1020)
+        veins = np.where(np.sum(treeMap, axis=2) == 600)
         treeMap[eq] = [0,0,0,0]
-        treeMap[neq] = [200,0,0,255]
-        return treeMap
+        treeMap[arteries] = [242, 12, 0, 255]
+        treeMap[veins] = [243, 83, 54, 255]
+        return treeMap.astype(int)
 
     def coverage(self, k=10):
         treeMap = self.createTreeMap()
