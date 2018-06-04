@@ -30,8 +30,8 @@ class Tree:
 
     def getRandomGoal(self, i):
         switch = {
-            0: np.array([[-200, -50], [0, 100]]) + self.fovea,
-            1: np.array([[-200, -50], [-100, 0]]) + self.fovea,
+            0: np.array([[-300, -100], [0, 100]]) + self.fovea,
+            1: np.array([[-300, -100], [-100, 0]]) + self.fovea,
             2: np.array([[50, 200], [50, 200]]) + self.opticaldisc,
             3: np.array([[50, 200], [-200, -50]]) + self.opticaldisc
         }
@@ -42,12 +42,21 @@ class Tree:
         return np.array((goal_x, goal_y))
 
     def growTree(self):
-        while np.mean(self.coverage()) / 255 < .9 or True:    # while coverage is not reached
+        i = 0
+        while np.mean(self.coverage()) / 255 < .9:    # while coverage is not reached
             branches = self.growingBranches[:]
             for b in branches:          # grow all branches in list until they have reached goal point
+                b.setLevel(i)
                 while not b.finished:
                     b.addSegment()
-            showImage(self.createTreeMap())
+                    showImage(self.createTreeImage(), sec=.01)
+                self.growingBranches.remove(b)
+            for b in branches:
+                for p in b.points:
+                    if np.array_equal(p, b.start):
+                        continue
+                    b.addBranch(p)
+            i += 1
 
     # TODO add different diameters
     def createTreeMap(self):
@@ -55,9 +64,9 @@ class Tree:
         treeMap[:,:,3] = 255
 
         # draw all branches onto treeMap
-        branches = [b.points for b in self.branches]
-        for branch in branches:
-            x,y = np.array(zip(*branch))     # seperate x and y coordinates from Branches
+        for branch in self.branches:
+            diameter = 4 - (branch.level)
+            x,y = np.array(zip(*branch.points))     # seperate x and y coordinates from Branches
             
             # interpolate 
             s = 0   # smoothing condition (0 means passing all points)
@@ -67,16 +76,21 @@ class Tree:
             tck, t = interpolate.splprep([x, y], s=s, k=k) 
             xi, yi = interpolate.splev(np.linspace(t[0], t[-1], 400), tck)
             xi, yi = xi.astype(int), yi.astype(int)                         # convert to int
-            xout = np.where( xi >= treeMap.shape[0])
-            yout = np.where( yi >= treeMap.shape[1])
-            xi[xout] = 299                                                  # remove out of bounds indexes
-            yi[yout] = 299                                                  # remove out of bounds indexes
-            xi, yi = xi.astype(int), yi.astype(int)                         # convert to int
-            xout = np.where( xi < 0)
-            yout = np.where( yi < 0)
-            xi[xout] = 299                                                  # remove out of bounds indexes
-            yi[yout] = 299                                                  # remove out of bounds indexes
-            treeMap[xi, yi] = [255, 255, 255, 255]                          # make points of branches white
+
+            p = np.vstack((xi, yi)).T                                       # remove all points > 300 and < 0
+            toHigh = np.unique(np.where(p > 299)[0])
+            p = np.delete(p, toHigh, axis=0)
+            toLow = np.unique(np.where(p < 0)[0])
+            p = np.delete(p, toLow, axis=0)
+
+            xi, yi = np.array(zip(*p))
+
+            branchImage = np.zeros((300,300,4))
+            branchImage[:,:,3] = 255
+            branchImage[xi, yi] = [255, 255, 255, 255]                          # make points of branches white
+            bina = makeBinary(branchImage, 200)
+            bina = binary_dilation(bina, iterations=diameter)
+            treeMap[bina] = 255
 
         return treeMap
 

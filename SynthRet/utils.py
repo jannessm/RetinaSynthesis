@@ -12,6 +12,7 @@ from scipy.ndimage.morphology import binary_dilation
 import math
 import random
 import os
+import time
 #from Unet.data import *
 #from Unet.unet import *
 
@@ -104,7 +105,7 @@ def addIllumination(image): # rewrite with skimage
 
     return img
 
-def showImage(img, points=None):
+def showImage(img, points=None, sec=-1):
     if type(img) == list:
         points = points if type(points) == list else [None] * len(img)
         rows = np.floor(np.sqrt(len(img)))
@@ -117,7 +118,12 @@ def showImage(img, points=None):
             _plotHelper(img[i], points[i])
     else:
         _plotHelper(img, points)
-    plt.show()
+    if not sec == -1:
+        plt.show(block=False)
+        plt.pause(sec)
+        plt.close()
+    else:
+        plt.show()
 
 def _plotHelper(img, points):
     if img.ndim == 3:

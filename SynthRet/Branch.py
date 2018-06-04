@@ -5,17 +5,22 @@ from utils import showImage
 class Branch:
     def __init__(self, tree, startingPoint, goalPoint):
         self.points = [np.array(startingPoint)]
+        self.start = startingPoint
         self.goal = np.array(goalPoint)                 # goal point
         self.tree = tree                                # tree object
 
         #attributes
         self.finished = False
+        self.level = 0
 
         #constants
         self.goalThreshold = 10                         # pixels away from goal point are sufficent
         self.maxAngle = 60                              # upper boundary for random angle
         self.covThreshold = 0.9                         # threshold for total coverage
     
+
+    def setLevel(self, l):
+        self.level = l
 
     '''
         addSegment
@@ -24,7 +29,9 @@ class Branch:
     '''
     def addSegment(self):
         x = self.points[len(self.points) - 1]               # current point
-        if np.mean(np.abs(self.goal - x)) < self.goalThreshold: # if goal point distance < goalThreshold Branch is finished
+        if (np.mean(np.abs(self.goal - x)) < self.goalThreshold # if goal point distance < goalThreshold Branch is finished
+                or                                              # or
+            x[0] < 0 or x[0] > 299 or x[1] < 0 or x[1] > 299):  # if x is out of the image
             self.finished = True
             return
         
@@ -32,20 +39,18 @@ class Branch:
         i = self.getCurrentGoalPoint(x, length)              # get currentGoalPoint
         cov = self.tree.coverage()                           # update coverage
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2 # set random angle around currentGoalPoint
-        
-        #TODO implement new branches
-        newBranch = np.random.rand()                        # roll the dice for new branch
-        if (newBranch <  np.mean(cov) / 255 - 0.3 and
-            self.tree.nbranches < 16 and 
-            not np.mean(x - self.points[0]) == 0):
-
-            self.tree.nbranches += 1
-            g = self.nearestUncoveredArea(x)                # get goal point for branch
-            self.tree.addBranch(x, g)                       # add a branch to queue
 
         rot = self.Rotate(angle)
         newX = np.dot(rot, i - x) + x                        # calculate new Point to branch
         self.points.append(newX)                             # add new Point to queue
+
+    def addBranch(self, x):
+        #TODO implement new branches
+        newBranch = np.random.rand()                        # roll the dice for new branch
+        if newBranch <  0.5:
+            self.tree.nbranches += 1
+            g = self.nearestUncoveredArea(x)                # get goal point for branch
+            self.tree.addBranch(x, g)                       # add a branch to queue
 
 
     '''
@@ -78,6 +83,7 @@ class Branch:
         get the coordinates of the nearest uncovered area according to x
     '''
     def nearestUncoveredArea(self, point):
+        return np.random.randint(0,300,(2,))
         coverageMap = self.tree.coverage()
         
         ids = np.where(coverageMap < 200)
