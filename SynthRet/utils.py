@@ -6,7 +6,7 @@ import numpy as np
 
 from matplotlib import pyplot as plt
 from PIL import Image, ImageEnhance
-from skimage import img_as_ubyte, exposure, io
+from skimage import img_as_ubyte, exposure, io, transform, draw
 from scipy.misc import imread
 from scipy.ndimage.morphology import binary_dilation
 import math
@@ -72,6 +72,22 @@ def mergeLayer(collect):
         dimg[ids] = img[ids]
     return dimg
 
+def makeBinary(img, threshold):
+    if img.shape[2] == 4:
+        r = np.multiply(img[:, :, 0], img[:, :, 3])
+        g = np.multiply(img[:, :, 1], img[:, :, 3])
+        b = np.multiply(img[:, :, 2], img[:, :, 3])
+    else:
+        r = img[:, :, 0]
+        g = img[:, :, 1]
+        b = img[:, :, 2]
+    rgb = np.dstack((r, g, b))
+    grey = np.multiply(rgb, [0.21, 0.72, 0.07])
+    grey = np.sum(grey, axis=2)
+    grey[np.where(grey < threshold)] = 0
+    grey[np.where(grey > threshold)] = 255
+    return grey
+
 #
 def addIllumination(image): # rewrite with skimage
     
@@ -112,13 +128,54 @@ def _plotHelper(img, points):
         x, y = zip(*points)
         plt.scatter(x=x, y=y, c='b')
 
+'''
+    add black mask on top of the image
+'''
+def addMask(image):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    if not os.path.isfile(dir_path + '/mask.npy'):
+        mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
+        mask = transform.resize(mask, (300, 300))
+        mask = mask.T
+        final_mask = np.zeros((300,300,4))
+        black = np.where(mask < 0.5)
+        transparent = np.where(mask >= 0.5)
+        final_mask[black] = [0,0,0,255]
+        final_mask[transparent] = [255,255,255,0]
+        np.save(dir_path + '/mask.npy', final_mask)
+    else:
+        final_mask = np.load(dir_path + '/mask.npy')
+        if not final_mask.shape == (300,300,4):
+            mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
+            mask = transform.resize(mask, (300, 300))
+            mask = mask.T
+            final_mask = np.zeros((300,300,4))
+            black = np.where(mask < 0.5)
+            transparent = np.where(mask >= 0.5)
+            final_mask[black] = [0,0,0,255]
+            final_mask[transparent] = [255,255,255,0]
+            np.save(dir_path + '/mask.npy', final_mask)
+    return mergeLayer([image, final_mask])
+
 def calculateMeanCoverage(path, k=10):
     images = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     means = []
     for f in images:
         binary = imread(path+f)
+        binary = transform.resize(binary, (300, 300))
+        if binary.ndim == 3:
+            binary = makeBinary(binary, 0.5)
         binary = binary_dilation(binary, iterations=k)
-        means.append(np.mean(binary))
+        rgba = np.zeros((300, 300, 4)) # make rgba image from binary
+        rgba[np.where(binary)] = [0,0,0, 255] # draw binary on it
+        # add fovea
+        rr, cc = draw.circle(150, 150, 15)
+        draw.set_color(rgba, [rr,cc], [0,0,0,255])
+        # add mask
+        rgba = addMask(rgba)    # add Mask
+        rgba = np.abs(rgba - [255, 255, 255, 0])
+        binary = makeBinary(rgba, 200)
+        means.append(np.mean(binary) / 255)
     return np.mean(np.asarray(means))
 
 if __name__ == '__main__':

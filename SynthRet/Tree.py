@@ -3,18 +3,22 @@ import numpy as np
 from Branch import Branch
 from scipy import interpolate
 from scipy.ndimage.morphology import binary_dilation
-from utils import showImage
+from skimage import draw
+from utils import showImage, addMask, makeBinary
 
 class Tree:
     def __init__(self, startingPoint, fovea):
         self.branches = []
+        self.growingBranches = []
         self.fovea = fovea          # fovea location [x, y]
         self.opticaldisc = startingPoint
+        self.nbranches = 0
 
-        for i in range(1):          # number of branches
+        for i in range(4):          # number of branches
             g = self.getRandomGoal(i)
             b = Branch(self, startingPoint, g)
             self.branches.append(b)
+            self.growingBranches.append(b)
 
         # constants
         self.covThreshold = 0.9      # coverage threshold
@@ -22,6 +26,7 @@ class Tree:
     def addBranch(self, startingPoint, goalPoint):
         b = Branch(self, startingPoint, goalPoint)
         self.branches.append(b)
+        self.growingBranches.append(b)
 
     def getRandomGoal(self, i):
         switch = {
@@ -37,15 +42,12 @@ class Tree:
         return np.array((goal_x, goal_y))
 
     def growTree(self):
-        #cov = self.coverage()
-        branches = self.branches[:]
-        while len(branches) > 0:
-            for b in branches:
-                if b.finished:
-                    branches.remove(b)
-                else:
+        while np.mean(self.coverage()) / 255 < .9 or True:    # while coverage is not reached
+            branches = self.growingBranches[:]
+            for b in branches:          # grow all branches in list until they have reached goal point
+                while not b.finished:
                     b.addSegment()
-            cov = self.coverage()
+            showImage(self.createTreeMap())
 
     # TODO add different diameters
     def createTreeMap(self):
@@ -69,6 +71,11 @@ class Tree:
             yout = np.where( yi >= treeMap.shape[1])
             xi[xout] = 299                                                  # remove out of bounds indexes
             yi[yout] = 299                                                  # remove out of bounds indexes
+            xi, yi = xi.astype(int), yi.astype(int)                         # convert to int
+            xout = np.where( xi < 0)
+            yout = np.where( yi < 0)
+            xi[xout] = 299                                                  # remove out of bounds indexes
+            yi[yout] = 299                                                  # remove out of bounds indexes
             treeMap[xi, yi] = [255, 255, 255, 255]                          # make points of branches white
 
         return treeMap
@@ -84,30 +91,32 @@ class Tree:
 
     def coverage(self, k=10):
         treeMap = self.createTreeMap()
-        binary = self.makeBinary(treeMap, 200)
-        binary = binary_dilation(binary, iterations=k)
-        return binary
 
-    def makeBinary(self, img, threshold):
-        r = np.multiply(img[:, :, 0], img[:, :, 3])
-        g = np.multiply(img[:, :, 1], img[:, :, 3])
-        b = np.multiply(img[:, :, 2], img[:, :, 3])
-        rgb = np.dstack((r, g, b))
-        grey = np.multiply(rgb, [0.21, 0.72, 0.07])
-        grey = np.sum(grey, axis=2)
-        grey[np.where(grey < threshold)] = 0
-        grey[np.where(grey > threshold)] = 255
-        return grey
+        # dilation
+        binary = makeBinary(treeMap, 200)
+        binary = binary_dilation(binary, iterations=k)
+
+        rgba = np.zeros(treeMap.shape) # make rgba image from binary
+        rgba[np.where(binary)] = [0,0,0, 255] # draw binary on it
+
+        # add fovea
+        rr, cc = draw.circle(self.fovea[0], self.fovea[1],15)
+        draw.set_color(rgba, [rr,cc], [0,0,0,255])
+
+        # add mask
+        binary = addMask(rgba)    # add Mask
+        binary = np.abs(binary - [255, 255, 255, 0])
+        return makeBinary(binary, 200)
 
 if __name__ == '__main__':
-    for i in range(5):
+    for i in range(10):
         t = Tree([250,150], [150, 150])
         t.growTree()
-        #points = np.array([0,0])
-        #for b in t.branches:
-        #    points = np.vstack((points, b.points))
-        #    points = np.vstack((points, b.goal))
-        #points = np.vstack((points, t.fovea))
-        #showImage(t.createTreeMap(), points[1:])
-        showImage(t.createTreeMap())
+        points = np.array([0,0])
+        for b in t.branches:
+            points = np.vstack((points, b.points))
+            points = np.vstack((points, b.goal))
+        points = np.vstack((points, t.fovea))
+        showImage(t.createTreeMap(), points=points)
+        #showImage(t.coverage())
         #showImage(t.coverage())

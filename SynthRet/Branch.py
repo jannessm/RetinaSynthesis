@@ -1,4 +1,6 @@
 import numpy as np
+from sklearn.cluster import KMeans
+from utils import showImage
 
 class Branch:
     def __init__(self, tree, startingPoint, goalPoint):
@@ -33,14 +35,13 @@ class Branch:
         
         #TODO implement new branches
         newBranch = np.random.rand()                        # roll the dice for new branch
-        if (np.mean(cov) < self.covThreshold and            # if new Branch and some uncovered area left
-            newBranch < np.mean(cov)):
-            g = self.nearestUncoveredArea(cov)              # get goal point for branch
+        if (newBranch <  np.mean(cov) / 255 - 0.3 and
+            self.tree.nbranches < 16 and 
+            not np.mean(x - self.points[0]) == 0):
+
+            self.tree.nbranches += 1
+            g = self.nearestUncoveredArea(x)                # get goal point for branch
             self.tree.addBranch(x, g)                       # add a branch to queue
-        #TODO set ending condition, more subbranchs
-        #####
-
-
 
         rot = self.Rotate(angle)
         newX = np.dot(rot, i - x) + x                        # calculate new Point to branch
@@ -76,13 +77,16 @@ class Branch:
         nearestUncoveredArea
         get the coordinates of the nearest uncovered area according to x
     '''
-    def nearestUncoveredArea(self, coverageMap):
-        x = [1, 1]
-        # TODO
+    def nearestUncoveredArea(self, point):
         coverageMap = self.tree.coverage()
-        x = np.mean(np.where(coverageMap == 0),axis=1)
+        
+        ids = np.where(coverageMap < 200)
+        X = np.vstack(ids).T
 
-        ###
+        km = KMeans(n_clusters=30, max_iter=1)
+        km.fit(X)
+        #showImage(coverageMap, km.cluster_centers_)
+        x = km.cluster_centers_[km.predict([point])[0]]
         return x
 
     '''
