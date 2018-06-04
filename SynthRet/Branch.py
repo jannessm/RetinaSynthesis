@@ -10,7 +10,6 @@ class Branch:
 
         #attributes
         self.finished = False
-        self.branches = 0
 
         #constants
         self.goalThreshold = 10                         # pixels away from goal point are sufficent
@@ -36,8 +35,11 @@ class Branch:
         
         #TODO implement new branches
         newBranch = np.random.rand()                        # roll the dice for new branch
-        if newBranch < 0.5 and self.branches < 6:
-            self.branches += 1
+        if (newBranch <  np.mean(cov) / 255 - 0.3 and
+            self.tree.nbranches < 16 and 
+            not np.mean(x - self.points[0]) == 0):
+
+            self.tree.nbranches += 1
             g = self.nearestUncoveredArea(x)                # get goal point for branch
             self.tree.addBranch(x, g)                       # add a branch to queue
 
@@ -81,10 +83,10 @@ class Branch:
         ids = np.where(coverageMap < 200)
         X = np.vstack(ids).T
 
-        km = KMeans(n_clusters=10)
+        km = KMeans(n_clusters=30, max_iter=1)
         km.fit(X)
+        #showImage(coverageMap, km.cluster_centers_)
         x = km.cluster_centers_[km.predict([point])[0]]
-
         return x
 
     '''

@@ -12,8 +12,9 @@ class Tree:
         self.growingBranches = []
         self.fovea = fovea          # fovea location [x, y]
         self.opticaldisc = startingPoint
+        self.nbranches = 0
 
-        for i in range(1):          # number of branches
+        for i in range(4):          # number of branches
             g = self.getRandomGoal(i)
             b = Branch(self, startingPoint, g)
             self.branches.append(b)
@@ -41,12 +42,12 @@ class Tree:
         return np.array((goal_x, goal_y))
 
     def growTree(self):
-        while len(self.growingBranches) > 0:
-            for b in self.growingBranches:
-                if b.finished:
-                    self.growingBranches.remove(b)
-                else:
+        while np.mean(self.coverage()) / 255 < .9 or True:    # while coverage is not reached
+            branches = self.growingBranches[:]
+            for b in branches:          # grow all branches in list until they have reached goal point
+                while not b.finished:
                     b.addSegment()
+            showImage(self.createTreeMap())
 
     # TODO add different diameters
     def createTreeMap(self):
@@ -68,6 +69,11 @@ class Tree:
             xi, yi = xi.astype(int), yi.astype(int)                         # convert to int
             xout = np.where( xi >= treeMap.shape[0])
             yout = np.where( yi >= treeMap.shape[1])
+            xi[xout] = 299                                                  # remove out of bounds indexes
+            yi[yout] = 299                                                  # remove out of bounds indexes
+            xi, yi = xi.astype(int), yi.astype(int)                         # convert to int
+            xout = np.where( xi < 0)
+            yout = np.where( yi < 0)
             xi[xout] = 299                                                  # remove out of bounds indexes
             yi[yout] = 299                                                  # remove out of bounds indexes
             treeMap[xi, yi] = [255, 255, 255, 255]                          # make points of branches white
@@ -103,14 +109,14 @@ class Tree:
         return makeBinary(binary, 200)
 
 if __name__ == '__main__':
-    for i in range(1):
+    for i in range(10):
         t = Tree([250,150], [150, 150])
         t.growTree()
-        #points = np.array([0,0])
-        #for b in t.branches:
-        #    points = np.vstack((points, b.points))
-        #    points = np.vstack((points, b.goal))
-        #points = np.vstack((points, t.fovea))
-        showImage(t.createTreeMap())
-        showImage(t.coverage())
+        points = np.array([0,0])
+        for b in t.branches:
+            points = np.vstack((points, b.points))
+            points = np.vstack((points, b.goal))
+        points = np.vstack((points, t.fovea))
+        showImage(t.createTreeMap(), points=points)
+        #showImage(t.coverage())
         #showImage(t.coverage())
