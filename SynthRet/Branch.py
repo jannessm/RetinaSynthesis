@@ -3,7 +3,7 @@ from sklearn.cluster import KMeans
 from utils import showImage
 
 class Branch:
-    def __init__(self, tree, startingPoint, goalPoint, artery=True):
+    def __init__(self, tree, startingPoint, goalPoint, level=1, artery=True):
         self.points = [np.array(startingPoint)]
         self.start = startingPoint
         self.goal = np.array(goalPoint)                 # goal point
@@ -11,7 +11,7 @@ class Branch:
 
         #attributes
         self.finished = False
-        self.level = 0
+        self.level = level
         self.artery = artery
 
         #constants
@@ -36,9 +36,8 @@ class Branch:
             self.finished = True
             return
         
-        length = np.random.randint(20, 30)                   # set random length
+        length = np.random.randint(5, 30) / self.level                   # set random length
         i = self.getCurrentGoalPoint(x, length)              # get currentGoalPoint
-        cov = self.tree.coverage()                           # update coverage
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2 # set random angle around currentGoalPoint
 
         rot = self.Rotate(angle)
@@ -48,10 +47,10 @@ class Branch:
     def addBranch(self, x):
         #TODO implement new branches
         newBranch = np.random.rand()                        # roll the dice for new branch
-        if newBranch <  0.5:
+        if newBranch <  0.5 and not np.array_equal(x, self.points[len(self.points) - 1]):
             self.tree.nbranches += 1
             g = self.nearestUncoveredArea(x)                # get goal point for branch
-            self.tree.addBranch(x, g, self.artery)                       # add a branch to queue
+            self.tree.addBranch(x, g, self.level + 1, self.artery)          # add a branch to queue
 
 
     '''
@@ -84,17 +83,29 @@ class Branch:
         get the coordinates of the nearest uncovered area according to x
     '''
     def nearestUncoveredArea(self, point):
-        return np.random.randint(0,300,(2,))
-        coverageMap = self.tree.coverage()
-        
-        ids = np.where(coverageMap < 200)
-        X = np.vstack(ids).T
+        if self.level == 1:
+            pf = point - self.tree.fovea
 
-        km = KMeans(n_clusters=30, max_iter=1)
-        km.fit(X)
-        #showImage(coverageMap, km.cluster_centers_)
-        x = km.cluster_centers_[km.predict([point])[0]]
-        return x
+            # if point is on the opposite site of the fovea according to the od,
+            # not go to fovea
+            if point[0] - self.tree.opticaldisc[0] < 0:
+                x = np.random.randint(-40, -10) + point[0]
+            # else go to fovea or in opposite direction
+            else:
+                x = np.random.randint(10,40) + point[0]
+            
+            toFovea = np.random.rand()
+            overFovea = 1 if pf[1] < 0 else -1
+            if toFovea < 0.65:
+                y = self.tree.fovea[1] - overFovea * np.random.randint(10,20)
+            else:
+                y = point[1] - overFovea * np.random.randint(10, 200 / (2 * self.level))
+            return np.array((x, y))
+        if self.level > 1:
+            i = self.points.index(point)
+            parentDirection = self.points[i-1] - self.points[i]
+            
+            return point
 
     '''
         Rotate

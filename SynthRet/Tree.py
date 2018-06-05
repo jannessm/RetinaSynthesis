@@ -14,12 +14,12 @@ class Tree:
         self.opticaldisc = startingPoint
         self.nbranches = 0
 
-        for i in range(1):          # number of arteries
+        for i in range(4):          # number of arteries
             g = self.getRandomGoal(i)
             b = Branch(self, startingPoint, g, artery=True)
             self.branches.append(b)
             self.growingBranches.append(b)
-        for i in range(1):          # number of veins
+        for i in range(4):          # number of veins
             g = self.getRandomGoal(i)
             b = Branch(self, startingPoint, g, artery=False)
             self.branches.append(b)
@@ -28,8 +28,8 @@ class Tree:
         # constants
         self.covThreshold = 0.9      # coverage threshold
 
-    def addBranch(self, startingPoint, goalPoint, artery):
-        b = Branch(self, startingPoint, goalPoint, artery=artery)
+    def addBranch(self, startingPoint, goalPoint, level, artery):
+        b = Branch(self, startingPoint, goalPoint, level, artery=artery)
         self.branches.append(b)
         self.growingBranches.append(b)
 
@@ -51,10 +51,9 @@ class Tree:
         while np.mean(self.coverage()) / 255 < .9:    # while coverage is not reached
             branches = self.growingBranches[:]
             for b in branches:          # grow all branches in list until they have reached goal point
-                b.setLevel(i)
                 while not b.finished:
                     b.addSegment()
-                    showImage(self.createTreeImage(), sec=.01)
+                    #showImage(self.createTreeImage(), [self.fovea], sec=.01)
                 self.growingBranches.remove(b)
             for b in branches:
                 for p in b.points:
@@ -70,7 +69,7 @@ class Tree:
 
         # draw all branches onto treeMap
         for branch in self.branches:
-            diameter = 4 - (branch.level)
+            diameter = 3 - (branch.level) if branch.level < 3 else 1
             color = 255 if branch.artery else 150
             x,y = np.array(zip(*branch.points))     # seperate x and y coordinates from Branches
             
