@@ -42,7 +42,7 @@ class Tree:
         }
         boundaries = switch.get(i%4)
         if boundaries is not None:
-            goal_x = np.random.randint(boundaries[0][0], boundaries[0][1])
+            goal_x = np.random.randint(boundaries[0][0], boundaries[0][1])  # maybe random.choice?
             goal_y = np.random.randint(boundaries[1][0], boundaries[1][1])
         return np.array((goal_x, goal_y))
 

@@ -102,7 +102,8 @@ class Branch:
                 y = point[1] - overFovea * np.random.randint(10, 200 / (2 * self.level))
             return np.array((x, y))
         if self.level > 1:
-            i = self.points.index(point)
+            i = self.points.index(point)                                #ambiguous?
+            #i = int(np.where(self.points == point)[0][0])
             parentDirection = self.points[i-1] - self.points[i]
             
             return point
