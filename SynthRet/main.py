@@ -20,6 +20,7 @@ def main():
     return addMask(image), addMask(groundTruth)
 
 # generate an image with the background and fovea
+def generateBackgroundAndFovea():
     img=np.zeros((300, 300, 4),np.uint8)            
     img[:,:,]=[217,61,39,255]
     #macula
