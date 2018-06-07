@@ -1,3 +1,11 @@
+"""
+Created on Fri Jun  1 11:27:24 2018
+
+@author: chen
+
+This program is intended to plot the 3-D surface image of odb function 
+
+"""
 from matplotlib import pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
@@ -5,36 +13,27 @@ import math
 import random
 
 
-def odr(x,y):
-    #parameters
-    zr = 60
+def odb(x,y):
+    #r parameters
+    zr = 90.9403
     xr = 240
     yr = 150
-    A = 0.05
-    a = 0.015
-    ther = 20
-#    phi = math.pi * random.random()
-    phi = math.pi
-    
-    #calculate rchanel values
-    exponentr = -((x-xr)/ther)**2 - ((y-yr)/ther)**2
+    a = 0.0461424
+    sr = 5.79272
 
-    red =  zr - 1/(a+np.exp(exponentr))
+    exponentr = -((x-xr)/sr)**2 - ((y-yr)/sr)**2
+    r =  zr - 1/(a+np.exp(exponentr))
     
-    return red
-
-def odgb(x,y):
     #parameters
-    k = 40
-    xgb = 240
-    ygb = 150
-    thegb =4
+    kb = 2.08531
+    xb = 240
+    yb = 150
+    sb = 3.90212
     
-    #calculate gbchanel values
-    exponentgb = -((x-xgb)/thegb)**2 - ((y-ygb)/thegb)**2
-    gb = odr(x,y)+k*np.exp(exponentgb)
-    
-    return gb
+    #calculate bchanel values
+    exponentgb = -((x-xb)/sb)**2 - ((y-yb)/sb)**2
+    blue = r+kb*np.exp(exponentgb)
+    return blue
 
 phi = math.pi * random.random()
 fig = plt.figure()
@@ -45,7 +44,7 @@ Y = np.arange(123, 177, 0.3)
 #Y = np.arange(149, 151, 0.3)
 X, Y = np.meshgrid(X, Y)
 
-Z = odgb(X,Y)
+Z = odb(X,Y)
 
 ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
 
