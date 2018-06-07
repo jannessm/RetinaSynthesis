@@ -47,8 +47,7 @@ class Tree:
         return np.array((goal_x, goal_y))
 
     def growTree(self):
-        i = 0
-        while np.mean(self.coverage()) / 255 < .9:    # while coverage is not reached
+        while np.mean(self.coverage()) / 255 < .9 and len(self.growingBranches) > 0:    # while coverage is not reached
             branches = self.growingBranches[:]
             for b in branches:          # grow all branches in list until they have reached goal point
                 while not b.finished:
@@ -60,7 +59,6 @@ class Tree:
                     if np.array_equal(p, b.start):
                         continue
                     b.addBranch(p)
-            i += 1
 
     # TODO add different diameters
     def createTreeMap(self):
@@ -138,6 +136,6 @@ if __name__ == '__main__':
             points = np.vstack((points, b.points))
             points = np.vstack((points, b.goal))
         points = np.vstack((points, t.fovea))
-        showImage(t.createTreeMap(), points=points)
-        #showImage(t.coverage())
-        #showImage(t.coverage())
+        #showImage(t.createTreeMap(), points=points)
+        showImage(t.createTreeImage())
+        showImage(t.createTreeMap())

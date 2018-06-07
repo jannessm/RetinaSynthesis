@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.cluster import KMeans
+from skimage import measure
 from utils import showImage
 
 class Branch:
@@ -103,13 +103,13 @@ class Branch:
                 y = point[1] - overFovea * np.random.randint(10, 200 / (2 * self.level))
             return np.array((x, y))
         if self.level > 1:
+            # tmap = self.tree.createTreeMap()
             # parentDirection = self.goal - point
             # angle = np.random.randint(20, 60)
             # k_l = self.Rotate(-angle).dot(np.array((- parentDirection[1], parentDirection[0])))
             # k_l = k_l / np.linalg.norm(k_l)
             # k_r = self.Rotate(angle).dot(np.array((parentDirection[1], - parentDirection[0])))
             # k_r = k_r / np.linalg.norm(k_r)
-            # tmap = self.tree.createTreeMap()
             # for l in range(3, 100):
             #     p = (k_l*l + point).astype(int)
             #     showImage(tmap, [p, point], 0.5)
@@ -126,6 +126,13 @@ class Branch:
             #     return point + k_r*r/2
             # else:
             #     return point + k_l*l/2
+
+            # size = 100
+            # bounds = (np.array([[-size/2, -size/2], [size/2, size/2]]) + point).astype(int)
+
+            # labels = measure.label(tmap[bounds[0, 0]: bounds[1, 0], 
+            #                             bounds[0, 1]: bounds[1, 1], :3])
+            # showImage(labls.astype(int))
             return None
 
     '''
