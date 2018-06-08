@@ -7,7 +7,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from PIL import Image, ImageEnhance
 from skimage import img_as_ubyte, exposure, io, transform, draw
-from scipy.misc import imread
+import scipy.misc 
 from scipy.ndimage.morphology import binary_dilation
 import math
 import random
@@ -105,7 +105,7 @@ def addIllumination(image): # rewrite with skimage
 
     return img
 
-def showImage(img, points=None, sec=-1):
+def showImage(str,img, points=None, sec=-1):
     if type(img) == list:
         points = points if type(points) == list else [None] * len(img)
         rows = np.floor(np.sqrt(len(img)))
@@ -115,9 +115,9 @@ def showImage(img, points=None, sec=-1):
             cols = len(img)
         for i in range(len(img)):
             plt.subplot(int(rows), int(cols), i+1)
-            _plotHelper(img[i], points[i])
+            _plotHelper(str,img[i], points[i],i)
     else:
-        _plotHelper(img, points)
+        _plotHelper(str,img, points,i)
     if not sec == -1:
         plt.show(block=False)
         plt.pause(sec)
@@ -125,11 +125,15 @@ def showImage(img, points=None, sec=-1):
     else:
         plt.show()
 
-def _plotHelper(img, points):
+def _plotHelper(str,img, points,i=None):
     if img.ndim == 3:
         plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
+        scipy.misc.imsave('vessel%s%i.jpg'%(str,i),np.transpose(img, (1,0,2)))      # save images as jpg
+        np.save('vessel%s%i.npy'%(str,i),np.transpose(img, (1,0,2)))        #save npy files
     else:
         plt.imshow(img.T)
+        scipy.misc.imsave('vessel$s%i.jpg'%(str,i),img.T)
+        np.save('vessel%s%i.npy'%(str,i),img.T)
     if points is not None:
         x, y = zip(*points)
         plt.scatter(x=x, y=y, c='b')

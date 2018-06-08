@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw
 from utils import mergeLayer, addIllumination, showImage, addMask
 import cv2
 from skimage import io, draw, data
-from scipy.misc import imread, imsave
+import scipy.misc 
 import math
 import os 
 from OpticalDisc import generateOpticalDisc
@@ -59,7 +59,7 @@ def generateVesselsTree(fovea, od):
     return tree.createTreeImage(), tree.createTreeMap()
 
 if __name__ == '__main__':
-    k = 2                               # amount of pictures to generate
+    k = 100                               # amount of pictures to generate
 
     if k > 20:                           # limit threads to upper boundary 20
         nthreads = 20
@@ -75,5 +75,7 @@ if __name__ == '__main__':
 
     print("\n\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
 
-    showImage(list(np.asarray(res)[:,0])) # show generated images
-    showImage(list(np.asarray(res)[:,1])) # show ground truths
+    
+    showImage('g',list(np.asarray(res)[:,1])) # show ground truths
+    showImage('i',list(np.asarray(res)[:,0])) # show generated images
+

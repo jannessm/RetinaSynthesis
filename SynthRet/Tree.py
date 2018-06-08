@@ -104,8 +104,8 @@ class Tree:
         arteries = np.where(np.sum(treeMap, axis=2) == 1020)
         veins = np.where(np.sum(treeMap, axis=2) == 600)
         treeMap[eq] = [0,0,0,0]
-        treeMap[arteries] = [5,200,190,20]
-        treeMap[veins] = [7,200,190,200] 
+        treeMap[arteries] = [242, 12, 0, 255]
+        treeMap[veins] = [242, 12, 0, 220] 
         return treeMap#.astype(int)
 
     def coverage(self, k=10):
@@ -137,6 +137,6 @@ if __name__ == '__main__':
             points = np.vstack((points, b.goal))
         points = np.vstack((points, t.fovea))
         #showImage(t.createTreeMap(), points=points)
-        #showImage(t.createTreeMap())
+        showImage(t.createTreeMap())
         showImage(t.createTreeImage())
         #showImage(t.createTreeMap())
