@@ -90,7 +90,7 @@ def addIllumination(image): # rewrite with skimage
 
     return img
 
-def showImage(str,img, points=None, sec=-1):
+def showImage(img, points=None, sec=-1, suffix=None):
     if type(img) == list:
         points = points if type(points) == list else [None] * len(img)
         rows = np.floor(np.sqrt(len(img)))
@@ -100,9 +100,10 @@ def showImage(str,img, points=None, sec=-1):
             cols = len(img)
         for i in range(len(img)):
             plt.subplot(int(rows), int(cols), i+1)
-            _plotHelper(str,img[i], points[i],i)
+            i_str = '0' * (np.log10(len(img)) - np.log10(i))  + i
+            _plotHelper(suffix,img[i], points[i], i_str)
     else:
-        _plotHelper(str,img, points,i)
+        _plotHelper(suffix,img, points)
     if not sec == -1:
         plt.show(block=False)
         plt.pause(sec)
@@ -110,15 +111,15 @@ def showImage(str,img, points=None, sec=-1):
     else:
         plt.show()
 
-def _plotHelper(str,img, points,i=None):
+def _plotHelper(suffix, img, points,i=None):
     if img.ndim == 3:
         plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
-        scipy.misc.imsave('vessel%s%i.jpg'%(str,i),np.transpose(img, (1,0,2)))      # save images as jpg
-        np.save('vessel%s%i.npy'%(str,i),np.transpose(img, (1,0,2)))        #save npy files
+        if suffix:
+            scipy.misc.imsave('vessel%s%i.jpg'%(suffix,i), np.transpose(img, (1,0,2)))      # save images as jpg
     else:
         plt.imshow(img.T)
-        scipy.misc.imsave('vessel$s%i.jpg'%(str,i),img.T)
-        np.save('vessel%s%i.npy'%(str,i),img.T)
+        if suffix:
+            scipy.misc.imsave('vessel%s%i.jpg'%(suffix,i), img.T)
     if points is not None:
         x, y = zip(*points)
         plt.scatter(x=x, y=y, c='b')

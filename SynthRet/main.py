@@ -7,11 +7,13 @@ from utils import mergeLayer, addIllumination, showImage, addMask
 import cv2
 from skimage import io, draw, data
 import scipy.misc 
+from scipy.misc import imsave
 import math
 import os 
 from OpticalDisc import generateOpticalDisc
-from multiprocessing.dummy import Pool
+from multiprocessing import Pool
 import time
+import tqdm
 
 '''
     generate synthetic images. if you want to save the generated files adjust save and path to your needs.
@@ -68,13 +70,14 @@ if __name__ == '__main__':
     start = time.time()                 # start timer
 
     threads = Pool(nthreads)            # generate k images in parallel
-    res = threads.map(generateImages, range(k))
+    for _ in tqdm.tqdm(threads.imap_unordered(generateImages, range(k)), total=k):
+        pass
     threads.close()
     threads.join()
 
     print("\n\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
 
     
-    showImage('g',list(np.asarray(res)[:,1])) # show ground truths
-    showImage('i',list(np.asarray(res)[:,0])) # show generated images
+    showImage(list(np.asarray(res)[:,1]), suffix='_groundtruth') # show ground truths
+    showImage(list(np.asarray(res)[:,0]), suffix='_image') # show generated images
 
