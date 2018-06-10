@@ -1,28 +1,13 @@
 # imports
-from PIL import Image, ImageEnhance
-
-import cv2
 import numpy as np
-
 from matplotlib import pyplot as plt
-from PIL import Image, ImageEnhance
-from skimage import img_as_ubyte, exposure, io, transform, draw
+from skimage import exposure, transform, draw
 import scipy.misc 
 from scipy.ndimage.morphology import binary_dilation
-import math
-import random
 import os
-import time
-#from Unet.data import *
-#from Unet.unet import *
+
 
 #def eval():
-    #data = dataProcess(300, 300, data_path="./syntheticImages/imgs", label_path="./syntheticImages/labels", test_path="../DRIVE/test/images")
-    #imgs_labels = None #TODO
-    #unet = myUnet(300, 300)
-    #unet.train()
-    #predictions = np.load('results/imgs_mask_test.npy')
-    #return measure(predictions, imgs_labels)
 
 def measure(y_actual, y_hat):
     TP = 0
@@ -144,7 +129,7 @@ def _plotHelper(str,img, points,i=None):
 def addMask(image):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     if not os.path.isfile(dir_path + '/mask.npy'):
-        mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
+        mask = scipy.misc.imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
         mask = transform.resize(mask, (300, 300))
         mask = mask.T
         final_mask = np.zeros((300,300,4))
@@ -156,7 +141,7 @@ def addMask(image):
     else:
         final_mask = np.load(dir_path + '/mask.npy')
         if not final_mask.shape == (300,300,4):
-            mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
+            mask = scipy.misc.imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
             mask = transform.resize(mask, (300, 300))
             mask = mask.T
             final_mask = np.zeros((300,300,4))
@@ -171,7 +156,7 @@ def calculateMeanCoverage(path, k=10):
     images = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     means = []
     for f in images:
-        binary = imread(path+f)
+        binary = scipy.misc.imread(path+f)
         binary = transform.resize(binary, (300, 300))
         if binary.ndim == 3:
             binary = makeBinary(binary, 0.5)
