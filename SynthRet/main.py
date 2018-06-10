@@ -21,7 +21,7 @@ def generateImages(i=0, save=False, path="/../syntheticImages/"):
     bkg, fovea = generateBackgroundAndFovea()
     od_img, od = generateOpticalDisc()
     vt, groundTruth = generateVesselsTree(fovea, od)
-    merged = mergeLayer([bkg, od_img, vt])
+    merged = mergeLayer([bkg, np.transpose(od_img,(1,0,2)), vt])
     image = addIllumination(merged)
     image = addMask(image)
     gt = addMask(groundTruth)
@@ -58,7 +58,7 @@ def generateVesselsTree(fovea, od):
     return tree.createTreeImage(), tree.createTreeMap()
 
 if __name__ == '__main__':
-    k = 100                               # amount of pictures to generate
+    k = 200                               # amount of pictures to generate
 
     if k > 20:                           # limit threads to upper boundary 20
         nthreads = 20
