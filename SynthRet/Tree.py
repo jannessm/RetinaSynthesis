@@ -28,11 +28,6 @@ class Tree:
         # constants
         self.covThreshold = 0.9      # coverage threshold
 
-    def addBranch(self, startingPoint, goalPoint, level, artery):
-        b = Branch(self, startingPoint, goalPoint, level, artery=artery)
-        self.branches.append(b)
-        self.growingBranches.append(b)
-
     def getRandomGoal(self, i):
         switch = {
             0: np.array([[-300, -100], [0, 100]]) + self.fovea,
@@ -61,14 +56,14 @@ class Tree:
                     b.addBranch(p)
 
     # TODO add different diameters
-    def createTreeMap(self):
+    def createTreeMap(self, unicolor=False):
         treeMap = np.zeros((300, 300, 4))
         treeMap[:,:,3] = 255
 
         # draw all branches onto treeMap
         for branch in self.branches:
             diameter = 3 - (branch.level) if branch.level < 3 else 1
-            color = 255 if branch.artery else 150
+            color = 255 if branch.artery or unicolor else 150
             x,y = np.array(zip(*branch.points))     # seperate x and y coordinates from Branches
             
             # interpolate 
