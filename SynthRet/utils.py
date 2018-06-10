@@ -6,8 +6,8 @@ import scipy.misc
 from scipy.ndimage.morphology import binary_dilation
 import os
 
-
-#def eval():
+imagePath = './images/'
+groundtruthPath = './groundtruth/'
 
 def measure(y_actual, y_hat):
     TP = 0
@@ -90,7 +90,7 @@ def addIllumination(image): # rewrite with skimage
 
     return img
 
-def showImage(img, points=None, sec=-1, suffix=None):
+def showImage(img, points=None, sec=-1, groundtruth=None, onlySave=False):
     if type(img) == list:
         points = points if type(points) == list else [None] * len(img)
         rows = np.floor(np.sqrt(len(img)))
@@ -99,30 +99,45 @@ def showImage(img, points=None, sec=-1, suffix=None):
             rows = 1
             cols = len(img)
         for i in range(len(img)):
-            plt.subplot(int(rows), int(cols), i+1)
-            i_str = '0' * (np.log10(len(img)) - np.log10(i))  + i
-            _plotHelper(suffix,img[i], points[i], i_str)
+            if not onlySave:
+                plt.subplot(int(rows), int(cols), i+1)
+            i_str = str(i).rjust(int(np.log10(len(img))) + 1, '0')
+            _plotHelper(img[i], points[i], i_str, groundtruth, onlySave)
     else:
-        _plotHelper(suffix,img, points)
-    if not sec == -1:
+        _plotHelper(img, points, '', groundtruth, onlySave)
+    if not sec == -1 and not onlySave:
         plt.show(block=False)
         plt.pause(sec)
         plt.close()
-    else:
+    elif not onlySave:
         plt.show()
 
-def _plotHelper(suffix, img, points,i=None):
+def _plotHelper(img, points, i='', groundtruth=None, onlySave=False):
     if img.ndim == 3:
-        plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
-        if suffix:
-            scipy.misc.imsave('vessel%s%i.jpg'%(suffix,i), np.transpose(img, (1,0,2)))      # save images as jpg
+        if not onlySave:
+            plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
+        if i:
+            rgb = rgba2rgb(np.transpose(img, (1,0,2)))
+            path = imagePath
+            if groundtruth:
+                path = groundtruthPath
+            print '%svessel%s.jpg'%(path,i)
+            scipy.misc.imsave('%svessel%s.jpg'%(path,i), rgb)      # save images as jpg
     else:
-        plt.imshow(img.T)
-        if suffix:
-            scipy.misc.imsave('vessel%s%i.jpg'%(suffix,i), img.T)
-    if points is not None:
+        if not onlySave:
+            plt.imshow(img)
+        if i:
+            path = imagePath
+            if groundtruth:
+                path = groundtruthPath
+            scipy.misc.imsave('%svessel%s.jpg'%(path,i), img.T)
+    if points is not None and not onlySave:
         x, y = zip(*points)
         plt.scatter(x=x, y=y, c='b')
+
+def rgba2rgb(img):
+    a = img[:,:,3] / 255.
+    return np.dstack(((img[:,:,0] + (255 * (1-a)), img[:,:,1] + (255 * (1-a)), img[:,:,2] + (255 * (1-a)))))
 
 '''
     add black mask on top of the image
