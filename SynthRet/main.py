@@ -3,20 +3,37 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from Tree import Tree
 from PIL import Image, ImageDraw
-from utils import mergeLayer, addIllumination, showImage
+from utils import mergeLayer, addIllumination, showImage, addMask
 import cv2
-from skimage import io, transform, draw, data
-from scipy.misc import imread
+from skimage import io, draw, data
+import scipy.misc 
 import math
 import os 
 from OpticalDisc import generateOpticalDisc
+from multiprocessing.dummy import Pool
+import time
 
-def main():
+'''
+    generate synthetic images. if you want to save the generated files adjust save and path to your needs.
+    path is relative to this file.
+'''
+def generateImages(i=0, save=False, path="/../syntheticImages/"):
     bkg, fovea = generateBackgroundAndFovea()
     od_img, od = generateOpticalDisc()
     vt, groundTruth = generateVesselsTree(fovea, od)
     merged = mergeLayer([bkg, od_img, vt])
     image = addIllumination(merged)
+    image = addMask(image)
+    gt = addMask(groundTruth)
+    if save:
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        path = dir_path + path
+        if not os.path.exists(path + "images"):
+            os.makedirs(path + "images")
+        if not os.path.exists(path + "groundtruth"):
+            os.makedirs(path + "groundtruth")
+        imsave(path + "images/" + str(i+1) + ".png", image)
+        imsave(path + "groundtruth/" + str(i+1) + ".png", gt)
     return addMask(image), addMask(groundTruth)
 
 # generate an image with the background and fovea
@@ -40,27 +57,24 @@ def generateVesselsTree(fovea, od):
     tree.growTree()
     return tree.createTreeImage(), tree.createTreeMap()
 
-'''
-    add black mask on top of the image
-'''
-def addMask(image):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    if not os.path.isfile(dir_path + '/mask.npy') or True:
-        mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
-        mask = transform.resize(mask, (300, 300))
-        mask = mask.T
-        final_mask = np.zeros((300,300,4))
-        black = np.where(mask < 0.5)
-        transparent = np.where(mask >= 0.5)
-        final_mask[black] = [0,0,0,255]
-        final_mask[transparent] = [255,255,255,0]
-        np.save(dir_path + '/mask.npy', mask)
-    else:
-        final_mask = np.load(dir_path + '/mask.npy')
-    return mergeLayer([image, final_mask])
-
-
 if __name__ == '__main__':
-    img, gt = main()
-    showImage(img)
-    showImage(gt)
+    k = 100                               # amount of pictures to generate
+
+    if k > 20:                           # limit threads to upper boundary 20
+        nthreads = 20
+    else:
+        nthreads = k
+    
+    start = time.time()                 # start timer
+
+    threads = Pool(nthreads)            # generate k images in parallel
+    res = threads.map(generateImages, range(k))
+    threads.close()
+    threads.join()
+
+    print("\n\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
+
+    
+    showImage('g',list(np.asarray(res)[:,1])) # show ground truths
+    showImage('i',list(np.asarray(res)[:,0])) # show generated images
+
