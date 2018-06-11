@@ -133,7 +133,7 @@ class NoiseUtils:
         n = self.fractalBrownianMotion(8 * x, 8 * y, self.perlinNoise)
         return (math.sin(16 * x * frequency + 4 * (n - 0.5)) + 1) * 0.5
     
-
+"""
 imageSize = 300
 noise = NoiseUtils(imageSize)
 noise.makeTexture(texture = noise.cloud)
@@ -151,6 +151,6 @@ for i in range(0, imageSize):
 pixels = pixels.astype('uint8')         
 cv2.imshow("Noise", pixels)  
 cv2.waitKey(0) 
-
+"""
 
     
