@@ -9,6 +9,7 @@ from skimage import io, draw, data
 import scipy.misc 
 import math
 import os 
+import time
 from OpticalDisc import generateOpticalDisc
 from Fovea import generateBackgroundAndFovea
 
@@ -43,7 +44,7 @@ def generateVesselsTree(fovea, od):
     return tree.createTreeImage(), tree.createTreeMap()
 
 if __name__ == '__main__':
-    k = 200                               # amount of pictures to generate
+    k = 2                              # amount of pictures to generate
 
     if k > 20:                           # limit threads to upper boundary 20
         nthreads = 20
