@@ -2,59 +2,69 @@ import numpy as np
 
 from Branch import Branch
 from scipy import interpolate
-from skimage.morphology import binary_dilation
-from utils import showImage
+from scipy.ndimage.morphology import binary_dilation
+from skimage import draw
+from utils import showImage, addMask, makeBinary
 
 class Tree:
     def __init__(self, startingPoint, fovea):
         self.branches = []
+        self.growingBranches = []
         self.fovea = fovea          # fovea location [x, y]
+        self.opticaldisc = startingPoint
+        self.nbranches = 0
 
-        for _ in range(4):
-            g = self.getRandomGoal()
-            b = Branch(self, startingPoint, g)
+        for i in range(4):          # number of arteries
+            g = self.getRandomGoal(i)
+            b = Branch(self, startingPoint, g, artery=True)
             self.branches.append(b)
+            self.growingBranches.append(b)
+        for i in range(4):          # number of veins
+            g = self.getRandomGoal(i)
+            b = Branch(self, startingPoint, g, artery=False)
+            self.branches.append(b)
+            self.growingBranches.append(b)
 
         # constants
         self.covThreshold = 0.9      # coverage threshold
 
-    def getRandomGoal(self):
+    def getRandomGoal(self, i):
         switch = {
-            0: [[0, 100], [0, 100]],
-            1: [[0, 100], [200, 300]],
-            2: [[250, 300], [0, 100]],
-            3: [[250, 300], [200, 300]]
+            0: np.array([[-300, -100], [0, 100]]) + self.fovea,
+            1: np.array([[-300, -100], [-100, 0]]) + self.fovea,
+            2: np.array([[50, 200], [50, 200]]) + self.opticaldisc,
+            3: np.array([[50, 200], [-200, -50]]) + self.opticaldisc
         }
-        boundaries = switch.get(len(self.branches))
+        boundaries = switch.get(i%4)
         if boundaries is not None:
-            goal_x = np.random.randint(boundaries[0][0], boundaries[0][1])
+            goal_x = np.random.randint(boundaries[0][0], boundaries[0][1])  # maybe random.choice?
             goal_y = np.random.randint(boundaries[1][0], boundaries[1][1])
         return np.array((goal_x, goal_y))
 
     def growTree(self):
-        #cov = self.coverage()
-        #while np.mean(cov) < self.covThreshold:
-        for i in range(1000): #debugging loop
-            for b in self.branches:
-                b.addSegment()
-            finished = True
-            for b in self.branches:
-                if not b.finished:
-                    finished = False
-            if finished:
-                break
-            self.iteration = i
-            cov = self.coverage()
+        while np.mean(self.coverage()) / 255 < .9 and len(self.growingBranches) > 0:    # while coverage is not reached
+            branches = self.growingBranches[:]
+            for b in branches:          # grow all branches in list until they have reached goal point
+                while not b.finished:
+                    b.addSegment()
+                    #showImage(self.createTreeImage(), [self.fovea], sec=.01)
+                self.growingBranches.remove(b)
+            for b in branches:
+                for p in b.points:
+                    if np.array_equal(p, b.start):
+                        continue
+                    b.addBranch(p)
 
     # TODO add different diameters
-    def createTreeMap(self):
+    def createTreeMap(self, unicolor=False):
         treeMap = np.zeros((300, 300, 4))
         treeMap[:,:,3] = 255
 
         # draw all branches onto treeMap
-        branches = [b.points for b in self.branches]
-        for branch in branches:
-            x,y = np.array(zip(*branch))     # seperate x and y coordinates from Branches
+        for branch in self.branches:
+            diameter = 3 - (branch.level) if branch.level < 3 else 1
+            color = 255 if branch.artery or unicolor else 150
+            x,y = np.array(zip(*branch.points))     # seperate x and y coordinates from Branches
             
             # interpolate 
             s = 0   # smoothing condition (0 means passing all points)
@@ -64,54 +74,64 @@ class Tree:
             tck, t = interpolate.splprep([x, y], s=s, k=k) 
             xi, yi = interpolate.splev(np.linspace(t[0], t[-1], 400), tck)
             xi, yi = xi.astype(int), yi.astype(int)                         # convert to int
-            xout = np.where( xi >= treeMap.shape[0])
-            yout = np.where( yi >= treeMap.shape[1])
-            xi[xout] = 299                                                  # remove out of bounds indexes
-            yi[yout] = 299                                                  # remove out of bounds indexes
-            treeMap[xi, yi] = [255, 255, 255, 255]                          # make points of branches white
+
+            p = np.vstack((xi, yi)).T                                       # remove all points > 300 and < 0
+            toHigh = np.unique(np.where(p > 299)[0])
+            p = np.delete(p, toHigh, axis=0)
+            toLow = np.unique(np.where(p < 0)[0])
+            p = np.delete(p, toLow, axis=0)
+
+            xi, yi = np.array(zip(*p))
+
+            branchImage = np.zeros((300,300,4))
+            branchImage[:,:,3] = 255
+            branchImage[xi, yi] = [255, 255, 255, 255]                      # make points of branches white
+            bina = makeBinary(branchImage, 200)
+            bina = binary_dilation(bina, iterations=diameter)
+            treeMap[bina] = color
 
         return treeMap
 
     def createTreeImage(self):
         treeMap = self.createTreeMap()
         #iterate over treemap and set alpha to 0 for black points
-        for i in range(treeMap.shape[0]):
-            for j in range(treeMap.shape[1]):
-                a = treeMap[i][j]
-                if np.array_equal(treeMap[i][j], [0,0,0,255]):
-                    treeMap[i][j] = [0,0,0,0]
-                else:
-                    treeMap[i][j] = [200, 0, 0, 255]
-        return treeMap
+        eq = np.where(np.sum(treeMap, axis=2) == 255)
+        arteries = np.where(np.sum(treeMap, axis=2) == 1020)
+        veins = np.where(np.sum(treeMap, axis=2) == 600)
+        treeMap[eq] = [0,0,0,0]
+        treeMap[arteries] = [242, 12, 0, 255]
+        treeMap[veins] = [242, 12, 0, 220] 
+        return treeMap#.astype(int)
 
     def coverage(self, k=10):
         treeMap = self.createTreeMap()
-        binary = self.makeBinary(treeMap, 200)
-        for _ in range(k):
-            binary = binary_dilation(binary)
-        return binary
 
-    def makeBinary(self, img, threshold):
-        r = np.multiply(img[:, :, 0], img[:, :, 3])
-        g = np.multiply(img[:, :, 1], img[:, :, 3])
-        b = np.multiply(img[:, :, 2], img[:, :, 3])
-        rgb = np.dstack((r, g, b))
-        grey = np.multiply(rgb, [0.21, 0.72, 0.07])
-        grey = np.sum(grey, axis=2)
-        grey[np.where(grey < threshold)] = 0
-        grey[np.where(grey > threshold)] = 255
-        return grey
+        # dilation
+        binary = makeBinary(treeMap, 200)
+        binary = binary_dilation(binary, iterations=k)
+
+        rgba = np.zeros(treeMap.shape) # make rgba image from binary
+        rgba[np.where(binary)] = [0,0,0, 255] # draw binary on it
+
+        # add fovea
+        rr, cc = draw.circle(self.fovea[0], self.fovea[1],15)
+        draw.set_color(rgba, [rr,cc], [0,0,0,255])
+
+        # add mask
+        binary = addMask(rgba)    # add Mask
+        binary = np.abs(binary - [255, 255, 255, 0])
+        return makeBinary(binary, 200)
 
 if __name__ == '__main__':
     for i in range(10):
         t = Tree([250,150], [150, 150])
         t.growTree()
-        print t.iteration
-        #points = np.array([0,0])
-        #for b in t.branches:
-        #    points = np.vstack((points, b.points))
-        #    points = np.vstack((points, b.goal))
-        #points = np.vstack((points, t.fovea))
-        #showImage(t.createTreeMap(), points[1:])
+        points = np.array([0,0])
+        for b in t.branches:
+            points = np.vstack((points, b.points))
+            points = np.vstack((points, b.goal))
+        points = np.vstack((points, t.fovea))
+        #showImage(t.createTreeMap(), points=points)
+        showImage(t.createTreeMap())
+        showImage(t.createTreeImage())
         #showImage(t.createTreeMap())
-        showImage(t.coverage())
