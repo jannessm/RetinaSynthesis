@@ -10,6 +10,7 @@ import scipy.misc
 import math
 import os 
 import time
+from multiprocessing.dummy import Pool
 from OpticalDisc import generateOpticalDisc
 from Fovea import generateBackgroundAndFovea
 
