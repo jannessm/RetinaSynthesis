@@ -19,21 +19,6 @@ def main():
     io.imshow(merged)
     return addIllumination(merged), groundTruth
 
-# generate an image with the background and fovea
-def generateBackgroundAndFovea():
-
-    img=np.zeros((300, 300, 4),np.uint8)            
-    img[:,:,]=[217,61,39,255]
-    #macula
-    change=np.random.randint(-20,20)
-    for i in range(100):
-        rr,cc=draw.circle(150+change,150+change,25-i/4.0)
-        draw.set_color(img,[rr,cc],[198-i, 57-i/5.0, 35-i/10.0,255])
-    #fovea
-    PosFovea=(150+change,150+change)
-    rr,cc=draw.circle(150+change,150+change,15.4)
-    draw.set_color(img,[rr,cc],[141, 57, 30,255])
-    return img,PosFovea
 
 # generate an image containing the vessels tree
 def generateVesselsTree(fovea, od):
