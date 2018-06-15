@@ -7,50 +7,29 @@ from utils import mergeLayer, addIllumination, showImage, addMask
 import cv2
 from skimage import io, draw, data
 import scipy.misc 
+from scipy.misc import imsave
 import math
 import os 
 from OpticalDisc import generateOpticalDisc
 from multiprocessing.dummy import Pool
 import time
+from multiprocessing.dummy import Pool
+from OpticalDisc import generateOpticalDisc
+from Fovea import generateBackgroundAndFovea
+import tqdm
 
 '''
     generate synthetic images. if you want to save the generated files adjust save and path to your needs.
     path is relative to this file.
 '''
-def generateImages(i=0, save=False, path="/../syntheticImages/"):
+def generateImages(i=0):
     bkg, fovea = generateBackgroundAndFovea()
     od_img, od = generateOpticalDisc()
     vt, groundTruth = generateVesselsTree(fovea, od)
-    merged = mergeLayer([bkg, od_img, vt])
+    merged = mergeLayer([bkg, np.transpose(od_img,(1,0,2)), vt])
     image = addIllumination(merged)
-    image = addMask(image)
-    gt = addMask(groundTruth)
-    if save:
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        path = dir_path + path
-        if not os.path.exists(path + "images"):
-            os.makedirs(path + "images")
-        if not os.path.exists(path + "groundtruth"):
-            os.makedirs(path + "groundtruth")
-        imsave(path + "images/" + str(i+1) + ".png", image)
-        imsave(path + "groundtruth/" + str(i+1) + ".png", gt)
     return addMask(image), addMask(groundTruth)
 
-# generate an image with the background and fovea
-def generateBackgroundAndFovea():
-    img=np.zeros((300, 300, 4),np.uint8)            
-    img[:,:,]=[255,127,36,255]
-    #macula
-    change=np.random.randint(-20,20)
-    for i in range(100):
-        rr,cc=draw.circle(150+change,150+change,26-i/4.0)
-        draw.set_color(img,[rr,cc],[190-i,190-i,190-i,255])
-    
-    #fovea
-    PosFovea=(150+change,150+change)
-    rr,cc=draw.circle(150+change,150+change,15)
-    draw.set_color(img,[rr,cc],[139,126,102,255])
-    return img, PosFovea
 
 # generate an image containing the vessels tree
 def generateVesselsTree(fovea, od):
@@ -59,23 +38,33 @@ def generateVesselsTree(fovea, od):
     return tree.createTreeImage(), tree.createTreeMap()
 
 if __name__ == '__main__':
-    k = 100                               # amount of pictures to generate
+    k = 200                              # amount of pictures to generate
 
     if k > 20:                           # limit threads to upper boundary 20
         nthreads = 20
     else:
         nthreads = k
     
+    print("\nStart generating "+ str(k) +" images")
     start = time.time()                 # start timer
 
-    threads = Pool(nthreads)            # generate k images in parallel
-    res = threads.map(generateImages, range(k))
-    threads.close()
-    threads.join()
+    #threads = Pool(nthreads)            # generate k images in parallel
+    #res = threads.map(generateImages, range(k))
+    #for _ in tqdm.tqdm(res, total=k):
+     #   pass
+    #threads.close()
+    #threads.join()
 
-    print("\n\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
+    im = []
+    gt = []
+    for _ in tqdm.tqdm(range(k), total=k):
+        i, g = generateImages()
+        im.append(i)
+        gt.append(g)
 
+    print("\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
     
-    showImage('g',list(np.asarray(res)[:,1])) # show ground truths
-    showImage('i',list(np.asarray(res)[:,0])) # show generated images
-
+    print("\n saving groundtruths")
+    showImage(gt, groundtruth=True, onlySave=True)
+    print("\n saving images")
+    showImage(im, groundtruth=False, onlySave=True)
