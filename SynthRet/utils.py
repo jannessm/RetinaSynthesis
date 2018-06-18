@@ -90,9 +90,10 @@ def addIllumination(image): # rewrite with skimage
 
     return img
 
-def showImage(img, points=None, sec=-1, groundtruth=None, onlySave=False):
+def showImage(img, pointsBlue=None, sec=-1, groundtruth=None, onlySave=False, pointsYellow=None):
     if type(img) == list:
-        points = points if type(points) == list else [None] * len(img)
+        pointsBlue = pointsBlue if type(pointsBlue) == list else [None] * len(img)
+        pointsYellow = pointsYellow if type(pointsYellow) == list else [None] * len(img)
         rows = np.floor(np.sqrt(len(img)))
         cols = np.ceil(np.sqrt(len(img))) 
         if not rows > 1:
@@ -102,9 +103,9 @@ def showImage(img, points=None, sec=-1, groundtruth=None, onlySave=False):
             if not onlySave:
                 plt.subplot(int(rows), int(cols), i+1)
             i_str = str(i).rjust(int(np.log10(len(img))) + 1, '0')
-            _plotHelper(img[i], points[i], i_str, groundtruth, onlySave)
+            _plotHelper(img[i], pointsBlue[i], pointsYellow[i], i_str, groundtruth, onlySave)
     else:
-        _plotHelper(img, points, '', groundtruth, onlySave)
+        _plotHelper(img, pointsBlue, pointsYellow, '', groundtruth, onlySave)
     if not sec == -1 and not onlySave:
         plt.show(block=False)
         plt.pause(sec)
@@ -112,7 +113,7 @@ def showImage(img, points=None, sec=-1, groundtruth=None, onlySave=False):
     elif not onlySave:
         plt.show()
 
-def _plotHelper(img, points, i='', groundtruth=None, onlySave=False):
+def _plotHelper(img, pointsBlue, pointsYellow, i='', groundtruth=None, onlySave=False):
     if img.ndim == 3:
         if not onlySave:
             plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
@@ -131,9 +132,12 @@ def _plotHelper(img, points, i='', groundtruth=None, onlySave=False):
             if groundtruth:
                 path = groundtruthPath
             scipy.misc.imsave('%svessel%s.jpg'%(path,i), img.T)
-    if points is not None and not onlySave:
-        x, y = zip(*points)
+    if pointsBlue is not None and not onlySave:
+        x, y = zip(*pointsBlue)
         plt.scatter(x=x, y=y, c='b')
+    if pointsYellow is not None and not onlySave:
+        x, y = zip(*pointsYellow)
+        plt.scatter(x=x, y=y, c='y')
 
 def rgba2rgb(img):
     a = img[:,:,3] / 255.
@@ -174,20 +178,31 @@ def calculateMeanCoverage(path, k=10):
     for f in images:
         binary = scipy.misc.imread(path+f)
         binary = transform.resize(binary, (300, 300))
-        if binary.ndim == 3:
-            binary = makeBinary(binary, 0.5)
-        binary = binary_dilation(binary, iterations=k)
-        rgba = np.zeros((300, 300, 4)) # make rgba image from binary
-        rgba[np.where(binary)] = [0,0,0, 255] # draw binary on it
-        # add fovea
-        rr, cc = draw.circle(150, 150, 15)
-        draw.set_color(rgba, [rr,cc], [0,0,0,255])
-        # add mask
-        rgba = addMask(rgba)    # add Mask
-        rgba = np.abs(rgba - [255, 255, 255, 0])
-        binary = makeBinary(rgba, 200)
-        means.append(np.mean(binary) / 255)
+        means.append(meanCoverage(binary, [150,150], k))
     return np.mean(np.asarray(means))
+
+def coverage(binary, fovea, k=10):
+    if binary.ndim == 3:
+        binary = makeBinary(binary, 200)
+    
+    # dilation
+    if k > 0:
+        binary = binary_dilation(binary, iterations=k)
+
+    rgba = np.zeros((300, 300, 4)) # make rgba image from binary
+    rgba[np.where(binary)] = [0,0,0, 255] # draw binary on it
+
+    # add fovea
+    rr, cc = draw.circle(fovea[0], fovea[1], 15)
+    draw.set_color(rgba, [rr,cc], [0,0,0,255])
+
+    # add mask
+    binary = addMask(rgba)    # add Mask
+    binary = np.abs(binary - [255, 255, 255, 0])
+    return makeBinary(binary, 200)
+
+def meanCoverage(img, fovea, k=10):
+    return np.mean(coverage(img, fovea, k)) / 255
 
 if __name__ == '__main__':
     paths = [
@@ -195,9 +210,11 @@ if __name__ == '__main__':
         '/../DRIVE/test/2nd_manual/'
     ]
     means = []
-    k = 10
+    k = 0
     for p in paths:
         dir_path = os.path.dirname(os.path.realpath(__file__))
         mypath = dir_path + p
         means.append(calculateMeanCoverage(mypath, k))
     print("MEAN COVERAGE WITH DILATION OF " + str(k) + ": " + str(np.mean(np.asarray(means))))
+
+    # result: dilation of 0 => 0.38799999

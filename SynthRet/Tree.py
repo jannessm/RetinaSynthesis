@@ -4,7 +4,7 @@ from Branch import Branch
 from scipy import interpolate
 from scipy.ndimage.morphology import binary_dilation
 from skimage import draw
-from utils import showImage, addMask, makeBinary
+from utils import showImage, addMask, makeBinary, coverage, meanCoverage
 
 class Tree:
     def __init__(self, startingPoint, fovea):
@@ -42,18 +42,21 @@ class Tree:
         return np.array((goal_x, goal_y))
 
     def growTree(self):
-        while np.mean(self.coverage()) / 255 < .9 and len(self.growingBranches) > 0:    # while coverage is not reached
+        while (meanCoverage(self.createTreeMap(), self.fovea, 0) < 0.388 and 
+            len(self.growingBranches) > 0):    # while coverage is not reached
+            
             branches = self.growingBranches[:]
             for b in branches:          # grow all branches in list until they have reached goal point
                 while not b.finished:
                     b.addSegment()
-                    #showImage(self.createTreeImage(), [self.fovea], sec=.01)
                 self.growingBranches.remove(b)
             for b in branches:
                 for p in b.points:
                     if np.array_equal(p, b.start):
                         continue
                     b.addBranch(p)
+        print "meanCov:         ", meanCoverage(self.createTreeMap(), self.fovea, 0)
+        print "growingBranches: ", len(self.growingBranches)
 
     # TODO add different diameters
     def createTreeMap(self, unicolor=False):
@@ -101,29 +104,23 @@ class Tree:
         treeMap[eq] = [0,0,0,0]
         treeMap[arteries] = [242, 12, 0, 255]
         treeMap[veins] = [242, 12, 0, 220] 
-        return treeMap#.astype(int)
+        return treeMap.astype(int)
 
     def coverage(self, k=10):
         treeMap = self.createTreeMap()
+        return coverage(treeMap, self.fovea, k)
 
-        # dilation
-        binary = makeBinary(treeMap, 200)
-        binary = binary_dilation(binary, iterations=k)
-
-        rgba = np.zeros(treeMap.shape) # make rgba image from binary
-        rgba[np.where(binary)] = [0,0,0, 255] # draw binary on it
-
-        # add fovea
-        rr, cc = draw.circle(self.fovea[0], self.fovea[1],15)
-        draw.set_color(rgba, [rr,cc], [0,0,0,255])
-
-        # add mask
-        binary = addMask(rgba)    # add Mask
-        binary = np.abs(binary - [255, 255, 255, 0])
-        return makeBinary(binary, 200)
+    def b2arr(self):
+        arr = np.array([[0,0]])
+        for b in self.branches:
+            arr = np.vstack((arr, np.asarray(b.points)))
+        return arr[1:]
 
 if __name__ == '__main__':
+    import faulthandler
+    faulthandler.enable()
     for i in range(10):
+        print i
         t = Tree([250,150], [150, 150])
         t.growTree()
         points = np.array([0,0])
@@ -134,4 +131,3 @@ if __name__ == '__main__':
         #showImage(t.createTreeMap(), points=points)
         showImage(t.createTreeMap())
         showImage(t.createTreeImage())
-        #showImage(t.createTreeMap())

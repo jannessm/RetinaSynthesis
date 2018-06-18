@@ -6,7 +6,6 @@ from PIL import Image, ImageDraw
 from utils import mergeLayer, addIllumination, showImage, addMask
 import cv2
 from skimage import io, draw, data
-import scipy.misc 
 from scipy.misc import imsave
 import math
 import os 
