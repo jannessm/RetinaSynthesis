@@ -1,13 +1,14 @@
 import numpy as np
 from skimage import io, draw
 
-def generateOpticalDisc():
+def generateOpticalDisc(fovea):
     odimg = np.zeros((300, 300, 4),np.uint8)
     
-    rx = 240 + np.random.randint(-20,21)
-    ry = 150 + np.random.randint(-5,6)
-    ra = 22 + np.random.randint(-3,4)
-    rb = ra + np.random.randint(-1,2)
+    
+    rx = fovea[0] + 77*np.random.choice([1,-1]) + np.random.randint(-5,6)
+    ry = fovea[1] + np.random.randint(-3,4)
+    ra = 17 + np.random.randint(-2,3)
+    rb = ra + np.random.randint(-2,0)
     gbx = rx + np.random.randint(-2,3)
     gby = ry + np.random.randint(-2,3)
     
@@ -24,7 +25,7 @@ def generateOpticalDisc():
 
 def odr(x,y,rx,ry):
     #parameters
-    zr = 254.211
+    zr = 254.211+(np.random.random_sample()-0.5)*1
     xr = rx
     yr = ry
     a = 0.0207176
@@ -38,7 +39,7 @@ def odr(x,y,rx,ry):
 
 def odb(x,y,rx,ry,bx,by):
     #r parameters
-    zr = 90.9403
+    zr = 90.9403++(np.random.random_sample()-0.5)*10
     xr = rx
     yr = ry
     a = 0.0461424
@@ -48,7 +49,7 @@ def odb(x,y,rx,ry,bx,by):
     r =  zr - 1/(a+np.exp(exponentr))
     
     #parameters
-    kb = 2.08531
+    kb = 2.08531+(np.random.random_sample()-0.5)*0.01
     xb = bx
     yb = by
     sb = 3.90212
@@ -60,7 +61,7 @@ def odb(x,y,rx,ry,bx,by):
 
 def odg(x,y,rx,ry,gx,gy):
     #r parameters
-    zr = 155.043
+    zr = 155.043+(np.random.random_sample()-0.5)*10
     xr = rx
     yr = ry
     a = 0.0403873
@@ -70,7 +71,7 @@ def odg(x,y,rx,ry,gx,gy):
     r =  zr - 1/(a+np.exp(exponentr))
     
     #parameters
-    kg = 63.1894
+    kg = 63.1894+(np.random.random_sample()-0.5)*1
     xg = gx
     yg = gy
     sg = 8.05019
@@ -80,6 +81,6 @@ def odg(x,y,rx,ry,gx,gy):
     green = r+kg*np.exp(exponentg)
     return green
 
-#OD generate test
-d,p=generateOpticalDisc()
-io.imshow(d)
+##OD generate test
+#d,p=generateOpticalDisc()
+#io.imshow(d)
