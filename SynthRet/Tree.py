@@ -4,6 +4,7 @@ from Branch import Branch
 from scipy import interpolate
 from scipy.ndimage.morphology import binary_dilation
 from skimage import draw
+from matplotlib import pyplot as plt
 from utils import showImage, addMask, makeBinary, coverage, meanCoverage
 
 class Tree:
@@ -55,8 +56,8 @@ class Tree:
                     if np.array_equal(p, b.start):
                         continue
                     b.addBranch(p)
-        print "meanCov:         ", meanCoverage(self.createTreeMap(), self.fovea, 0)
-        print "growingBranches: ", len(self.growingBranches)
+        # print "meanCov:         ", meanCoverage(self.createTreeMap(), self.fovea, 0)
+        # print "growingBranches: ", len(self.growingBranches)
 
     # TODO add different diameters
     def createTreeMap(self, unicolor=False):

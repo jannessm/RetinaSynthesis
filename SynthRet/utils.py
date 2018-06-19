@@ -216,5 +216,6 @@ if __name__ == '__main__':
         mypath = dir_path + p
         means.append(calculateMeanCoverage(mypath, k))
     print("MEAN COVERAGE WITH DILATION OF " + str(k) + ": " + str(np.mean(np.asarray(means))))
+    print("STDDEV COVERAGE WITH DILATION OF " + str(k) + ": " + str(np.std(np.asarray(means))))
 
-    # result: dilation of 0 => 0.38799999
+    # result: dilation of 0 mean = 0.38799999; std = 0.0605

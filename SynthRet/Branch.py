@@ -1,6 +1,6 @@
 import numpy as np
 from utils import showImage
-from Goals import nearestUncoveredArea
+from Goals import nextGoalPoint
 
 class Branch:
     def __init__(self, tree, startingPoint, goalPoint, level=1, artery=True):
@@ -51,7 +51,7 @@ class Branch:
             not self.closeToAnotherBranch(x)):
 
             self.tree.nbranches += 1
-            g = nearestUncoveredArea(self, x)                # get goal point for branch
+            g = nextGoalPoint(self, x)                # get goal point for branch
             if type(g) == np.ndarray:
                 b = Branch(self.tree, x, g, self.level + 1, self.artery)
                 

@@ -3,12 +3,16 @@ from utils import showImage
 from skimage import measure
 
 '''
-    nearestUncoveredArea
-    get the coordinates of the nearest uncovered area according to x
+    nextGoalPoint
+    get the coordinates of the next goal point according to some heuristics.
+
+    if the vessel level is 1 the next goal point should either point towards the fovea or 
+        in the opposite direction.
+    else cluster the area around point and get a cluster center as a new goal point.
 '''
-def nearestUncoveredArea(self, point):
+def nextGoalPoint(self, point):
     if self.level == 1:
-        pf = point - self.tree.fovea
+        pf = point - self.tree.fovea                # direction from fovea to the point
 
         # if point is on the opposite site of the fovea according to the od,
         # not go to fovea
