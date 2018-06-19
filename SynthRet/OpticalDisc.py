@@ -5,7 +5,7 @@ def generateOpticalDisc(fovea):
     odimg = np.zeros((300, 300, 4),np.uint8)
     
     
-    rx = fovea[0] + 77*np.random.choice([1,-1]) + np.random.randint(-5,6)
+    rx = fovea[0] + 77*np.random.choice([1]) + np.random.randint(-5,6)
     ry = fovea[1] + np.random.randint(-3,4)
     ra = 17 + np.random.randint(-2,3)
     rb = ra + np.random.randint(-2,0)
