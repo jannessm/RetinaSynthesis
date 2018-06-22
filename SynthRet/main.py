@@ -6,13 +6,15 @@ from PIL import Image, ImageDraw
 from utils import mergeLayer, addIllumination, showImage, addMask
 import cv2
 from skimage import io, draw, data
-import scipy.misc 
 from scipy.misc import imsave
 import math
 import os 
 from OpticalDisc import generateOpticalDisc
-from multiprocessing import Pool
+from multiprocessing.dummy import Pool
 import time
+from multiprocessing.dummy import Pool
+from OpticalDisc import generateOpticalDisc
+from Fovea import generateBackgroundAndFovea
 import tqdm
 
 '''
@@ -21,26 +23,18 @@ import tqdm
 '''
 def generateImages(i=0):
     bkg, fovea = generateBackgroundAndFovea()
-    od_img, od = generateOpticalDisc()
+    od_img, od = generateOpticalDisc(fovea)
     vt, groundTruth = generateVesselsTree(fovea, od)
     merged = mergeLayer([bkg, np.transpose(od_img,(1,0,2)), vt])
     image = addIllumination(merged)
+
+    # mirror the image
+    i = np.random.rand()
+    if i < 0.5:
+        image = np.flip(image, 0)
+        groundTruth = np.flip(groundTruth, 0)
     return addMask(image), addMask(groundTruth)
 
-# generate an image with the background and fovea
-def generateBackgroundAndFovea():
-    img=np.zeros((300, 300, 4),np.uint8)            
-    img[:,:,]=[217,61,39,255]
-    #macula
-    change=np.random.randint(-20,20)
-    for i in range(100):
-        rr,cc=draw.circle(150+change,150+change,25-i/4.0)
-        draw.set_color(img,[rr,cc],[198-i, 57-i/5.0, 35-i/10.0,255])
-    #fovea
-    PosFovea=(150+change,150+change)
-    rr,cc=draw.circle(150+change,150+change,15.4)
-    draw.set_color(img,[rr,cc],[141, 57, 30,255])
-    return img,PosFovea
 
 # generate an image containing the vessels tree
 def generateVesselsTree(fovea, od):
@@ -49,7 +43,7 @@ def generateVesselsTree(fovea, od):
     return tree.createTreeImage(), tree.createTreeMap()
 
 if __name__ == '__main__':
-    k = 200                              # amount of pictures to generate
+    k = 2                              # amount of pictures to generate
 
     if k > 20:                           # limit threads to upper boundary 20
         nthreads = 20
@@ -76,6 +70,8 @@ if __name__ == '__main__':
     print("\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
     
     print("\n saving groundtruths")
-    showImage(gt, groundtruth=True, onlySave=True)
+    #showImage(gt, groundtruth=True, onlySave=True)
+    showImage(gt)
     print("\n saving images")
-    showImage(im, groundtruth=False, onlySave=True)
+    #showImage(im, groundtruth=False, onlySave=True)
+    showImage(im)

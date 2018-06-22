@@ -1,6 +1,6 @@
 import numpy as np
 from utils import showImage
-from Goals import nearestUncoveredArea
+from Goals import nextGoalPoint
 
 class Branch:
     def __init__(self, tree, startingPoint, goalPoint, level=1, artery=True):
@@ -30,7 +30,7 @@ class Branch:
     '''
     def addSegment(self):
         x = self.points[len(self.points) - 1]               # current point
-        if (np.mean(np.abs(self.goal - x)) < self.goalThreshold # if goal point distance < goalThreshold Branch is finished
+        if (np.mean(np.abs(self.goal - x)) < self.goalThreshold / self.level # if goal point distance < goalThreshold Branch is finished
                 or                                              # or
             x[0] < 0 or x[0] > 299 or x[1] < 0 or x[1] > 299):  # if x is out of the image
             self.finished = True
@@ -46,19 +46,21 @@ class Branch:
 
     def addBranch(self, x):
         newBranch = np.random.rand()                        # roll the dice for new branch
-        if newBranch <  0.5 and not np.array_equal(x, self.points[len(self.points) - 1]):
+        if (newBranch <  0.5 and 
+            not np.array_equal(x, self.points[len(self.points) - 1]) and 
+            not self.closeToAnotherBranch(x)):
+
             self.tree.nbranches += 1
-            g = nearestUncoveredArea(self, x)                # get goal point for branch
+            g = nextGoalPoint(self, x)                # get goal point for branch
             if type(g) == np.ndarray:
                 b = Branch(self.tree, x, g, self.level + 1, self.artery)
                 
-                if self.level > 1:
+                self.tree.growingBranches.append(b)
+                self.tree.branches.append(b)
+                
+                if self.level > 0:
                     while not b.finished:
                         b.addSegment()
-                else:
-                    self.tree.growingBranches.append(b)
-
-                self.tree.branches.append(b)
 
     '''
         getCurrenGoalPoint
@@ -94,3 +96,12 @@ class Branch:
         theta = np.radians(alpha)
         c, s = np.cos(theta), np.sin(theta)
         return np.array(((c, -s), (s, c)))
+
+    def closeToAnotherBranch(self, x):
+        branches = self.tree.b2arr()
+        if branches.shape[0] > 0:
+            shortestDistance = np.min(np.linalg.norm(branches - x))
+            #showImage(self.tree.createTreeMap(), branches, pointsYellow=[x], sec=0.1)
+            return shortestDistance < 1000
+        else:
+            return False
