@@ -5,6 +5,7 @@ from scipy.ndimage.morphology import binary_dilation,binary_erosion
 from skimage import draw
 from matplotlib import pyplot as plt
 from PIL import Image
+import PIL.ImageOps
 from utils import showImage, addMask, makeBinary, coverage, meanCoverage
 import pylab
 from cStringIO import StringIO
@@ -63,8 +64,8 @@ class Tree:
 
     # TODO add different diameters
     def createTreeMap(self, unicolor=False):
-        treeMap = np.zeros((300, 300, 4))
-        treeMap[:,:,3] = 255
+        #treeMap = np.zeros((300, 300, 4))
+        #treeMap[:,:,3] = 255
         fig = plt.figure(figsize=(3,3),dpi=100)
         plt.axis('off')
         # draw all branches onto treeMap
@@ -97,9 +98,9 @@ class Tree:
             
             for i in range(r/100):
                 if (i == (r/100-1)):
-                    plt.plot(xi[100*i:],yi[100*i:],'w',linewidth=r/100-i)
+                    plt.plot(xi[100*i:],yi[100*i:],'k',linewidth=r/100-i)
                 else:
-                    plt.plot(xi[100*i:100*i+100],yi[100*i:100*i+100],'w',linewidth=r/100-i)
+                    plt.plot(xi[100*i:100*i+100],yi[100*i:100*i+100],'k',linewidth=r/100-i)
             #plt.plot(xi,yi,linewidth=2)
             
             #plt.close(fig)
@@ -117,7 +118,6 @@ class Tree:
             #branchImage[:,:,3] = 255
             #branchImage[xi, yi] = [255, 255, 255, 255]                      # make points of branches white
             #bina = makeBinary(branchImage, 200)
-            #bina = makeBinary(im_arr, 200)
             #bina = bina.astype(int)
             #print bina.dtype
             #bina = binary_dilation(bina, iterations=diameter)
@@ -129,16 +129,23 @@ class Tree:
         plt.savefig(buffer_,format='png')
         #plt.show()
         buffer_.seek(0)
-        im = Image.open(buffer_)
-        im_arr = np.asarray(im)     #shape is (300,300,4)
+        im = Image.open(buffer_)    #mode = RGBA
+        im_arr = np.asarray(im)     #im_arr shape is (300,300,4)
         im_arr = im_arr.transpose((1,0,2))  #transpose x y
         buffer_.close()
         plt.close(fig)
         #showImage(im_arr)
-        bina = makeBinary(im_arr, 200)
-        bina = bina.astype(int)
-        treeMap[bina] = color
-        showImage(treeMap)
+
+        # bina = makeBinary(im_arr, 2)
+        # bina = bina.astype(int)
+        # treeMap[bina] = color
+        r,g,b,a = im.split()
+        rgb_image = Image.merge('RGB',(r,g,b))
+        inverted_image = PIL.ImageOps.invert(rgb_image)
+        r2,g2,b2 = inverted_image.split()
+        treeMap_Image = Image.merge('RGBA',(r2,g2,b2,a))
+        treeMap = np.asarray(treeMap_Image).transpose((1,0,2))
+        #showImage(treeMap)
 
         return treeMap
 
@@ -150,7 +157,8 @@ class Tree:
         veins = np.where(np.sum(treeMap, axis=2) == 600)
         treeMap[eq] = [0,0,0,0]
         treeMap[arteries] = [201,31,55,255]
-        treeMap[veins] = [243, 83, 54, 255] 
+        treeMap[veins] = [243, 83, 54, 255]
+        showImage(treeMap.astype(int)) 
         return treeMap.astype(int)
 
     def coverage(self, k=10):
