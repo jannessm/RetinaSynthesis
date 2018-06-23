@@ -1,5 +1,4 @@
 import numpy as np
-
 from Branch import Branch
 from scipy import interpolate
 from scipy.ndimage.morphology import binary_dilation

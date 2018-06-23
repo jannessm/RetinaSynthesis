@@ -12,8 +12,6 @@ import os
 from OpticalDisc import generateOpticalDisc
 from multiprocessing.dummy import Pool
 import time
-from multiprocessing.dummy import Pool
-from OpticalDisc import generateOpticalDisc
 from Fovea import generateBackgroundAndFovea
 import tqdm
 
