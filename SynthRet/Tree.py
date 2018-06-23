@@ -65,7 +65,8 @@ class Tree:
     def createTreeMap(self, unicolor=False):
         treeMap = np.zeros((300, 300, 4))
         treeMap[:,:,3] = 255
-
+        fig = plt.figure(figsize=(3,3),dpi=100)
+        plt.axis('off')
         # draw all branches onto treeMap
         for branch in self.branches:
             #diameter = 3 - (branch.level) if branch.level < 3 else 1
@@ -93,26 +94,22 @@ class Tree:
 
             #qie pian
             r = len(xi)         # alomst 400
-            fig = plt.figure(figsize=(3,3),dpi=100)
-            buffer_ = StringIO()
-            #for i in range(r/100):
-                #if (i == (r/10-1)):
-                    #plt.plot(xi[10*i:],yi[10*i:],linewidth=(r-i)/r*2)
-                #else:
-                #plt.plot(xi[100*i:100*i+100],yi[100*i:100*i+100],linewidth=(r-i*100)/r*3)
-            plt.plot(xi,yi,linewidth=2)
-            plt.savefig(buffer_,format='png')
-            #plt.show()
-            buffer_.seek(0)
-            plt.close(fig)
-            im = Image.open(buffer_)
-            im_arr = np.asarray(im)     #shape is (300,300,4)
+            
+            for i in range(r/100):
+                if (i == (r/100-1)):
+                    plt.plot(xi[100*i:],yi[100*i:],'w',linewidth=r/100-i)
+                else:
+                    plt.plot(xi[100*i:100*i+100],yi[100*i:100*i+100],'w',linewidth=r/100-i)
+            #plt.plot(xi,yi,linewidth=2)
+            
+            #plt.close(fig)
+            
             #print im_arr[1][1]
             #xi,yi = np.array(zip(*im_arr))
             
             #xi = xi[np.where(xi <= 300)]
             #yi = yi[np.where(yi <= 300)]
-            buffer_.close()
+            
             #print im_arr[0,0,:]#.shape,xi.shape,yi.shape           #17910
 
 
@@ -120,12 +117,28 @@ class Tree:
             #branchImage[:,:,3] = 255
             #branchImage[xi, yi] = [255, 255, 255, 255]                      # make points of branches white
             #bina = makeBinary(branchImage, 200)
-            bina = makeBinary(im_arr, 200)
-            bina = bina.astype(int)
+            #bina = makeBinary(im_arr, 200)
+            #bina = bina.astype(int)
             #print bina.dtype
             #bina = binary_dilation(bina, iterations=diameter)
             #bina = binary_erosion(bina, iterations=erosion)
-            treeMap[bina] = color
+            #treeMap[bina] = color
+
+        
+        buffer_ = StringIO()
+        plt.savefig(buffer_,format='png')
+        #plt.show()
+        buffer_.seek(0)
+        im = Image.open(buffer_)
+        im_arr = np.asarray(im)     #shape is (300,300,4)
+        im_arr = im_arr.transpose((1,0,2))  #transpose x y
+        buffer_.close()
+        plt.close(fig)
+        #showImage(im_arr)
+        bina = makeBinary(im_arr, 200)
+        bina = bina.astype(int)
+        treeMap[bina] = color
+        showImage(treeMap)
 
         return treeMap
 
