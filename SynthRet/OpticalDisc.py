@@ -21,7 +21,7 @@ def generateOpticalDisc(fovea):
             odimg[y,x,0] = odr(x,y,rx,ry) 
             odimg[y,x,1] = odg(x,y,rx,ry,gbx,gby) 
             odimg[y,x,2] = odb(x,y,rx,ry,gbx,gby) 
-    return odimg, [rx,ry] #TODO select random point according to fovea pos.
+    return np.transpose(odimg,(1,0,2)), [rx,ry] #TODO select random point according to fovea pos.
 
 def odr(x,y,rx,ry):
     #parameters

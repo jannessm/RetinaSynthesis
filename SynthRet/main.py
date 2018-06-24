@@ -22,7 +22,7 @@ def generateImages(i=0):
     bkg, fovea = generateBackgroundAndFovea()
     od_img, od = generateOpticalDisc(fovea)
     vt, groundTruth = generateVesselsTree(fovea, od)
-    merged = mergeLayer([bkg, np.transpose(od_img,(1,0,2)), vt])
+    merged = mergeLayer([bkg, od_img, vt], lastIsVessel=True)
     image = addIllumination(merged)
     return addMask(image), addMask(groundTruth)
 

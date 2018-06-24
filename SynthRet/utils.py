@@ -44,7 +44,7 @@ def merge3c(collect):
     return finalimage
 
 #merge 4-chanel RGBA images
-def mergeLayer(collect):
+def mergeLayer(collect, lastIsVessel=False):
     #***the size of images***
     ncol=300
     nrow=300
@@ -54,9 +54,17 @@ def mergeLayer(collect):
     for img in collect:
         if img is None:
             continue
-        ids = np.where(img[:,:,3] > 0)
-        dimg[ids] = img[ids]
-        showImage(dimg, sec=0.1)
+
+        img = img.astype(int)
+
+        # a (img) over b (dimg)
+        a_a = img[:, :, 3][:, :, np.newaxis]
+        a_b = dimg[:, :, 3][:, :, np.newaxis]
+        a_c = a_a + (255 - a_a) * a_b
+
+        a_A = np.multiply(img, a_a)
+        a_B = np.multiply(dimg, a_b)
+        dimg = np.divide(a_A + np.multiply(a_B, 255 - a_a), a_c)
     return dimg
 
 def makeBinary(img, threshold):
@@ -161,7 +169,7 @@ def addMask(image):
         black = np.where(mask < 0.5)
         transparent = np.where(mask >= 0.5)
         final_mask[black] = [0,0,0,255]
-        final_mask[transparent] = [255,255,255,0]
+        final_mask[transparent] = [0,0,0,0]
         np.save(dir_path + '/mask.npy', final_mask)
     else:
         final_mask = np.load(dir_path + '/mask.npy')
@@ -173,14 +181,14 @@ def addMask(image):
             black = np.where(mask < 0.5)
             transparent = np.where(mask >= 0.5)
             final_mask[black] = [0,0,0,255]
-            final_mask[transparent] = [255,255,255,0]
+            final_mask[transparent] = [0,0,0,0]
             np.save(dir_path + '/mask.npy', final_mask)
     return mergeLayer([image, final_mask])
 
 def calculateMeanCoverage(path):
     images = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     means = []
-    for f in images:
+    for f in images: 
         binary = scipy.misc.imread(path+f)
         binary = transform.resize(binary, (300, 300))
         binary[np.where(binary > 0)] = 1

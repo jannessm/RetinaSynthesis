@@ -90,7 +90,7 @@ class Tree:
             
             r = np.linspace(0, total_len * 2, total_len * 2)
             if branch.level == 1:
-                widths = 0.003 * r + 0.6
+                widths = 0.003 * r + 0.7
             else:
                 widths = 0.003 * r + 0.5
             points = np.array([xi, yi]).T.reshape(-1, 1, 2)
@@ -102,7 +102,6 @@ class Tree:
         treeImg = fig2ndarray(fig)
         plt.close()
 
-        showImage(treeImg, sec=0.1)
         return treeImg
 
     def createTreeMap(self):
