@@ -39,7 +39,7 @@ if __name__ == '__main__':
     if k > 20:                           # limit threads to upper boundary 20
         nthreads = 20
     else:
-        nthreads = 6
+        nthreads = k
     
     print("\nStart generating "+ str(k) +" images")
     start = time.time()                 # start timer
