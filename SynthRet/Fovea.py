@@ -93,8 +93,4 @@ def gValue(x,y,cx,cy,gbx,gby):
     
     return green
 
-d,p=generateBackgroundAndFovea()
-plt.imshow(d,plt.cm.gray)
-
-plt.savefig("D:/24.png")
 #io.imshow(d)
