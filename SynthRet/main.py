@@ -6,7 +6,6 @@ from PIL import Image, ImageDraw
 from utils import mergeLayer, addIllumination, showImage, addMask
 import cv2
 from skimage import io, draw, data
-import scipy.misc 
 from scipy.misc import imsave
 import math
 import os 
@@ -24,10 +23,16 @@ import tqdm
 '''
 def generateImages(i=0):
     bkg, fovea = generateBackgroundAndFovea()
-    od_img, od = generateOpticalDisc()
+    od_img, od = generateOpticalDisc(fovea)
     vt, groundTruth = generateVesselsTree(fovea, od)
     merged = mergeLayer([bkg, np.transpose(od_img,(1,0,2)), vt])
     image = addIllumination(merged)
+
+    # mirror the image
+    i = np.random.rand()
+    if i < 0.5:
+        image = np.flip(image, 0)
+        groundTruth = np.flip(groundTruth, 0)
     return addMask(image), addMask(groundTruth)
 
 
@@ -38,7 +43,7 @@ def generateVesselsTree(fovea, od):
     return tree.createTreeImage(), tree.createTreeMap()
 
 if __name__ == '__main__':
-    k = 200                              # amount of pictures to generate
+    k = 2                              # amount of pictures to generate
 
     if k > 20:                           # limit threads to upper boundary 20
         nthreads = 20
@@ -65,6 +70,8 @@ if __name__ == '__main__':
     print("\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
     
     print("\n saving groundtruths")
-    showImage(gt, groundtruth=True, onlySave=True)
+    #showImage(gt, groundtruth=True, onlySave=True)
+    showImage(gt)
     print("\n saving images")
-    showImage(im, groundtruth=False, onlySave=True)
+    #showImage(im, groundtruth=False, onlySave=True)
+    showImage(im)
