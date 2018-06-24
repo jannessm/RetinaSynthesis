@@ -49,13 +49,14 @@ def mergeLayer(collect):
     ncol=300
     nrow=300
     #initial transparent image
-    dimg = np.zeros((ncol, nrow, 4),np.uint8)
+    dimg = np.zeros((ncol, nrow, 4), np.uint8)
     #merge layers
     for img in collect:
         if img is None:
             continue
         ids = np.where(img[:,:,3] > 0)
         dimg[ids] = img[ids]
+        showImage(dimg, sec=0.1)
     return dimg
 
 def makeBinary(img, threshold):
@@ -176,13 +177,19 @@ def addMask(image):
             np.save(dir_path + '/mask.npy', final_mask)
     return mergeLayer([image, final_mask])
 
-def calculateMeanCoverage(path, k=10):
+def calculateMeanCoverage(path):
     images = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     means = []
     for f in images:
         binary = scipy.misc.imread(path+f)
         binary = transform.resize(binary, (300, 300))
-        means.append(meanCoverage(binary, [150,150], k))
+        binary[np.where(binary > 0)] = 1
+        if len(binary.shape) < 3:
+            binary = np.dstack((binary, binary, binary, binary))
+        else:
+            binary = np.dstack((binary, np.ones((binary.shape[0], binary.shape[1]))))
+        binary = (binary * 255).astype(int)
+        means.append(meanCoverage(binary, [150,150]))
     return np.mean(np.asarray(means))
 
 def fig2ndarray(fig):
@@ -195,31 +202,28 @@ def fig2ndarray(fig):
     # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
     buf = np.roll ( buf, 3, axis = 2 )
     buf = np.transpose(buf, (1,0,2))
+
     buf = transform.resize(buf, (300, 300))
+    buf = (buf * 255).astype(int)
     return buf
 
-def coverage(binary, fovea, k=10):
-    if binary.ndim == 3:
-        binary = makeBinary(binary, 200)
-    
-    # dilation
-    if k > 0:
-        binary = binary_dilation(binary, iterations=k)
-
-    rgba = np.zeros((300, 300, 4)) # make rgba image from binary
-    rgba[np.where(binary)] = [0,0,0, 255] # draw binary on it
+def coverage(binary, fovea):
+    #invert
+    binary = np.abs(binary - [255, 255, 255, 0])
 
     # add fovea
     rr, cc = draw.circle(fovea[0], fovea[1], 15)
-    draw.set_color(rgba, [rr,cc], [0,0,0,255])
+    draw.set_color(binary, [rr,cc], [0,0,0,255])
 
     # add mask
-    binary = addMask(rgba)    # add Mask
-    binary = np.abs(binary - [255, 255, 255, 0])
-    return makeBinary(binary, 200)
+    binary = addMask(binary)    # add Mask
 
-def meanCoverage(img, fovea, k=10):
-    return np.mean(coverage(img, fovea, k)) / 255
+    #invert
+    binary = np.abs(binary - [255, 255, 255, 0])
+    return binary
+
+def meanCoverage(img, fovea):
+    return np.mean(coverage(img, fovea)) / 255
 
 if __name__ == '__main__':
     paths = [
@@ -227,12 +231,11 @@ if __name__ == '__main__':
         '/../DRIVE/test/2nd_manual/'
     ]
     means = []
-    k = 0
     for p in paths:
         dir_path = os.path.dirname(os.path.realpath(__file__))
         mypath = dir_path + p
-        means.append(calculateMeanCoverage(mypath, k))
-    print("MEAN COVERAGE WITH DILATION OF " + str(k) + ": " + str(np.mean(np.asarray(means))))
-    print("STDDEV COVERAGE WITH DILATION OF " + str(k) + ": " + str(np.std(np.asarray(means))))
+        means.append(calculateMeanCoverage(mypath))
+    print("MEAN COVERAGE: " + str(np.mean(np.asarray(means))))
+    print("STDDEV COVERAGE: " + str(np.std(np.asarray(means))))
 
-    # result: dilation of 0 mean = 0.38799999; std = 0.0605
+    # result: dilation of 0 mean = 0.93107; std = 0.06892986

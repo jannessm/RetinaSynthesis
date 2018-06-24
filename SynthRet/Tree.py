@@ -1,15 +1,11 @@
 import numpy as np
 from Branch import Branch
 from scipy import interpolate
-from scipy.ndimage.morphology import binary_dilation,binary_erosion
 from skimage import draw
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
-from PIL import Image
-import PIL.ImageOps
 from utils import showImage, addMask, makeBinary, coverage, meanCoverage, fig2ndarray
-import pylab
-from cStringIO import StringIO
+from scipy.ndimage.morphology import binary_dilation,binary_erosion
 
 class Tree:
     def __init__(self, startingPoint, fovea):
@@ -31,12 +27,13 @@ class Tree:
             self.growingBranches.append(b)
 
         # constants
-        self.covThreshold = 0.9      # coverage threshold
+        self.covThreshold = 0.5      # coverage threshold
+        # self.covThreshold = 0.93107      # coverage threshold
 
     def getRandomGoal(self, i):
         switch = {
-            0: np.array([[-300, -100], [0, 100]]) + self.fovea,
-            1: np.array([[-300, -100], [-100, 0]]) + self.fovea,
+            0: np.array([[-300, -150], [50, 200]]) + self.fovea,
+            1: np.array([[-300, -150], [-200, -50]]) + self.fovea,
             2: np.array([[50, 200], [50, 200]]) + self.opticaldisc,
             3: np.array([[50, 200], [-200, -50]]) + self.opticaldisc
         }
@@ -47,7 +44,8 @@ class Tree:
         return np.array((goal_x, goal_y))
 
     def growTree(self):
-        while (meanCoverage(self.createTreeMap(), self.fovea, 0) < 0.388 and 
+        tMap = self.createTreeMap()
+        while (meanCoverage(tMap, self.fovea) < self.covThreshold and 
             len(self.growingBranches) > 0):    # while coverage is not reached
             
             branches = self.growingBranches[:]
@@ -56,18 +54,21 @@ class Tree:
                     b.addSegment()
                 self.growingBranches.remove(b)
             for b in branches:
-                for p in b.points:
+                for p in b.points[::-1]:
                     if np.array_equal(p, b.start):
                         continue
+                    tMap = self.createTreeMap()
+                    if meanCoverage(tMap, self.fovea) > self.covThreshold:
+                        break
                     b.addBranch(p)
-            print "meanCov:         ", meanCoverage(self.createTreeMap(), self.fovea, 0)
-            print "growingBranches: ", len(self.growingBranches)
 
     def createTreeImage(self):
         fig, axes = plt.subplots(figsize=(3,3),dpi=100)
         plt.axis('off')
         plt.xlim(0,300)
         plt.ylim(0,300)
+        axes.patch.set_alpha(0.0)
+        fig.patch.set_alpha(0.0)
 
         # draw all branches onto treeMap
         for branch in self.branches:
@@ -89,9 +90,9 @@ class Tree:
             
             r = np.linspace(0, total_len * 2, total_len * 2)
             if branch.level == 1:
-                widths = 0.003 * r + 0.4
+                widths = 0.003 * r + 0.6
             else:
-                widths = 0.003 * r + 0.3
+                widths = 0.003 * r + 0.5
             points = np.array([xi, yi]).T.reshape(-1, 1, 2)
             segments = np.concatenate([points[:-1], points[1:]], axis=1)[::-1]
             lc = LineCollection(segments, linewidths=widths, color=color)
@@ -101,21 +102,19 @@ class Tree:
         treeImg = fig2ndarray(fig)
         plt.close()
 
-        showImage(treeImg)
+        showImage(treeImg, sec=0.1)
         return treeImg
 
     def createTreeMap(self):
         treeMap = self.createTreeImage()
-        showImage(treeMap)
         treeMap = makeBinary(treeMap, 10)
-        showImage(treeMap)
         notransp = np.ones(treeMap.shape) * 255
         treeMap = np.dstack((treeMap, treeMap, treeMap, notransp))
         return treeMap.astype(int)
 
-    def coverage(self, k=10):
+    def coverage(self):
         treeMap = self.createTreeMap()
-        return coverage(treeMap, self.fovea, k)
+        return coverage(treeMap, self.fovea)
 
     def b2arr(self):
         arr = np.array([[0,0]])

@@ -22,7 +22,6 @@ def generateImages(i=0):
     bkg, fovea = generateBackgroundAndFovea()
     od_img, od = generateOpticalDisc(fovea)
     vt, groundTruth = generateVesselsTree(fovea, od)
-    showImage(vt)
     merged = mergeLayer([bkg, np.transpose(od_img,(1,0,2)), vt])
     image = addIllumination(merged)
     return addMask(image), addMask(groundTruth)
@@ -45,26 +44,14 @@ if __name__ == '__main__':
     print("\nStart generating "+ str(k) +" images")
     start = time.time()                 # start timer
 
-    # threads = Pool(nthreads)            # generate k images in parallel
-    # res = threads.map(generateImages, range(k))
-    # for _ in tqdm.tqdm(res, total=k):
-    #    pass
-    # threads.close()
-    # threads.join()
-
     for _ in tqdm.tqdm(range(k), total=k):
         i, g = generateImages()
-        showImage([i], groundtruth=False, onlySave=True)
-        showImage([g], groundtruth=True, onlySave=True)
+        showImage([i])
+        showImage([g])
+#        showImage([i], groundtruth=False, onlySave=True)
+ #       showImage([g], groundtruth=True, onlySave=True)
 
     print("\n" + str(k) + " pict1ures needed " + str(time.time() - start) + " sec!\n")
-    
-    print("\n saving groundtruths")
-    #showImage(gt, groundtruth=True, onlySave=True)
-    showImage(gt)
-    print("\n saving images")
-    #showImage(im, groundtruth=False, onlySave=True)
-    showImage(im)
 
     # bild = io.imread("bild.png")
     # showImage(bild)
