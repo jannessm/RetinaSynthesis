@@ -1,31 +1,37 @@
 import numpy as np
 import math
 import random
-#from PIL import Image
 import matplotlib.pyplot as plt
 from skimage import io, transform, draw, data
-#from NoiseUtils import getTexture
 from perlinNoise import getTexture
 # generate an image with the background and fovea
 def generateBackgroundAndFovea():
        img=np.zeros((300, 300, 4),np.uint8)
-       img[:,:,]=[210+np.random.randint(-4,4),52+np.random.randint(-4,4),28+np.random.randint(-4,4),255]       
+       img[:,:,]=[214,52,28,255]       
        cx=150+np.random.randint(-10,10)
        cy=150+np.random.randint(-10,10)
 #       img2=getTexture()
 #       img2=Image.fromarray(np.uint8(img2*255))
+#       img3=getTexture()
+#       img3=Image.fromarray(np.uint8(img3*255))
        
-#       img1=np.zeros((300, 300, 4),np.uint8)
+       
+ #      img1=np.zeros((300, 300, 4),np.uint8)
 #       for i in range(3):
 #           for j in range(3):
 #               img2=getTexture()
-#               img1[0+i*100:100+i*100,0+j*100:100+j*100,]=img2*255
+#               img[0+i*100:100+i*100,0+j*100:100+j*100,]=img2*255
 #
 #       img1=Image.fromarray(np.uint8(img1))
-       img2=getTexture()
-       img[:,:,]=img2[:,:,]*255
+#       img2=getTexture()
+#       img3=getTexture()
+#       img4=getTexture()
+#       img[:,:,]=img2[:,:,]*255*0.3+img3[:,:,]*255*0.4+img3[:,:,]*255*0.3
+       img1=getTexture()
+       img[:,:,]=img1[:,:,]*255
+
        PosFovea=(cy,cx)
-       rr,cc=draw.circle(cy,cx,25.4)
+       rr,cc=draw.circle(cy,cx,25)
        gbx=cx + np.random.randint(-2,3)
        gby=cy + np.random.randint(-2,3)
        for i in range(len(rr)):
@@ -35,7 +41,9 @@ def generateBackgroundAndFovea():
                 img[y,x,1] = gValue(x,y,cx,cy,gbx,gby) 
                 img[y,x,2] = bValue(x,y,cx,cy,gbx,gby)
 #       img=Image.fromarray(np.uint8(img))
-#       img = Image.blend(img, img1, 0.6) 
+#       img = Image.blend(img, img2, 0.5)
+#       img = Image.blend(img, img3, 0.5)
+       
        return img,PosFovea
 
 	
@@ -47,7 +55,7 @@ def rValue(x,y,cx,cy):
 #    d=np.sqrt(dx**2+dy**2)
 #    R=np.sqrt(cx**2+cy**2)
 #    red= 198*math.exp(-0.3*d/(R*2))
-    r=182   
+    r=180  
     A = 0.1
     a = 0.05
     ther = 10
@@ -72,14 +80,14 @@ def bValue(x,y,cx,cy,gbx,gby):
 #    blue= 28*math.exp(-0.6*d/(R*2))
     
     #r parameters
-    zr =30
+    zr =28
     a = 0.05
     ther =30
     exponentr = -((x-cx)/ther)**2 - ((y-cy)/ther)**2
     r =  zr+1/(a+math.exp(exponentr))
     
     #parameters
-    k = 10
+    k = 4
     thegb =4
     #calculate bchanel values
     exponentgb = -((x-gbx)/thegb)**2 - ((y-gby)/thegb)**2
@@ -103,7 +111,7 @@ def gValue(x,y,cx,cy,gbx,gby):
     exponentr = -((x-cx)/ther)**2 - ((y-cy)/ther)**2
     r =  zr+1/(a+math.exp(exponentr))   
     #parameters
-    k =10
+    k =8
     thegb =4
     #calculate gchanel values
     exponentgb = -((x-gbx)/thegb)**2 - ((y-gby)/thegb)**2
@@ -114,6 +122,5 @@ def gValue(x,y,cx,cy,gbx,gby):
 
 #d,p=generateBackgroundAndFovea()
 #plt.imshow(d,plt.cm.gray)
-#
-#plt.savefig("D:/009.png")
-#io.imshow(d)
+###
+#plt.savefig("D:/10.png")

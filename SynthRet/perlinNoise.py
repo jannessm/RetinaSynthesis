@@ -14,13 +14,7 @@ from matplotlib.colors import LinearSegmentedColormap
 
 # it produce more vectors pointing diagonally than vectors pointing along
 # an axis
-# # generate uniform unit vectors
-# def generate_unit_vectors(n):
-#     'Generates matrix NxN of unit length vectors'
-#     v = np.random.uniform(-1, 1, (n, n, 2))
-#     l = np.sqrt(v[:, :, 0] ** 2 + v[:, :, 1] ** 2).reshape(n, n, 1)
-#     v /= l
-#     return v
+
 
 def generate_unit_vectors(n):
     'Generates matrix NxN of unit length vectors'
@@ -31,12 +25,14 @@ def generate_unit_vectors(n):
 
 # quintic interpolation
 def qz(t):
-    return t * t * t * (t * (t * 6 - 15) + 10)
+    return t * t * t * (t * (t * 6 - 15) +10)
+
 
 
 # cubic interpolation
 def cz(t):
     return -2 * t * t * t + 3 * t * t
+
 
 
 def generate_2D_perlin_noise(size, ns):
@@ -78,7 +74,6 @@ def generate_2D_perlin_noise(size, ns):
     d1 = d[..., 1].copy().reshape(ns, ns, 2, 1)
 
     # make an empy matrix
-    #m = np.zeros((size, size,4))
     m=np.zeros((size,size))
     # reshape for convenience
     t = m.reshape(nc, ns, nc, ns)
@@ -98,10 +93,13 @@ def generate_2D_perlin_noise(size, ns):
 
 def getTexture():
     size=300
-    img0 = generate_2D_perlin_noise(size,20)
-    img1 = generate_2D_perlin_noise(size,20)
-    img2 = generate_2D_perlin_noise(size,50)
-    img = (img0 + img1+img2) / 3
+    img0 = generate_2D_perlin_noise(size,1)
+    img1 = generate_2D_perlin_noise(size,10)
+    img2 = generate_2D_perlin_noise(size,20)
+    img3 = generate_2D_perlin_noise(size,50)
+#    img4 = generate_2D_perlin_noise(size,20)
+#    img = (img0 + img1+img2+img3+img4) / 5 
+    img=img0*0.5+img1*0.2+img2*0.2+img3*0.1
 
     cmap = LinearSegmentedColormap.from_list('cloud', [ '#BD321C','#D9321C','#D93823'])
                                               
