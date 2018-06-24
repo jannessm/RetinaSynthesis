@@ -20,7 +20,7 @@ import tqdm
 '''
 def generateImages(i=0):
     bkg, fovea = generateBackgroundAndFovea()
-    od_img, od = generateOpticalDisc()
+    od_img, od = generateOpticalDisc(fovea)
     vt, groundTruth = generateVesselsTree(fovea, od)
     showImage(vt)
     merged = mergeLayer([bkg, np.transpose(od_img,(1,0,2)), vt])
@@ -52,12 +52,10 @@ if __name__ == '__main__':
     # threads.close()
     # threads.join()
 
-    im = []
-    gt = []
     for _ in tqdm.tqdm(range(k), total=k):
         i, g = generateImages()
-        im.append(i)
-        gt.append(g)
+        showImage([i], groundtruth=False, onlySave=True)
+        showImage([g], groundtruth=True, onlySave=True)
 
     print("\n" + str(k) + " pict1ures needed " + str(time.time() - start) + " sec!\n")
     

@@ -91,7 +91,7 @@ def addIllumination(image): # rewrite with skimage
 
     return img
 
-def showImage(img, pointsBlue=None, sec=-1, groundtruth=None, onlySave=False, pointsYellow=None):
+def showImage(img, pointsBlue=None, sec=-1, groundtruth=None, onlySave=False, pointsYellow=None, k=None):
     if type(img) == list:
         pointsBlue = pointsBlue if type(pointsBlue) == list else [None] * len(img)
         pointsYellow = pointsYellow if type(pointsYellow) == list else [None] * len(img)
@@ -103,7 +103,10 @@ def showImage(img, pointsBlue=None, sec=-1, groundtruth=None, onlySave=False, po
         for i in range(len(img)):
             if not onlySave:
                 plt.subplot(int(rows), int(cols), i+1)
-            i_str = str(i).rjust(int(np.log10(len(img))) + 1, '0')
+            if k:
+                i_str = str(i).rjust(int(np.log10(k)) + 1, '0')
+            else:
+                i_str = str(i).rjust(int(np.log10(len(img))) + 1, '0')
             _plotHelper(img[i], pointsBlue[i], pointsYellow[i], i_str, groundtruth, onlySave)
     else:
         _plotHelper(img, pointsBlue, pointsYellow, '', groundtruth, onlySave)
