@@ -43,7 +43,7 @@ def generateVesselsTree(fovea, od):
     return tree.createTreeImage(), tree.createTreeMap()
 
 if __name__ == '__main__':
-    k = 2                              # amount of pictures to generate
+    k = 1000                              # amount of pictures to generate
 
     if k > 20:                           # limit threads to upper boundary 20
         nthreads = 20
@@ -70,8 +70,8 @@ if __name__ == '__main__':
     print("\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
     
     print("\n saving groundtruths")
-    #showImage(gt, groundtruth=True, onlySave=True)
-    showImage(gt)
+    showImage(gt, groundtruth=True, onlySave=True)
+    #showImage(gt)
     print("\n saving images")
-    #showImage(im, groundtruth=False, onlySave=True)
-    showImage(im)
+    showImage(im, groundtruth=False, onlySave=True)
+    #showImage(im)
