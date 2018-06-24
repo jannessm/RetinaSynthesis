@@ -43,7 +43,7 @@ def generateVesselsTree(fovea, od):
     return tree.createTreeImage(), tree.createTreeMap()
 
 if __name__ == '__main__':
-    k = 1000                              # amount of pictures to generate
+    k = 200                              # amount of pictures to generate
 
     if k > 20:                           # limit threads to upper boundary 20
         nthreads = 20
@@ -60,18 +60,10 @@ if __name__ == '__main__':
     #threads.close()
     #threads.join()
 
-    im = []
-    gt = []
     for _ in tqdm.tqdm(range(k), total=k):
         i, g = generateImages()
-        im.append(i)
-        gt.append(g)
+        showImage([i], groundtruth=False, onlySave=True)
+        showImage([g], groundtruth=True, onlySave=True)
+
 
     print("\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
-    
-    print("\n saving groundtruths")
-    showImage(gt, groundtruth=True, onlySave=True)
-    #showImage(gt)
-    print("\n saving images")
-    showImage(im, groundtruth=False, onlySave=True)
-    #showImage(im)

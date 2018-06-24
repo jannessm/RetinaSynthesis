@@ -1,2 +1,4 @@
 .DS*
 *.pyc
+images
+groundtruth
