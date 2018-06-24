@@ -1,24 +1,28 @@
+"""
+Created on Fri Jun  1 11:27:24 2018
+
+@author: chen
+
+This program is intended to plot the 3-D surface image of odr function 
+
+"""
 from matplotlib import pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
-import math
+
 import random
 
 
 def odr(x,y):
     #parameters
-    zr = 240
+    zr = 254.211
     xr = 240
     yr = 150
-    A = 0.05
-    a = 0.015
-    ther = 10
-#    phi = math.pi * random.random()
-    phi = math.pi
+    a = 0.0207176
+    sr = 11.9622
     
     #calculate rchanel values
-    exponentr = -((x-xr+A*math.cos(phi))/ther)**2 - ((y-yr+A*math.cos(phi))/ther)**2
-
+    exponentr = -((x-xr)/sr)**2 - ((y-yr)/sr)**2
     red =  zr - 1/(a+np.exp(exponentr))
     
     return red

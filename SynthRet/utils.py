@@ -1,26 +1,13 @@
 # imports
-from PIL import Image, ImageEnhance
-
-import cv2
 import numpy as np
-import skimage.io as io
-
 from matplotlib import pyplot as plt
-from PIL import Image, ImageEnhance
-from skimage import img_as_ubyte
-import skimage.io as io
-import math
-import random
-from Unet.data import *
-from Unet.unet import *
+from skimage import exposure, transform, draw
+import scipy.misc 
+from scipy.ndimage.morphology import binary_dilation
+import os
 
-def eval():
-    data = dataProcess(300, 300, data_path="./syntheticImages/imgs", label_path="./syntheticImages/labels", test_path="../DRIVE/test/images")
-    imgs_labels = None #TODO
-    unet = myUnet(300, 300)
-    unet.train()
-    predictions = np.load('results/imgs_mask_test.npy')
-    return measure(predictions, imgs_labels)
+imagePath = './images/'
+groundtruthPath = './groundtruth/'
 
 def measure(y_actual, y_hat):
     TP = 0
@@ -61,121 +48,156 @@ def mergeLayer(collect):
     #***the size of images***
     ncol=300
     nrow=300
-    #initial black image
+    #initial transparent image
     dimg = np.zeros((ncol, nrow, 4),np.uint8)
-    dimg[::,::,3] = 255
     #merge layers
-    for n in range(len(collect)):
-        img = collect[n]
-        for i in range(ncol):
-            for j in range(nrow):
-                #the pixel in new image is not black
-                if (img[i,j,0:2].max() > 0):
-                    #the pixel in old image is black, replace directly
-                    if (dimg[i,j,0:2].max() == 0):
-                        dimg[i,j,:] = img[i,j,:]
-                    #the pixel in old image is not black, alpha blending
-                    else:
-                        al0 = dimg[i,j,3]/255.0
-                        al1 = img[i,j,3]/255.0
-                        dimg[i,j,3] = ((al1+al0*(1-al1))*255).astype(np.uint8)
-                        dimg[i,j,0:3] = (
-                                (img[i,j,0:3]*al1 + dimg[i,j,0:3]*al0*(1-al1))
-                                /al1+al0*(1-al1)
-                                ).astype(np.uint8)
-                        
+    for img in collect:
+        if img is None:
+            continue
+        ids = np.where(img[:,:,3] > 0)
+        dimg[ids] = img[ids]
     return dimg
 
+def makeBinary(img, threshold):
+    if img.shape[2] == 4:
+        r = np.multiply(img[:, :, 0], img[:, :, 3])
+        g = np.multiply(img[:, :, 1], img[:, :, 3])
+        b = np.multiply(img[:, :, 2], img[:, :, 3])
+    else:
+        r = img[:, :, 0]
+        g = img[:, :, 1]
+        b = img[:, :, 2]
+    rgb = np.dstack((r, g, b))
+    grey = np.multiply(rgb, [0.21, 0.72, 0.07])
+    grey = np.sum(grey, axis=2)
+    grey[np.where(grey < threshold)] = 0
+    grey[np.where(grey > threshold)] = 255
+    return grey
+
 #
-def addIllumination(image):
+def addIllumination(image): # rewrite with skimage
     
     # set parameters (random)
-    brightness = np.random.uniform(1.1,4)
-    color = np.random.uniform(1.1,4)  
-    contrast = np.random.uniform(1.1,4)  
-    sharpness = np.random.uniform(1.1,4)
+    brightness = np.random.uniform(0.1,3)
+    low, high = np.random.randint(low=0,high=30), np.random.randint(low=225,high=255)
 
     # enhance brightness
-    image1 = ImageEnhance.Brightness(image).enhance(brightness)  
-
-    # enhance color
-    image2 = ImageEnhance.Color(image1).enhance(color)   
+    image1 = exposure.adjust_gamma(image, brightness) 
+    #exposure.adjust_log(image)   
     
-    # enhance contrase 
-    image3 = ImageEnhance.Contrast(image2).enhance(contrast)   
-    
-    # enhance sharpness 
-    img = ImageEnhance.Sharpness(image3).enhance(sharpness)  
+    # enhance contrast 
+    img = exposure.rescale_intensity(image1,out_range=(low,high))
 
     return img
 
-def odr(x,y):
-    #parameters
-    zr = 220
-    xr = 240
-    yr = 150
-    A = 0.05
-    a = 0.015
-    ther = 20
-    phi = math.pi
-    
-    #calculate rchanel values
-    exponentr = -((x-xr+A*math.cos(phi))/ther)**2 - ((y-yr+A*math.cos(phi))/ther)**2
-    red =  zr - 1/(a+math.exp(exponentr))
-    
-    return red
-
-def odb(x,y):
-    #parameters
-    zr = 40
-    xr = 240
-    yr = 150
-    a = 0.015
-    ther = 30
-
-    exponentr = -((x-xr)/ther)**2 - ((y-yr)/ther)**2
-    r =  zr - 1/(a+math.exp(exponentr))
-    
-    #parameters
-    k = 40
-    xgb = 240
-    ygb = 150
-    thegb = 8
-    
-    #calculate bchanel values
-    exponentgb = -((x-xgb)/thegb)**2 - ((y-ygb)/thegb)**2
-    gb = r+k*math.exp(exponentgb)
-    return gb
-
-def odg(x,y):
-    #parameters
-    zr = 200
-    xr = 240
-    yr = 150
-    a = 0.015
-    ther = 30
-
-    exponentr = -((x-xr)/ther)**2 - ((y-yr)/ther)**2
-    r =  zr - 1/(a+math.exp(exponentr))
-    
-    #parameters
-    k = 40
-    xgb = 240
-    ygb = 150
-    thegb = 8
-    
-    #calculate gchanel values
-    exponentgb = -((x-xgb)/thegb)**2 - ((y-ygb)/thegb)**2
-    gb = r+k*math.exp(exponentgb)
-    return gb
-
-def showImage(img, points):
-    if len(img.shape) == 3:
-        plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
+def showImage(img, points=None, sec=-1, groundtruth=None, onlySave=False):
+    if type(img) == list:
+        points = points if type(points) == list else [None] * len(img)
+        rows = np.floor(np.sqrt(len(img)))
+        cols = np.ceil(np.sqrt(len(img))) 
+        if not rows > 1:
+            rows = 1
+            cols = len(img)
+        for i in range(len(img)):
+            if not onlySave:
+                plt.subplot(int(rows), int(cols), i+1)
+            i_str = str(i).rjust(int(np.log10(len(img))) + 1, '0')
+            _plotHelper(img[i], points[i], i_str, groundtruth, onlySave)
     else:
-        plt.imshow(img.T)
-    if points is not None:
-        x, y = zip(*points)
-        plt.scatter(x=x, y=y, c='r')
-    plt.show()
+        _plotHelper(img, points, '', groundtruth, onlySave)
+    if not sec == -1 and not onlySave:
+        plt.show(block=False)
+        plt.pause(sec)
+        plt.close()
+    elif not onlySave:
+        plt.show()
 
+def _plotHelper(img, points, i='', groundtruth=None, onlySave=False):
+    if img.ndim == 3:
+        if not onlySave:
+            plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
+        if i:
+            rgb = rgba2rgb(np.transpose(img, (1,0,2)))
+            path = imagePath
+            if groundtruth:
+                path = groundtruthPath
+            print '%svessel%s.jpg'%(path,i)
+            scipy.misc.imsave('%svessel%s.jpg'%(path,i), rgb)      # save images as jpg
+    else:
+        if not onlySave:
+            plt.imshow(img)
+        if i:
+            path = imagePath
+            if groundtruth:
+                path = groundtruthPath
+            scipy.misc.imsave('%svessel%s.jpg'%(path,i), img.T)
+    if points is not None and not onlySave:
+        x, y = zip(*points)
+        plt.scatter(x=x, y=y, c='b')
+
+def rgba2rgb(img):
+    a = img[:,:,3] / 255.
+    return np.dstack(((img[:,:,0] + (255 * (1-a)), img[:,:,1] + (255 * (1-a)), img[:,:,2] + (255 * (1-a)))))
+
+'''
+    add black mask on top of the image
+'''
+def addMask(image):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    if not os.path.isfile(dir_path + '/mask.npy'):
+        mask = scipy.misc.imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
+        mask = transform.resize(mask, (300, 300))
+        mask = mask.T
+        final_mask = np.zeros((300,300,4))
+        black = np.where(mask < 0.5)
+        transparent = np.where(mask >= 0.5)
+        final_mask[black] = [0,0,0,255]
+        final_mask[transparent] = [255,255,255,0]
+        np.save(dir_path + '/mask.npy', final_mask)
+    else:
+        final_mask = np.load(dir_path + '/mask.npy')
+        if not final_mask.shape == (300,300,4):
+            mask = scipy.misc.imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
+            mask = transform.resize(mask, (300, 300))
+            mask = mask.T
+            final_mask = np.zeros((300,300,4))
+            black = np.where(mask < 0.5)
+            transparent = np.where(mask >= 0.5)
+            final_mask[black] = [0,0,0,255]
+            final_mask[transparent] = [255,255,255,0]
+            np.save(dir_path + '/mask.npy', final_mask)
+    return mergeLayer([image, final_mask])
+
+def calculateMeanCoverage(path, k=10):
+    images = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    means = []
+    for f in images:
+        binary = scipy.misc.imread(path+f)
+        binary = transform.resize(binary, (300, 300))
+        if binary.ndim == 3:
+            binary = makeBinary(binary, 0.5)
+        binary = binary_dilation(binary, iterations=k)
+        rgba = np.zeros((300, 300, 4)) # make rgba image from binary
+        rgba[np.where(binary)] = [0,0,0, 255] # draw binary on it
+        # add fovea
+        rr, cc = draw.circle(150, 150, 15)
+        draw.set_color(rgba, [rr,cc], [0,0,0,255])
+        # add mask
+        rgba = addMask(rgba)    # add Mask
+        rgba = np.abs(rgba - [255, 255, 255, 0])
+        binary = makeBinary(rgba, 200)
+        means.append(np.mean(binary) / 255)
+    return np.mean(np.asarray(means))
+
+if __name__ == '__main__':
+    paths = [
+        '/../DRIVE/test/1st_manual/',
+        '/../DRIVE/test/2nd_manual/'
+    ]
+    means = []
+    k = 10
+    for p in paths:
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        mypath = dir_path + p
+        means.append(calculateMeanCoverage(mypath, k))
+    print("MEAN COVERAGE WITH DILATION OF " + str(k) + ": " + str(np.mean(np.asarray(means))))
