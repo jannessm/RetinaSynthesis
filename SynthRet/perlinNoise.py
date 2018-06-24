@@ -1,9 +1,15 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jun 12 20:38:17 2018
 
+@author: Administrator
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from itertools import product, count 
+from itertools import product, count
+from PIL import Image 
 from matplotlib.colors import LinearSegmentedColormap
 
 
@@ -93,15 +99,16 @@ def generate_2D_perlin_noise(size, ns):
 
 def getTexture():
     size=300
-    img0 = generate_2D_perlin_noise(size,20)
-    img1 = generate_2D_perlin_noise(size,20)
-    img2 = generate_2D_perlin_noise(size,50)
-    img = (img0 + img1+img2) / 3
+    img0 = generate_2D_perlin_noise(size,1)
+    img1 = generate_2D_perlin_noise(size,1)
+    img2 = generate_2D_perlin_noise(size,20)
+    img3 = generate_2D_perlin_noise(size,50)
+    img = img0*0.5+img1*0.2+img2*0.1+img3*0.1
 
     cmap = LinearSegmentedColormap.from_list('cloud', [ '#BD321C','#D9321C','#D93823'])
-                                              
+    #['#D9321C','#BB311E','#BB2E1C']                                                
     img = cm.ScalarMappable(cmap=cmap).to_rgba(img)
-    
+    #Image.fromarray(img,mode='RGBA') 
     return img
 #img=getTexture()
 #plt.imshow(img)
