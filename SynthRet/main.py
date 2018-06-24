@@ -2,9 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from Tree import Tree
-from PIL import Image, ImageDraw
-from utils import mergeLayer, addIllumination, showImage, addMask
-import cv2
+from utils import mergeLayer, addIllumination, showImage, addMask, makeBinary
 from skimage import io, draw, data
 import scipy.misc 
 #from scipy.misc import imsave
@@ -24,6 +22,7 @@ def generateImages(i=0):
     bkg, fovea = generateBackgroundAndFovea()
     od_img, od = generateOpticalDisc()
     vt, groundTruth = generateVesselsTree(fovea, od)
+    showImage(vt)
     merged = mergeLayer([bkg, np.transpose(od_img,(1,0,2)), vt])
     image = addIllumination(merged)
     return addMask(image), addMask(groundTruth)
@@ -68,3 +67,7 @@ if __name__ == '__main__':
     print("\n saving images")
     #showImage(im, groundtruth=False, onlySave=True)
     showImage(im)
+
+    # bild = io.imread("bild.png")
+    # showImage(bild)
+    # showImage(makeBinary(bild, 10))

@@ -70,9 +70,10 @@ def makeBinary(img, threshold):
     rgb = np.dstack((r, g, b))
     grey = np.multiply(rgb, [0.21, 0.72, 0.07])
     grey = np.sum(grey, axis=2)
-    grey[np.where(grey < threshold)] = 0
-    grey[np.where(grey > threshold)] = 255
-    return grey
+    binary = np.ones(grey.shape) * 255
+    binary[np.where(grey > threshold)] = 255
+    binary[np.where(grey < threshold)] = 0
+    return binary.astype(int)
 
 #
 def addIllumination(image): # rewrite with skimage

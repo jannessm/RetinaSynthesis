@@ -4,9 +4,10 @@ from scipy import interpolate
 from scipy.ndimage.morphology import binary_dilation,binary_erosion
 from skimage import draw
 from matplotlib import pyplot as plt
+from matplotlib.collections import LineCollection
 from PIL import Image
 import PIL.ImageOps
-from utils import showImage, addMask, makeBinary, coverage, meanCoverage
+from utils import showImage, addMask, makeBinary, coverage, meanCoverage, fig2ndarray
 import pylab
 from cStringIO import StringIO
 
@@ -59,20 +60,18 @@ class Tree:
                     if np.array_equal(p, b.start):
                         continue
                     b.addBranch(p)
-        # print "meanCov:         ", meanCoverage(self.createTreeMap(), self.fovea, 0)
-        # print "growingBranches: ", len(self.growingBranches)
+            print "meanCov:         ", meanCoverage(self.createTreeMap(), self.fovea, 0)
+            print "growingBranches: ", len(self.growingBranches)
 
-    # TODO add different diameters
-    def createTreeMap(self, unicolor=False):
-        #treeMap = np.zeros((300, 300, 4))
-        #treeMap[:,:,3] = 255
-        fig = plt.figure(figsize=(3,3),dpi=100)
+    def createTreeImage(self):
+        fig, axes = plt.subplots(figsize=(3,3),dpi=100)
         plt.axis('off')
+        plt.xlim(0,300)
+        plt.ylim(0,300)
+
         # draw all branches onto treeMap
         for branch in self.branches:
-            #diameter = 3 - (branch.level) if branch.level < 3 else 1
-            #erosion = 1
-            color = 255 if branch.artery or unicolor else 150
+            color = (201. / 255, 31. / 255, 55. / 255, 1) if branch.artery else (243. / 255, 83. / 255, 54. / 255, 1)
             x,y = np.array(zip(*branch.points))     # seperate x and y coordinates from Branches
             
             # interpolate 
@@ -80,85 +79,38 @@ class Tree:
             k = 3 if x.shape[0] > 3 else x.shape[0]-1
             if k == 0:
                 continue
+            
+            x_len = max(x) - min(x)
+            y_len = max(y) - min(y)
+            total_len = np.sqrt(x_len**2 + y_len**2)
+
             tck, t = interpolate.splprep([x, y], s=s, k=k) 
-            xi, yi = interpolate.splev(np.linspace(t[0], t[-1], 400), tck)
-            xi, yi = xi.astype(int), yi.astype(int)                         # convert to int
-
-            p = np.vstack((xi, yi)).T                                       # remove all points > 300 and < 0
-            toHigh = np.unique(np.where(p > 299)[0])
-            p = np.delete(p, toHigh, axis=0)
-            toLow = np.unique(np.where(p < 0)[0])
-            p = np.delete(p, toLow, axis=0)         # p:[[x1,y1],[x2,y2]....]
-          
-            xi, yi = np.array(zip(*p)) 
-            #print xi.shape,yi.shape 
-
-            #qie pian
-            r = len(xi)         # alomst 400
+            xi, yi = interpolate.splev(np.linspace(t[0], t[-1], total_len * 2), tck)
             
-            for i in range(r/100):
-                if (i == (r/100-1)):
-                    plt.plot(xi[100*i:],yi[100*i:],'k',linewidth=r/100-i)
-                else:
-                    plt.plot(xi[100*i:100*i+100],yi[100*i:100*i+100],'k',linewidth=r/100-i)
-            #plt.plot(xi,yi,linewidth=2)
-            
-            #plt.close(fig)
-            
-            #print im_arr[1][1]
-            #xi,yi = np.array(zip(*im_arr))
-            
-            #xi = xi[np.where(xi <= 300)]
-            #yi = yi[np.where(yi <= 300)]
-            
-            #print im_arr[0,0,:]#.shape,xi.shape,yi.shape           #17910
+            r = np.linspace(0, total_len * 2, total_len * 2)
+            if branch.level == 1:
+                widths = 0.003 * r + 0.4
+            else:
+                widths = 0.003 * r + 0.3
+            points = np.array([xi, yi]).T.reshape(-1, 1, 2)
+            segments = np.concatenate([points[:-1], points[1:]], axis=1)[::-1]
+            lc = LineCollection(segments, linewidths=widths, color=color)
+            axes.add_collection(lc)
 
+        plt.show(block=False)
+        treeImg = fig2ndarray(fig)
+        plt.close()
 
-            #branchImage = np.zeros((300,300,4))
-            #branchImage[:,:,3] = 255
-            #branchImage[xi, yi] = [255, 255, 255, 255]                      # make points of branches white
-            #bina = makeBinary(branchImage, 200)
-            #bina = bina.astype(int)
-            #print bina.dtype
-            #bina = binary_dilation(bina, iterations=diameter)
-            #bina = binary_erosion(bina, iterations=erosion)
-            #treeMap[bina] = color
+        showImage(treeImg)
+        return treeImg
 
-        
-        buffer_ = StringIO()
-        plt.savefig(buffer_,format='png')
-        #plt.show()
-        buffer_.seek(0)
-        im = Image.open(buffer_)    #mode = RGBA
-        im_arr = np.asarray(im)     #im_arr shape is (300,300,4)
-        im_arr = im_arr.transpose((1,0,2))  #transpose x y
-        buffer_.close()
-        plt.close(fig)
-        #showImage(im_arr)
-
-        # bina = makeBinary(im_arr, 2)
-        # bina = bina.astype(int)
-        # treeMap[bina] = color
-        r,g,b,a = im.split()
-        rgb_image = Image.merge('RGB',(r,g,b))
-        inverted_image = PIL.ImageOps.invert(rgb_image)
-        r2,g2,b2 = inverted_image.split()
-        treeMap_Image = Image.merge('RGBA',(r2,g2,b2,a))
-        treeMap = np.asarray(treeMap_Image).transpose((1,0,2))
-        #showImage(treeMap)
-
-        return treeMap
-
-    def createTreeImage(self):
-        treeMap = self.createTreeMap()
-        #iterate over treemap and set alpha to 0 for black points
-        eq = np.where(np.sum(treeMap, axis=2) == 255)
-        arteries = np.where(np.sum(treeMap, axis=2) == 1020)
-        veins = np.where(np.sum(treeMap, axis=2) == 600)
-        treeMap[eq] = [0,0,0,0]
-        treeMap[arteries] = [201,31,55,255]
-        treeMap[veins] = [243, 83, 54, 255]
-        showImage(treeMap.astype(int)) 
+    def createTreeMap(self):
+        treeMap = self.createTreeImage()
+        showImage(treeMap)
+        treeMap = makeBinary(treeMap, 10)
+        showImage(treeMap)
+        notransp = np.ones(treeMap.shape) * 255
+        treeMap = np.dstack((treeMap, treeMap, treeMap, notransp))
         return treeMap.astype(int)
 
     def coverage(self, k=10):
@@ -183,6 +135,5 @@ if __name__ == '__main__':
             points = np.vstack((points, b.points))
             points = np.vstack((points, b.goal))
         points = np.vstack((points, t.fovea))
-        #showImage(t.createTreeMap(), points=points)
         showImage(t.createTreeMap())
         showImage(t.createTreeImage())
