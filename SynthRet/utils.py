@@ -27,45 +27,28 @@ def measure(y_actual, y_hat):
 
     return (TP / (TP+FN), TN / (TN+FP), (TP+TN)/(TP+TN+FP+FN))
 
-#merge 3-chanel RGB images
-def merge3c(collect):
-    #***the size of images***
-    ncol=300
-    nrow=300
-    #initial black image
-    finalimage = np.zeros((ncol, nrow, 3),np.uint8)
-    #merge layers
-    for n in range(len(collect)):
-        img = collect[n]
-        for i in range(ncol):
-            for j in range(nrow):
-                if (img[i,j,:].max() > 0):
-                    finalimage[i,j,:] = img[i,j,:]
-    return finalimage
-
 #merge 4-chanel RGBA images
 def mergeLayer(collect, lastIsVessel=False):
-    #***the size of images***
-    ncol=300
-    nrow=300
-    #initial transparent image
-    dimg = np.zeros((ncol, nrow, 4), np.uint8)
+
+    # change each img to float
+    for i in range(len(collect)):
+        collect[i] = collect[i].astype(float) / 255
+
+    dimg = collect[0]
     #merge layers
     for img in collect:
-        if img is None:
+        if img is None or np.array_equal(img, dimg):
             continue
-
-        img = img.astype(int)
 
         # a (img) over b (dimg)
         a_a = img[:, :, 3][:, :, np.newaxis]
         a_b = dimg[:, :, 3][:, :, np.newaxis]
-        a_c = a_a + (255 - a_a) * a_b
+        a_c = a_a + (1 - a_a) * a_b
 
         a_A = np.multiply(img, a_a)
         a_B = np.multiply(dimg, a_b)
-        dimg = np.divide(a_A + np.multiply(a_B, 255 - a_a), a_c)
-    return dimg
+        dimg = np.divide(a_A + np.multiply(a_B, 1 - a_a), a_c)
+    return (dimg * 255).astype(int)
 
 def makeBinary(img, threshold):
     if img.shape[2] == 4:
@@ -130,7 +113,7 @@ def _plotHelper(img, pointsBlue, pointsYellow, i='', groundtruth=None, onlySave=
     if img.ndim == 3:
         if not onlySave:
             plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
-        if i:
+        if i and not groundtruth == None:
             rgb = rgba2rgb(np.transpose(img, (1,0,2)))
             path = imagePath
             if groundtruth:
