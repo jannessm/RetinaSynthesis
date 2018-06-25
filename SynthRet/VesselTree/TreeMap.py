@@ -1,5 +1,4 @@
-from matplotlib.axes import Axes
-from matplotlib.backend_bases import FigureCanvasBase
+
 from matplotlib.collections import LineCollection
 from scipy import interpolate
 from skimage import transform

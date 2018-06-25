@@ -1,9 +1,7 @@
 import numpy as np
 from Branch import Branch
-from scipy import interpolate
-from skimage import draw
 from TreeMap import TreeMap
-from utils import showImage, addMask, makeBinary, coverage, meanCoverage
+from utils import showImage, makeBinary, coverage, meanCoverage
 
 class Tree:
     def __init__(self, startingPoint, fovea):
