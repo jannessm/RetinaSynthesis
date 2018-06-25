@@ -140,7 +140,7 @@ def _plotHelper(img, pointsBlue, pointsYellow, i='', groundtruth=None, onlySave=
     else:
         if not onlySave:
             plt.imshow(img)
-        if i:
+        if i and not groundtruth == None:
             path = imagePath
             if groundtruth:
                 path = groundtruthPath
