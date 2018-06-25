@@ -24,7 +24,6 @@ def generateImages(i=0):
     vt, groundTruth = generateVesselsTree(fovea, od)
     merged = mergeLayer([bkg, od_img, vt])
     image = addIllumination(merged)
-    showImage(image)
     return addMask(image), addMask(groundTruth)
 
 

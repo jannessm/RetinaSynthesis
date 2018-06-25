@@ -75,12 +75,11 @@ def addIllumination(image): # rewrite with skimage
     low, high = np.random.randint(low=0,high=30), np.random.randint(low=225,high=255)
 
     # enhance brightness
-    image1 = exposure.adjust_gamma(image, brightness) 
-    #exposure.adjust_log(image)   
+    image1 = exposure.adjust_gamma(image.astype(float) / 255, brightness)
+    image1 = (image1 * 255).astype(int)
     
     # enhance contrast 
     img = exposure.rescale_intensity(image1,out_range=(low,high))
-
     return img
 
 def showImage(img, pointsBlue=None, sec=-1, groundtruth=None, onlySave=False, pointsYellow=None, k=None):
