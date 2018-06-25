@@ -2,10 +2,8 @@ import numpy as np
 from Branch import Branch
 from scipy import interpolate
 from skimage import draw
-from matplotlib import pyplot as plt
-from matplotlib.collections import LineCollection
-from utils import showImage, addMask, makeBinary, coverage, meanCoverage, fig2ndarray
-from scipy.ndimage.morphology import binary_dilation,binary_erosion
+from TreeMap import TreeMap
+from utils import showImage, addMask, makeBinary, coverage, meanCoverage
 
 class Tree:
     def __init__(self, startingPoint, fovea):
@@ -14,6 +12,7 @@ class Tree:
         self.fovea = fovea          # fovea location [x, y]
         self.opticaldisc = startingPoint
         self.nbranches = 0
+        self.treeMap = TreeMap()
 
         for i in range(4):          # number of arteries
             g = self.getRandomGoal(i)
@@ -27,7 +26,7 @@ class Tree:
             self.growingBranches.append(b)
 
         # constants
-        self.covThreshold = 0.5      # coverage threshold
+        self.covThreshold = 0.53           # coverage threshold
         # self.covThreshold = 0.93107      # coverage threshold
 
     def getRandomGoal(self, i):
@@ -63,46 +62,7 @@ class Tree:
                     b.addBranch(p)
 
     def createTreeImage(self):
-        fig, axes = plt.subplots(figsize=(3,3),dpi=100)
-        plt.axis('off')
-        plt.xlim(0,300)
-        plt.ylim(0,300)
-        axes.patch.set_alpha(0.0)
-        fig.patch.set_alpha(0.0)
-
-        # draw all branches onto treeMap
-        for branch in self.branches:
-            color = (201. / 255, 31. / 255, 55. / 255, 1) if branch.artery else (243. / 255, 83. / 255, 54. / 255, 1)
-            x,y = np.array(zip(*branch.points))     # seperate x and y coordinates from Branches
-            
-            # interpolate 
-            s = 0   # smoothing condition (0 means passing all points)
-            k = 3 if x.shape[0] > 3 else x.shape[0]-1
-            if k == 0:
-                continue
-            
-            x_len = max(x) - min(x)
-            y_len = max(y) - min(y)
-            total_len = np.sqrt(x_len**2 + y_len**2)
-
-            tck, t = interpolate.splprep([x, y], s=s, k=k) 
-            xi, yi = interpolate.splev(np.linspace(t[0], t[-1], total_len * 2), tck)
-            
-            r = np.linspace(0, total_len * 2, total_len * 2)
-            if branch.level == 1:
-                widths = 0.003 * r + 0.7
-            else:
-                widths = 0.003 * r + 0.5
-            points = np.array([xi, yi]).T.reshape(-1, 1, 2)
-            segments = np.concatenate([points[:-1], points[1:]], axis=1)[::-1]
-            lc = LineCollection(segments, linewidths=widths, color=color)
-            axes.add_collection(lc)
-
-        plt.show(block=False)
-        treeImg = fig2ndarray(fig)
-        plt.close()
-
-        return treeImg
+        return self.treeMap.getImg()
 
     def createTreeMap(self):
         treeMap = self.createTreeImage()

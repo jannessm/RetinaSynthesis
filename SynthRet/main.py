@@ -51,7 +51,7 @@ if __name__ == '__main__':
 #        showImage([i], groundtruth=False, onlySave=True)
  #       showImage([g], groundtruth=True, onlySave=True)
 
-    print("\n" + str(k) + " pict1ures needed " + str(time.time() - start) + " sec!\n")
+    print("\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
 
     # bild = io.imread("bild.png")
     # showImage(bild)
