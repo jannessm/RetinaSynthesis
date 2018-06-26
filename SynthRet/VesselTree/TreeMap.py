@@ -7,8 +7,8 @@ from utils import showImage, makeBinary
 
 class TreeMap:
     def __init__(self):
-        self.arteryColor = (201. / 255, 31. / 255, 55. / 255, 1)
-        self.veinColor = (243. / 255, 83. / 255, 54. / 255, 1)
+        self.arteryColor = (201. / 255, 31. / 255, 55. / 255, 0.8)
+        self.veinColor = (243. / 255, 83. / 255, 54. / 255, 0.4)
         self.lines = []
         self.treeMap = np.zeros((300,300,4), dtype=int)
         self.treeImage = np.zeros((300,300,4), dtype=int)
