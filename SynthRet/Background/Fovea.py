@@ -4,7 +4,6 @@ import random
 import matplotlib.pyplot as plt
 from skimage import io, transform, draw, data
 from perlinNoise import getTexture
-import cv2
 # generate an image with the background and fovea
 def generateBackgroundAndFovea():
        img=np.zeros((300, 300, 4),np.uint8)
@@ -23,9 +22,9 @@ def generateBackgroundAndFovea():
                 img[y,x,0] = rValue(x,y,cx,cy) 
                 img[y,x,1] = gValue(x,y,cx,cy,gbx,gby) 
                 img[y,x,2] = bValue(x,y,cx,cy,gbx,gby)
-       kernel_size = (5, 5);
-       sigma = 1;
-       img = cv2.GaussianBlur(img, kernel_size, sigma);
+       # kernel_size = (5, 5)
+       # sigma = 1
+       # img = cv2.GaussianBlur(img, kernel_size, sigma)
        return img,PosFovea
 
 	
@@ -102,6 +101,6 @@ def gValue(x,y,cx,cy,gbx,gby):
 # print(gValue(12,12,0,0,0,0))
 
 
-# b,p=generateBackgroundAndFovea()
-# plt.imshow(b)
+#b,p=generateBackgroundAndFovea()
+#plt.imshow(b)
 # plt.savefig("E:/3.png")
