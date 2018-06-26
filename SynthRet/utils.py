@@ -1,12 +1,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from skimage import exposure, transform, draw
-from skimage.color import rgba2rgb, rgb2grey
 from scipy.misc import imread, imsave
 import os
-
-imagePath = './images/'
-groundtruthPath = './groundtruth/'
 
 #merge 4-chanel RGBA images
 def mergeLayer(collect, lastIsVessel=False):
@@ -33,8 +29,16 @@ def mergeLayer(collect, lastIsVessel=False):
 
 def makeBinary(img, threshold):
     if img.shape[2] == 4:
-        img = rgba2rgb(img)
-    grey = rgb2grey(img)
+        r = np.multiply(img[:, :, 0], img[:, :, 3]) 
+        g = np.multiply(img[:, :, 1], img[:, :, 3]) 
+        b = np.multiply(img[:, :, 2], img[:, :, 3]) 
+    else: 
+        r = img[:, :, 0] 
+        g = img[:, :, 1] 
+        b = img[:, :, 2] 
+    rgb = np.dstack((r, g, b)) 
+    grey = np.multiply(rgb, [0.21, 0.72, 0.07]) 
+    grey = np.sum(grey, axis=2)
     binary = np.ones(grey.shape) * 255
     binary[np.where(grey > threshold)] = 255
     binary[np.where(grey < threshold)] = 0
@@ -88,7 +92,7 @@ def _plotHelper(img, pointsBlue, pointsYellow):
         x, y = zip(*pointsYellow)
         plt.scatter(x=x, y=y, c='y')
 
-def saveImage(imgs, j, groundtruth=None, maxId=None):
+def saveImage(imgs, j, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/"):
     if not type(imgs) == list:
         imgs = [imgs]
 
@@ -97,12 +101,18 @@ def saveImage(imgs, j, groundtruth=None, maxId=None):
             i_str = str(i+j).rjust(int(np.log10(maxId)) + 1, '0')
         else:
             i_str = str(i+j).rjust(int(np.log10(len(imgs))) + 1, '0')
-        rgb = rgba2rgb(imgs[i])
+        rgb = rgba2rgb(np.transpose(imgs[i], (1,0,2)))
         path = imagePath
         if groundtruth:
             path = groundtruthPath
         print '%svessel%s.jpg'%(path,i_str)
         imsave('%svessel%s.jpg'%(path,i_str), rgb)      # save images as jpg
+
+def rgba2rgb(img):
+    r = np.multiply(img[:, :, 0], img[:, :, 3]) 
+    g = np.multiply(img[:, :, 1], img[:, :, 3]) 
+    b = np.multiply(img[:, :, 2], img[:, :, 3])
+    return np.dstack((r,g,b))
 
 
 '''
@@ -111,14 +121,14 @@ def saveImage(imgs, j, groundtruth=None, maxId=None):
 def addMask(image):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     if not os.path.isfile(dir_path + '/mask.npy'):
-        final_mask = prepareMask()
+        final_mask = prepareMask(dir_path)
     else:
         final_mask = np.load(dir_path + '/mask.npy')
         if not final_mask.shape == (300,300,4):
-            final_mask = prepareMask()
+            final_mask = prepareMask(dir_path)
     return mergeLayer([image, final_mask])
 
-def prepareMask():
+def prepareMask(dir_path):
     mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
     mask = transform.resize(mask, (300, 300))
     mask = mask.T

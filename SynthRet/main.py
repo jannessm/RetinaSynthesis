@@ -26,7 +26,7 @@ def generateVesselsTree(fovea, od):
     tree.growTree()
     return tree.createTreeImage(), tree.createTreeMap()
 
-def generateImages(k=1, showImages=True, save=False, groundTruthPath="", imagesPath=""):    
+def generateImages(k=1, showImages=True, save=False, groundTruthPath="./groundtruths/", imagesPath="./images/"):    
     print("\nStart generating "+ str(k) +" images")
     start = time.time()                 # start timer
 
@@ -34,13 +34,12 @@ def generateImages(k=1, showImages=True, save=False, groundTruthPath="", imagesP
     gt = []
 
     for j in tqdm.tqdm(range(k), total=k):
-        print("generate Image: ",j)
         i, g = _generateImage()
         imgs.append(i)
         gt.append(g)
         if save:
-            saveImage(i, j, groundtruth=False, maxId=k)
-            saveImage(g, j, groundtruth=True,  maxId=k)
+            saveImage(i, j, False, k, groundTruthPath, imagesPath)
+            saveImage(g, j, True,  k, groundTruthPath, imagesPath)
 
     print("\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
 
@@ -49,4 +48,5 @@ def generateImages(k=1, showImages=True, save=False, groundTruthPath="", imagesP
         showImage(gt)
 
 if __name__ == '__main__':
-    generateImages()
+    images = 1
+    generateImages(images, showImages=True, save=True)

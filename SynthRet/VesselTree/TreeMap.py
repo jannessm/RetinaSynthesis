@@ -1,15 +1,16 @@
-
 from matplotlib.collections import LineCollection
 from scipy import interpolate
 from skimage import transform
 import numpy as np
 import matplotlib.pyplot as plt
+from utils import showImage
 
 class TreeMap:
     def __init__(self):
         self.arteryColor = (201. / 255, 31. / 255, 55. / 255, 1)
         self.veinColor = (243. / 255, 83. / 255, 54. / 255, 1)
         self.lines = []
+        self.image = np.zeros((300,300,4), dtype=int)
 
     def addBranch(self, branch):
         color = self.arteryColor if branch.artery else self.veinColor
@@ -36,9 +37,9 @@ class TreeMap:
         points = np.array([xi, yi]).T.reshape(-1, 1, 2)
         segments = np.concatenate([points[:-1], points[1:]], axis=1)[::-1]
         self.lines.append([segments, widths, color])
+        self.updateImg()
     
-    def getImg(self):
-        plt.clf()
+    def updateImg(self):
         fig, ax = plt.subplots(figsize=(3,3),dpi=100)
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
@@ -65,7 +66,8 @@ class TreeMap:
         buf = np.transpose(buf, (1,0,2))
 
         buf = transform.resize(buf, (300, 300))
-        buf = (buf * 255).astype(int)
+        self.image = (buf * 255).astype(int)
         plt.close()
-        plt.clf()
-        return buf
+
+    def getImg(self):
+        return self.image

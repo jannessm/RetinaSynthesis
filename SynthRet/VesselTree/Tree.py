@@ -24,7 +24,7 @@ class Tree:
             self.growingBranches.append(b)
 
         # constants
-        self.covThreshold = 0.53           # coverage threshold
+        self.covThreshold = 0.543          # coverage threshold
         # self.covThreshold = 0.93107      # coverage threshold
 
     def getRandomGoal(self, i):
