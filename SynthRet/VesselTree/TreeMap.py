@@ -3,14 +3,15 @@ from scipy import interpolate
 from skimage import transform
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import showImage
+from utils import showImage, makeBinary
 
 class TreeMap:
     def __init__(self):
         self.arteryColor = (201. / 255, 31. / 255, 55. / 255, 1)
         self.veinColor = (243. / 255, 83. / 255, 54. / 255, 1)
         self.lines = []
-        self.image = np.zeros((300,300,4), dtype=int)
+        self.treeMap = np.zeros((300,300,4), dtype=int)
+        self.treeImage = np.zeros((300,300,4), dtype=int)
 
     def addBranch(self, branch):
         color = self.arteryColor if branch.artery else self.veinColor
@@ -40,10 +41,11 @@ class TreeMap:
         self.updateImg()
     
     def updateImg(self):
-        fig, ax = plt.subplots(figsize=(3,3),dpi=100)
+        fig, ax = plt.subplots(figsize=(3,3),dpi=50)
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
         plt.axis("off")
+        plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
 
         # set dimensions of plot
         ax.set_xlim(0,300)
@@ -59,15 +61,22 @@ class TreeMap:
         # Get the RGBA buffer from the figure
         w,h = fig.canvas.get_width_height()
         buf = np.fromstring ( fig.canvas.tostring_argb(), dtype=np.uint8 )
+        plt.close()
         buf.shape = ( w, h, 4 )
     
         # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
         buf = np.roll ( buf, 3, axis = 2 )
         buf = np.transpose(buf, (1,0,2))
 
-        buf = transform.resize(buf, (300, 300))
-        self.image = (buf * 255).astype(int)
-        plt.close()
+        if buf.dtype == float:
+            buf = buf * 255
+        self.treeImage = buf.astype(int)
+        treeMap = makeBinary(self.treeImage, 10)
+        notransp = np.ones(treeMap.shape) * 255
+        self.treeMap = np.dstack((treeMap, treeMap, treeMap, notransp)).astype(int)
 
     def getImg(self):
-        return self.image
+        return self.treeImage
+
+    def getMap(self):
+        return self.treeMap

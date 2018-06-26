@@ -31,8 +31,8 @@ class Tree:
         switch = {
             0: np.array([[-300, -150], [50, 200]]) + self.fovea,
             1: np.array([[-300, -150], [-200, -50]]) + self.fovea,
-            2: np.array([[50, 200], [50, 200]]) + self.opticaldisc,
-            3: np.array([[50, 200], [-200, -50]]) + self.opticaldisc
+            2: np.array([[50, 200], [20, 200]]) + self.opticaldisc,
+            3: np.array([[50, 200], [-200, -20]]) + self.opticaldisc
         }
         boundaries = switch.get(i%4)
         if boundaries is not None:
@@ -63,11 +63,7 @@ class Tree:
         return self.treeMap.getImg()
 
     def createTreeMap(self):
-        treeMap = self.createTreeImage()
-        treeMap = makeBinary(treeMap, 10)
-        notransp = np.ones(treeMap.shape) * 255
-        treeMap = np.dstack((treeMap, treeMap, treeMap, notransp))
-        return treeMap.astype(int)
+        return self.treeMap.getMap()
 
     def coverage(self):
         treeMap = self.createTreeMap()
