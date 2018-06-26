@@ -92,15 +92,15 @@ def _plotHelper(img, pointsBlue, pointsYellow):
         x, y = zip(*pointsYellow)
         plt.scatter(x=x, y=y, c='y')
 
-def saveImage(imgs, j, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/"):
+def saveImage(imgs, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/"):
     if not type(imgs) == list:
         imgs = [imgs]
 
     for i in range(len(imgs)):
         if maxId:
-            i_str = str(i+j).rjust(int(np.log10(maxId)) + 1, '0')
+            i_str = str(i).rjust(int(np.log10(maxId)) + 1, '0')
         else:
-            i_str = str(i+j).rjust(int(np.log10(len(imgs))) + 1, '0')
+            i_str = str(i).rjust(int(np.log10(len(imgs))) + 1, '0')
         rgb = rgba2rgb(np.transpose(imgs[i], (1,0,2)))
         path = imagePath
         if groundtruth:

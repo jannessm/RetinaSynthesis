@@ -38,8 +38,8 @@ def generateImages(k=1, showImages=True, save=False, groundTruthPath="./groundtr
         imgs.append(i)
         gt.append(g)
         if save:
-            saveImage(i, j, False, k, groundTruthPath, imagesPath)
-            saveImage(g, j, True,  k, groundTruthPath, imagesPath)
+            saveImage(i, False, k, groundTruthPath, imagesPath)
+            saveImage(g, True,  k, groundTruthPath, imagesPath)
 
     print("\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
 
