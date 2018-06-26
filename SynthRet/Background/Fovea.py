@@ -22,9 +22,7 @@ def generateBackgroundAndFovea():
                 img[y,x,0] = rValue(x,y,cx,cy) 
                 img[y,x,1] = gValue(x,y,cx,cy,gbx,gby) 
                 img[y,x,2] = bValue(x,y,cx,cy,gbx,gby)
-       # kernel_size = (5, 5)
-       # sigma = 1
-       # img = cv2.GaussianBlur(img, kernel_size, sigma)
+
        return img,PosFovea
 
 	
