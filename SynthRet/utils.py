@@ -168,6 +168,7 @@ def coverage(binary, fovea):
 
     #invert
     binary = np.abs(binary - [255, 255, 255, 0])
+    
     return binary
 
 def meanCoverage(img, fovea):
