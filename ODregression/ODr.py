@@ -9,7 +9,7 @@ This program is intended to plot the 3-D surface image of odr function
 from matplotlib import pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
-
+import math
 import random
 
 

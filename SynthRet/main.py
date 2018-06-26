@@ -1,38 +1,22 @@
+from VesselTree import Tree
+from utils import mergeLayer, addIllumination, showImage, addMask, saveImage
+from OpticalDisc import generateOpticalDisc
+from Background import generateBackgroundAndFovea
+
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-from Tree import Tree
-from PIL import Image, ImageDraw
-from utils import mergeLayer, addIllumination, showImage, addMask
-import cv2
-from skimage import io, draw, data
-from scipy.misc import imsave
-import math
-import os 
-from OpticalDisc import generateOpticalDisc
-from multiprocessing.dummy import Pool
 import time
-from multiprocessing.dummy import Pool
-from OpticalDisc import generateOpticalDisc
-from Fovea import generateBackgroundAndFovea
 import tqdm
 
 '''
     generate synthetic images. if you want to save the generated files adjust save and path to your needs.
     path is relative to this file.
 '''
-def generateImages(i=0):
+def _generateImage():
     bkg, fovea = generateBackgroundAndFovea()
     od_img, od = generateOpticalDisc(fovea)
     vt, groundTruth = generateVesselsTree(fovea, od)
-    merged = mergeLayer([bkg, np.transpose(od_img,(1,0,2)), vt])
+    merged = mergeLayer([bkg, od_img, vt])
     image = addIllumination(merged)
-
-    # mirror the image
-    i = np.random.rand()
-    if i < 0.5:
-        image = np.flip(image, 0)
-        groundTruth = np.flip(groundTruth, 0)
     return addMask(image), addMask(groundTruth)
 
 
@@ -42,28 +26,27 @@ def generateVesselsTree(fovea, od):
     tree.growTree()
     return tree.createTreeImage(), tree.createTreeMap()
 
-if __name__ == '__main__':
-    k = 200                              # amount of pictures to generate
-
-    if k > 20:                           # limit threads to upper boundary 20
-        nthreads = 20
-    else:
-        nthreads = k
-    
+def generateImages(k=1, showImages=True, save=False, groundTruthPath="./groundtruths/", imagesPath="./images/"):    
     print("\nStart generating "+ str(k) +" images")
     start = time.time()                 # start timer
 
-    #threads = Pool(nthreads)            # generate k images in parallel
-    #res = threads.map(generateImages, range(k))
-    #for _ in tqdm.tqdm(res, total=k):
-     #   pass
-    #threads.close()
-    #threads.join()
+    imgs = []
+    gt = []
 
-    for _ in tqdm.tqdm(range(k), total=k):
-        i, g = generateImages()
-        showImage([i], groundtruth=False, onlySave=True)
-        showImage([g], groundtruth=True, onlySave=True)
-
+    for j in tqdm.tqdm(range(k), total=k):
+        i, g = _generateImage()
+        imgs.append(i)
+        gt.append(g)
+        if save:
+            saveImage(i, False, k, groundTruthPath, imagesPath)
+            saveImage(g, True,  k, groundTruthPath, imagesPath)
 
     print("\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
+
+    if showImages:
+        showImage(imgs)
+        showImage(gt)
+
+if __name__ == '__main__':
+    images = 1
+    generateImages(images, showImages=True, save=True)

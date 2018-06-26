@@ -34,6 +34,7 @@ class Branch:
                 or                                              # or
             x[0] < 0 or x[0] > 299 or x[1] < 0 or x[1] > 299):  # if x is out of the image
             self.finished = True
+            self.tree.treeMap.addBranch(self)                   # add Branch to Map
             return
         
         length = np.random.randint(5, 25) / self.level                   # set random length

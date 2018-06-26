@@ -29,13 +29,13 @@ def nextGoalPoint(self, point):
         else:
             y = point[1] - overFovea * np.random.randint(10, 200 / (2 * self.level))
 
-        if not crossingVessel(np.array((x,y)), point, self.tree.createTreeMap(unicolor=True)):
+        if not crossingVessel(np.array((x,y)), point, self.tree.createTreeMap()):
             return np.array((x, y))
         else:
             return None
     
     if self.level > 1:
-        tmap = self.tree.createTreeMap(unicolor=True)
+        tmap = self.tree.createTreeMap()
         #showImage(tmap)
         size = 20
         centers = []
