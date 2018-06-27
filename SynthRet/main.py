@@ -34,6 +34,8 @@ def generateImages(k=1, showImages=True, save=False, groundTruthPath="./groundtr
     gt = []
 
     for j in tqdm.tqdm(range(k), total=k):
+        if not j == 0:
+            print("\nlast image took: " + str(time.time() - start) + " sec")
         i, g = _generateImage()
         imgs.append(i)
         gt.append(g)

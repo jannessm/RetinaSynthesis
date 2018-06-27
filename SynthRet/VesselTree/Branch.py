@@ -13,6 +13,8 @@ class Branch:
         self.finished = False
         self.level = level
         self.artery = artery
+        self.subBranchesFovea = 0
+        self.subBranchesNotFovea = 0
 
         #constants
         self.goalThreshold = 10                         # pixels away from goal point are sufficent
@@ -29,7 +31,7 @@ class Branch:
         else set finished to true
     '''
     def addSegment(self):
-        x = self.points[len(self.points) - 1]               # current point
+        x = self.points[len(self.points) - 1]                   # current point
         if (np.mean(np.abs(self.goal - x)) < self.goalThreshold / self.level # if goal point distance < goalThreshold Branch is finished
                 or                                              # or
             x[0] < 0 or x[0] > 299 or x[1] < 0 or x[1] > 299):  # if x is out of the image
@@ -37,22 +39,21 @@ class Branch:
             self.tree.treeMap.addBranch(self)                   # add Branch to Map
             return
         
-        length = np.random.randint(5, 25) / self.level                   # set random length
-        i = self.getCurrentGoalPoint(x, length)              # get currentGoalPoint
+        length = np.random.randint(5, 25) / self.level          # set random length
+        i = self.getCurrentGoalPoint(x, length)                 # get currentGoalPoint
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2 # set random angle around currentGoalPoint
 
         rot = self.Rotate(angle)
-        newX = np.dot(rot, i - x) + x                        # calculate new Point to branch
-        self.points.append(newX)                             # add new Point to queue
+        newX = np.dot(rot, i - x) + x                           # calculate new Point to branch
+        self.points.append(newX)                                # add new Point to queue
 
     def addBranch(self, x):
-        newBranch = np.random.rand()                        # roll the dice for new branch
+        newBranch = np.random.rand()                            # roll the dice for new branch
         if (newBranch <  0.5 and 
             not np.array_equal(x, self.points[len(self.points) - 1]) and 
             not self.closeToAnotherBranch(x)):
 
-            self.tree.nbranches += 1
-            g = nextGoalPoint(self, x)                # get goal point for branch
+            g = nextGoalPoint(self, x)                           # get goal point for branch
             if type(g) == np.ndarray:
                 b = Branch(self.tree, x, g, self.level + 1, self.artery)
                 
@@ -62,6 +63,7 @@ class Branch:
                 if self.level > 0:
                     while not b.finished:
                         b.addSegment()
+                    #showImage(self.tree.createTreeImage())
 
     '''
         getCurrenGoalPoint

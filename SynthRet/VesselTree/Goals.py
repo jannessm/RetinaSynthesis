@@ -1,5 +1,5 @@
 import numpy as np
-from utils import showImage
+from utils import showImage, saveImage
 from skimage import measure
 
 '''
@@ -12,31 +12,39 @@ from skimage import measure
 '''
 def nextGoalPoint(self, point):
     if self.level == 1:
+        #showImage(self.tree.createTreeMap())
         pf = point - self.tree.fovea                # direction from fovea to the point
+        overFovea = 1 if pf[1] < 0 else -1
 
         # if point is on the opposite site of the fovea according to the od,
         # not go to fovea
-        if point[0] - self.tree.opticaldisc[0] < 0:
-            x = np.random.randint(-70, -20) + point[0]
         # else go to fovea or in opposite direction
-        else:
-            x = np.random.randint(10,40) + point[0]
-        
-        toFovea = np.random.rand()
-        overFovea = 1 if pf[1] < 0 else -1
-        if toFovea < 0.5:
-            y = self.tree.fovea[1] - overFovea * np.random.randint(10,20)
-        else:
-            y = point[1] - overFovea * np.random.randint(10, 200 / (2 * self.level))
+        if point[0] - self.tree.opticaldisc[0] > 0:
+            goalVector = (self.goal - point) / np.linalg.norm(self.goal - point)
+            length = np.random.randint(40, 100)
+            alpha = np.random.randint(30, 70)
+            left = -1 if np.random.rand() else 1
+            x, y = np.dot(self.Rotate(left * alpha), goalVector) * length + point
 
-        if not crossingVessel(np.array((x,y)), point, self.tree.createTreeMap()):
-            return np.array((x, y))
         else:
-            return None
+            x = point[0] -  np.random.randint(20, 60)
+
+            # if same amount goes to fovea and same goes not in fovea direction roll the dice else use the fraction of toFovea / notToFovea
+            toFovea = np.random.rand()
+            if not self.subBranchesFovea == self.subBranchesNotFovea:
+                toFovea = 1 - toFovea / 3 if self.subBranchesFovea > self.subBranchesNotFovea else 0 + toFovea / 3
+
+            if toFovea < 0.5:
+                self.subBranchesFovea += 1
+                y = self.tree.fovea[1] - overFovea * np.random.randint(10, 30)
+            else:
+                self.subBranchesNotFovea += 1
+                y = point[1] - overFovea * np.random.randint(40, 100)
+        return np.array((x, y))
     
     if self.level > 1:
         tmap = self.tree.createTreeMap()
-        #showImage(tmap)
+        #imgs = [self.tree.createTreeImage()]
         size = 20
         centers = []
         new_centers = []
@@ -58,9 +66,11 @@ def nextGoalPoint(self, point):
             centers = new_centers
             new_centers = []
             size += 5
+            #imgs.append(img.astype(int))
         
         result = None
         img, centers, areas = createLabeledImage(size, tmap, point)
+        #imgs.append(img.astype(int))
         if len(areas) > 0:
             max_area = np.where(areas == np.max(areas))[0][0]
             
@@ -75,6 +85,15 @@ def nextGoalPoint(self, point):
                 alpha = np.random.randint(20,70)
                 result = self.Rotate(alpha).dot(to_result) + point
 
+                # test if center was already used
+                for c in self.tree.centers:
+                    if (c[0] - 30 < result[0] and c[0] + 30 > result[0] and
+                        c[1] - 30 < result[1] and c[1] + 30 > result[1]):
+                        result = None
+                        break
+        #saveImage(imgs, imagePath="./", png=True)
+        if not result is None:
+            self.tree.centers.append(result)
         return result
     
 def createLabeledImage(size, tmap, point):

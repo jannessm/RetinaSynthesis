@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from skimage import exposure, transform, draw
 from scipy.misc import imread, imsave
 import os
+import config
 
 #merge 4-chanel RGBA images
 def mergeLayer(collect, lastIsVessel=False):
@@ -25,6 +26,8 @@ def mergeLayer(collect, lastIsVessel=False):
         a_A = np.multiply(img, a_a)
         a_B = np.multiply(dimg, a_b)
         dimg = np.divide(a_A + np.multiply(a_B, 1 - a_a), a_c)
+        zero = np.where(a_c == 0)
+        dimg[zero[0], zero[1], :] = [0,0,0,0]
     return (dimg * 255).astype(int)
 
 def makeBinary(img, threshold):
@@ -81,6 +84,10 @@ def showImage(img, pointsBlue=None, pointsYellow=None, sec=-1):
         plt.show()
 
 def _plotHelper(img, pointsBlue, pointsYellow):
+    plt.axis("off")
+    plt.gcf().patch.set_alpha(0.0)
+    plt.gca().patch.set_alpha(0.0)
+    plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
     if img.ndim == 3:
         plt.imshow(np.transpose(img, (1,0,2)))   #show transposed so x is horizontal and y is vertical
     else:
@@ -92,7 +99,7 @@ def _plotHelper(img, pointsBlue, pointsYellow):
         x, y = zip(*pointsYellow)
         plt.scatter(x=x, y=y, c='y')
 
-def saveImage(imgs, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/"):
+def saveImage(imgs, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/", png=False):
     if not type(imgs) == list:
         imgs = [imgs]
 
@@ -101,12 +108,16 @@ def saveImage(imgs, groundtruth=None, maxId=None, groundtruthPath="./groundtruth
             i_str = str(i).rjust(int(np.log10(maxId)) + 1, '0')
         else:
             i_str = str(i).rjust(int(np.log10(len(imgs))) + 1, '0')
-        rgb = rgba2rgb(np.transpose(imgs[i], (1,0,2)))
+
         path = imagePath
         if groundtruth:
             path = groundtruthPath
         print '%svessel%s.jpg'%(path,i_str)
-        imsave('%svessel%s.jpg'%(path,i_str), rgb)      # save images as jpg
+        if png:
+            imsave('%svessel%s.png'%(path,i_str), np.transpose(imgs[i], (1,0,2)))      # save images as png
+        else:
+            rgb = rgba2rgb(np.transpose(imgs[i], (1,0,2)))
+            imsave('%svessel%s.jpg'%(path,i_str), rgb)      # save images as jpg
 
 def rgba2rgb(img):
     r = np.multiply(img[:, :, 0], img[:, :, 3]) 
@@ -152,22 +163,14 @@ def calculateMeanCoverage(path):
         else:
             binary = np.dstack((binary, np.ones((binary.shape[0], binary.shape[1]))))
         binary = (binary * 255).astype(int)
+        binary = np.transpose(binary, (1,0,2))
+        binary[:,:,3] = 255
         means.append(meanCoverage(binary, [150,150]))
     return np.mean(np.asarray(means))
 
 def coverage(binary, fovea):
-    #invert
-    binary = np.abs(binary - [255, 255, 255, 0])
-
-    # add fovea
-    rr, cc = draw.circle(fovea[0], fovea[1], 15)
-    draw.set_color(binary, [rr,cc], [0,0,0,255])
-
     # add mask
-    binary = addMask(binary)    # add Mask
-
-    #invert
-    binary = np.abs(binary - [255, 255, 255, 0])
+    binary = addMask(binary)
     return binary
 
 def meanCoverage(img, fovea):
@@ -175,8 +178,7 @@ def meanCoverage(img, fovea):
 
 if __name__ == '__main__':
     paths = [
-        '/../DRIVE/test/1st_manual/',
-        '/../DRIVE/test/2nd_manual/'
+        '/../DRIVE/test/1st_manual/'
     ]
     means = []
     for p in paths:
