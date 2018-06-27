@@ -26,6 +26,8 @@ def mergeLayer(collect, lastIsVessel=False):
         a_A = np.multiply(img, a_a)
         a_B = np.multiply(dimg, a_b)
         dimg = np.divide(a_A + np.multiply(a_B, 1 - a_a), a_c)
+        zero = np.where(a_c == 0)
+        dimg[zero[0], zero[1], :] = [0,0,0,0]
     return (dimg * 255).astype(int)
 
 def makeBinary(img, threshold):
@@ -161,6 +163,8 @@ def calculateMeanCoverage(path):
         else:
             binary = np.dstack((binary, np.ones((binary.shape[0], binary.shape[1]))))
         binary = (binary * 255).astype(int)
+        binary = np.transpose(binary, (1,0,2))
+        binary[:,:,3] = 255
         means.append(meanCoverage(binary, [150,150]))
     return np.mean(np.asarray(means))
 

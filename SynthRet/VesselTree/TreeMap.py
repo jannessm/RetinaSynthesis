@@ -3,7 +3,7 @@ from scipy import interpolate
 from skimage import transform
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import showImage, makeBinary
+from utils import showImage, makeBinary, meanCoverage
 
 class TreeMap:
     def __init__(self):
@@ -74,6 +74,7 @@ class TreeMap:
         treeMap = makeBinary(self.treeImage, 10)
         notransp = np.ones(treeMap.shape) * 255
         self.treeMap = np.dstack((treeMap, treeMap, treeMap, notransp)).astype(int)
+        print meanCoverage(self.treeMap, None)
 
     def getImg(self):
         return self.treeImage

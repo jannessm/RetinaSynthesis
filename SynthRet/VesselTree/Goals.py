@@ -19,28 +19,27 @@ def nextGoalPoint(self, point):
         # if point is on the opposite site of the fovea according to the od,
         # not go to fovea
         # else go to fovea or in opposite direction
-        if point[0] - self.tree.opticaldisc[0] < 0:
+        if point[0] - self.tree.opticaldisc[0] > 0:
             goalVector = (self.goal - point) / np.linalg.norm(self.goal - point)
             length = np.random.randint(40, 100)
-            alpha = np.random.randint(30, 80)
-            x, y = np.dot(self.Rotate(alpha), goalVector) * length + point
+            alpha = np.random.randint(30, 70)
+            left = -1 if np.random.rand() else 1
+            x, y = np.dot(self.Rotate(left * alpha), goalVector) * length + point
 
         else:
-            x = np.random.randint(20, 60) + point[0]
+            x = point[0] -  np.random.randint(20, 60)
 
             # if same amount goes to fovea and same goes not in fovea direction roll the dice else use the fraction of toFovea / notToFovea
-            if self.subBranchesFovea == self.subBranchesNotFovea:
-                toFovea = np.random.rand() + 0.5
-            else:
-                toFovea = 2 if self.subBranchesFovea > self.subBranchesNotFovea else 0
+            toFovea = np.random.rand()
+            if not self.subBranchesFovea == self.subBranchesNotFovea:
+                toFovea = 1 - toFovea / 3 if self.subBranchesFovea > self.subBranchesNotFovea else 0 + toFovea / 3
 
-            if toFovea < 1:
+            if toFovea < 0.5:
                 self.subBranchesFovea += 1
-                y = self.tree.fovea[1] - overFovea * np.random.randint(20, 30)
+                y = self.tree.fovea[1] - overFovea * np.random.randint(10, 30)
             else:
                 self.subBranchesNotFovea += 1
                 y = point[1] - overFovea * np.random.randint(40, 100)
-
         return np.array((x, y))
     
     if self.level > 1:
