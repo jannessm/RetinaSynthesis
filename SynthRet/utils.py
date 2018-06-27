@@ -3,7 +3,6 @@ from matplotlib import pyplot as plt
 from skimage import exposure, transform, draw
 from scipy.misc import imread, imsave
 import os
-import config
 
 #merge 4-chanel RGBA images
 def mergeLayer(collect, lastIsVessel=False):
