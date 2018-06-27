@@ -9,8 +9,8 @@ class Tree:
         self.growingBranches = []
         self.fovea = fovea          # fovea location [x, y]
         self.opticaldisc = startingPoint
-        self.nbranches = 0
         self.treeMap = TreeMap()
+        self.centers = []
 
         for i in range(4):          # number of arteries
             g = self.getRandomGoal(i)
@@ -24,7 +24,8 @@ class Tree:
             self.growingBranches.append(b)
 
         # constants
-        self.covThreshold = 0.341972        # coverage threshold
+        self.covThreshold = 0.33             # coverage threshold
+        #self.covThreshold = 0.341972        # coverage threshold
 
     def getRandomGoal(self, i):
         switch = {

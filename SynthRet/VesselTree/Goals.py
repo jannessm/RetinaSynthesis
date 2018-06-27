@@ -84,7 +84,16 @@ def nextGoalPoint(self, point):
             if normed_g.dot(normed_result) > 0.94:
                 alpha = np.random.randint(20,70)
                 result = self.Rotate(alpha).dot(to_result) + point
+
+                # test if center was already used
+                for c in self.tree.centers:
+                    if (c[0] - 30 < result[0] and c[0] + 30 > result[0] and
+                        c[1] - 30 < result[1] and c[1] + 30 > result[1]):
+                        result = None
+                        break
         #saveImage(imgs, imagePath="./", png=True)
+        if not result is None:
+            self.tree.centers.append(result)
         return result
     
 def createLabeledImage(size, tmap, point):

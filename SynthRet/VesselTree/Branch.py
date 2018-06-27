@@ -53,7 +53,6 @@ class Branch:
             not np.array_equal(x, self.points[len(self.points) - 1]) and 
             not self.closeToAnotherBranch(x)):
 
-            self.tree.nbranches += 1
             g = nextGoalPoint(self, x)                           # get goal point for branch
             if type(g) == np.ndarray:
                 b = Branch(self.tree, x, g, self.level + 1, self.artery)
@@ -64,6 +63,7 @@ class Branch:
                 if self.level > 0:
                     while not b.finished:
                         b.addSegment()
+                    #showImage(self.tree.createTreeImage())
 
     '''
         getCurrenGoalPoint

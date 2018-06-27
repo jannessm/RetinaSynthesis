@@ -7,8 +7,8 @@ from utils import showImage, makeBinary, meanCoverage
 
 class TreeMap:
     def __init__(self):
-        self.arteryColor = (201. / 255, 31. / 255, 55. / 255, 0.8)
-        self.veinColor = (243. / 255, 83. / 255, 54. / 255, 0.4)
+        self.arteryColor = (161. / 255, 25. / 255, 44. / 255, 1)
+        self.veinColor = (97. / 255, 33. / 255, 43. / 255, 1)
         self.lines = []
         self.treeMap = np.zeros((300,300,4), dtype=int)
         self.treeImage = np.zeros((300,300,4), dtype=int)
@@ -34,7 +34,7 @@ class TreeMap:
         if branch.level == 1:
             widths = 0.003 * r + 0.7
         else:
-            widths = 0.003 * r + 0.5
+            widths = 0.003 * r + 0.3
         points = np.array([xi, yi]).T.reshape(-1, 1, 2)
         segments = np.concatenate([points[:-1], points[1:]], axis=1)[::-1]
         self.lines.append([segments, widths, color])
@@ -74,6 +74,7 @@ class TreeMap:
         treeMap = makeBinary(self.treeImage, 10)
         notransp = np.ones(treeMap.shape) * 255
         self.treeMap = np.dstack((treeMap, treeMap, treeMap, notransp)).astype(int)
+        showImage(self.treeImage, sec=0.01)
         print meanCoverage(self.treeMap, None)
 
     def getImg(self):
