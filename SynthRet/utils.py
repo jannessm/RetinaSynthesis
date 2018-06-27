@@ -98,11 +98,13 @@ def _plotHelper(img, pointsBlue, pointsYellow):
         x, y = zip(*pointsYellow)
         plt.scatter(x=x, y=y, c='y')
 
-def saveImage(imgs, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/", png=False):
+def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/", png=False):
     if not type(imgs) == list:
         imgs = [imgs]
 
     for i in range(len(imgs)):
+        if j:
+            i = j
         if maxId:
             i_str = str(i).rjust(int(np.log10(maxId)) + 1, '0')
         else:
@@ -188,3 +190,4 @@ if __name__ == '__main__':
     print("STDDEV COVERAGE: " + str(np.std(np.asarray(means))))
 
     # result: dilation of 0 mean = 0.93107; std = 0.06892986
+

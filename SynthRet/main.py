@@ -34,14 +34,17 @@ def generateImages(k=1, showImages=True, save=False, groundTruthPath="./groundtr
     gt = []
 
     for j in tqdm.tqdm(range(k), total=k):
+        from IPython.display import clear_output
+        if get_ipython():
+            clear_output()
         if not j == 0:
             print("\nlast image took: " + str(time.time() - start) + " sec")
         i, g = _generateImage()
         imgs.append(i)
         gt.append(g)
         if save:
-            saveImage(i, False, k, groundTruthPath, imagesPath)
-            saveImage(g, True,  k, groundTruthPath, imagesPath)
+            saveImage(i, j, False, k, groundTruthPath, imagesPath)
+            saveImage(g, j, True,  k, groundTruthPath, imagesPath)
 
     print("\n" + str(k) + " pictures needed " + str(time.time() - start) + " sec!\n")
 
