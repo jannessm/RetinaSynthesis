@@ -75,7 +75,7 @@ class TreeMap:
         buf = np.roll ( buf, 3, axis = 2 )
         buf = np.transpose(buf, (1,0,2))
         buf = transform.resize(buf, (300,300,4))
-        print buf.shape
+        #print buf.shape
         if buf.dtype == float:
             buf = buf * 255
         self.treeImage = buf.astype(int)
