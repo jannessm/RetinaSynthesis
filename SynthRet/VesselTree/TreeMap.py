@@ -5,10 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from utils import showImage, makeBinary, meanCoverage
 
+
 class TreeMap:
     def __init__(self):
-        self.arteryColor = (161. / 255, 25. / 255, 44. / 255, 1)
-        self.veinColor = (97. / 255, 33. / 255, 43. / 255, 1)
+        #self.arteryColor = (161. / 255, 25. / 255, 44. / 255, 1)
+        #self.veinColor = (97. / 255, 33. / 255, 43. / 255, 1)
+        self.arteryColor = (161. / 255, 25. / 255, 44. / 255, 0.6)
+        self.veinColor = (97. / 255, 33. / 255, 43. / 255, 0.5)
         self.lines = []
         self.treeMap = np.zeros((300,300,4), dtype=int)
         self.treeImage = np.zeros((300,300,4), dtype=int)
@@ -26,8 +29,12 @@ class TreeMap:
         x_len = max(x) - min(x)
         y_len = max(y) - min(y)
         total_len = np.sqrt(x_len**2 + y_len**2)
+        
+        try:
 
-        tck, t = interpolate.splprep([x, y], s=s, k=k) 
+            tck, t = interpolate.splprep([x, y], s=s, k=k)
+        except:
+            return
         xi, yi = interpolate.splev(np.linspace(t[0], t[-1], total_len * 2), tck)
         
         r = np.linspace(0, total_len * 2, total_len * 2)
@@ -41,7 +48,7 @@ class TreeMap:
         self.updateImg()
     
     def updateImg(self):
-        fig, ax = plt.subplots(figsize=(3,3),dpi=50)
+        fig, ax = plt.subplots(figsize=(3,3),dpi=100)
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
         plt.axis("off")
@@ -67,15 +74,16 @@ class TreeMap:
         # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
         buf = np.roll ( buf, 3, axis = 2 )
         buf = np.transpose(buf, (1,0,2))
-
+        buf = transform.resize(buf, (300,300,4))
+        print buf.shape
         if buf.dtype == float:
             buf = buf * 255
         self.treeImage = buf.astype(int)
         treeMap = makeBinary(self.treeImage, 10)
         notransp = np.ones(treeMap.shape) * 255
         self.treeMap = np.dstack((treeMap, treeMap, treeMap, notransp)).astype(int)
-        showImage(self.treeImage, sec=0.01)
-        print meanCoverage(self.treeMap, None)
+        #showImage(self.treeImage, sec=0.01)
+        #print meanCoverage(self.treeMap, None)
 
     def getImg(self):
         return self.treeImage

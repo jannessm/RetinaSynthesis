@@ -103,12 +103,14 @@ def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./gro
         imgs = [imgs]
 
     for i in range(len(imgs)):
-        if j:
-            i = j
-        if maxId:
-            i_str = str(i).rjust(int(np.log10(maxId)) + 1, '0')
+        if not j:
+            id = i
         else:
-            i_str = str(i).rjust(int(np.log10(len(imgs))) + 1, '0')
+            id = j
+        if maxId:
+            i_str = str(id).rjust(int(np.log10(maxId)) + 1, '0')
+        else:
+            i_str = str(id).rjust(int(np.log10(len(imgs))) + 1, '0')
 
         path = imagePath
         if groundtruth:
@@ -190,4 +192,3 @@ if __name__ == '__main__':
     print("STDDEV COVERAGE: " + str(np.std(np.asarray(means))))
 
     # result: dilation of 0 mean = 0.93107; std = 0.06892986
-
