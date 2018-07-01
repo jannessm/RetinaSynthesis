@@ -39,24 +39,30 @@ def mergeLayer(collect):
     make an image binary by a given threshold
 '''
 def makeBinary(img, threshold):
-    # if image is rgba convert to rgb
+    # if image is rgba convert to rgb and split to r,g,b
     if img.shape[2] == 4:
         r = np.multiply(img[:, :, 0], img[:, :, 3]) 
         g = np.multiply(img[:, :, 1], img[:, :, 3]) 
-        b = np.multiply(img[:, :, 2], img[:, :, 3]) 
-    else: 
-        r = img[:, :, 0] 
-        g = img[:, :, 1] 
-        b = img[:, :, 2] 
-    rgb = np.dstack((r, g, b)) 
-    grey = np.multiply(rgb, [0.21, 0.72, 0.07]) 
+        b = np.multiply(img[:, :, 2], img[:, :, 3])
+        rgb = np.dstack((r, g, b)) # put them back together
+    else:
+        rgb = img[:]
+    
+    # convert to greyscale
+    grey = np.multiply(rgb, [0.21, 0.72, 0.07])
     grey = np.sum(grey, axis=2)
+
+    # apply threshold
     binary = np.ones(grey.shape) * 255
     binary[np.where(grey > threshold)] = 255
     binary[np.where(grey < threshold)] = 0
+
     return binary.astype(int)
 
-#
+'''
+    addIllumination
+    image - image to add illumination to
+'''
 def addIllumination(image): # rewrite with skimage
     
     # set parameters (random)
