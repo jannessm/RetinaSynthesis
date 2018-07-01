@@ -4,20 +4,23 @@ from skimage import exposure, transform, draw
 from scipy.misc import imread, imsave
 import os
 
-#merge 4-chanel RGBA images
-def mergeLayer(collect, lastIsVessel=False):
+'''
+    mergeLayer
+    collect - list of rgba integer images 
+    merges all rgba images in collect. the first will be the lowest image
+'''
+def mergeLayer(collect):
 
     # change each img to float
     for i in range(len(collect)):
         collect[i] = collect[i].astype(float) / 255
 
-    dimg = collect[0]
-    #merge layers
-    for img in collect:
-        if img is None or np.array_equal(img, dimg):
+    dimg = collect[0]                               # init lowest layer
+    for img in collect:                             # interate over all other images
+        if img is None or np.array_equal(img, dimg):# skip first image because of init
             continue
 
-        # a (img) over b (dimg)
+        # a (img) over b (dimg) (porter-duff-algorithm)
         a_a = img[:, :, 3][:, :, np.newaxis]
         a_b = dimg[:, :, 3][:, :, np.newaxis]
         a_c = a_a + (1 - a_a) * a_b
@@ -29,7 +32,14 @@ def mergeLayer(collect, lastIsVessel=False):
         dimg[zero[0], zero[1], :] = [0,0,0,0]
     return (dimg * 255).astype(int)
 
+'''
+    makeBinary
+    img     - image to make binary
+    threshold - the threshold
+    make an image binary by a given threshold
+'''
 def makeBinary(img, threshold):
+    # if image is rgba convert to rgb
     if img.shape[2] == 4:
         r = np.multiply(img[:, :, 0], img[:, :, 3]) 
         g = np.multiply(img[:, :, 1], img[:, :, 3]) 

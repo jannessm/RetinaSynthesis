@@ -3,30 +3,42 @@ from Branch import Branch
 from TreeMap import TreeMap
 from utils import showImage, makeBinary, coverage, meanCoverage
 
+'''
+    Tree
+    startingPoint   - point where to start the tree at
+    fovea           - position of the fovea
+    This class manages the whole tree.
+'''
 class Tree:
     def __init__(self, startingPoint, fovea):
-        self.branches = []
-        self.growingBranches = []
-        self.fovea = fovea          # fovea location [x, y]
-        self.opticaldisc = startingPoint
-        self.treeMap = TreeMap()
-        self.centers = []
+        self.branches = []                  # all branches
+        self.growingBranches = []           # all branches which are not finished yet
+        self.fovea = fovea                  # fovea location [x, y]
+        self.opticaldisc = startingPoint    # optical disc location [x, y]
+        self.treeMap = TreeMap()            # treeMap object to handle the images
+        self.centers = []                   # list of used centers for branches with a level > 1
 
-        for i in range(4):          # number of arteries
-            g = self.getRandomGoal(i)
+        for i in range(4):                  # init 4 arteries
+            g = self.getRandomGoal(i)       # get it's goalpoint
             b = Branch(self, startingPoint, g, artery=True)
-            self.branches.append(b)
-            self.growingBranches.append(b)
-        for i in range(4):          # number of veins
-            g = self.getRandomGoal(i)
+            self.branches.append(b)         # add it to list of branches
+            self.growingBranches.append(b)  # add it to list of growing branches
+
+        for i in range(4):                  # init 4 veins
+            g = self.getRandomGoal(i)       # get it's goalpoint
             b = Branch(self, startingPoint, g, artery=False)
-            self.branches.append(b)
-            self.growingBranches.append(b)
+            self.branches.append(b)         # add it to list of branches
+            self.growingBranches.append(b)  # add it to list of growing branches
 
         # constants
         self.covThreshold = 0.33             # coverage threshold
-        #self.covThreshold = 0.341972        # coverage threshold
+        #self.covThreshold = 0.341972        # coverage threshold of groundtruth
 
+    '''
+        getRandomGoal
+        i - id of branch
+        get a random goal point
+    '''
     def getRandomGoal(self, i):
         switch = {
             0: np.array([[-300, -150], [50, 200]]) + self.fovea,
@@ -34,58 +46,70 @@ class Tree:
             2: np.array([[50, 200], [20, 200]]) + self.opticaldisc,
             3: np.array([[50, 200], [-200, -20]]) + self.opticaldisc
         }
-        boundaries = switch.get(i%4)
-        if boundaries is not None:
-            goal_x = np.random.randint(boundaries[0][0], boundaries[0][1])  # maybe random.choice?
+        boundaries = switch.get(i%4)    # get random boundaries
+        if boundaries is not None:      # if there are boundaries run np.randint()
+            goal_x = np.random.randint(boundaries[0][0], boundaries[0][1])
             goal_y = np.random.randint(boundaries[1][0], boundaries[1][1])
         return np.array((goal_x, goal_y))
 
+    '''
+        growTree
+        trigger generation of the tree
+    '''
     def growTree(self):
-        tMap = self.createTreeMap()
+        tMap = self.createTreeMap()             # get current binary treeMap
+
+        # while the mean coverage is below the wanted threshold and there are non finished branches
+        # keep growing
         while (meanCoverage(tMap, self.fovea) < self.covThreshold and 
-            len(self.growingBranches) > 0):    # while coverage is not reached
+            len(self.growingBranches) > 0):
             
-            branches = self.growingBranches[:]
-            for b in branches:          # grow all branches in list until they have reached goal point
+            branches = self.growingBranches[:]      # deepcopy of all non finished branches
+            for b in branches:                      # grow all branches in list until they have reached goal point
                 while not b.finished:
                     b.addSegment()
-                self.growingBranches.remove(b)
-            for b in branches:
+                self.growingBranches.remove(b)      # when branch is finished remove it from list
+
+
+            for b in branches:                      # add branches for each point on the created branches
                 for p in b.points[::-1]:
-                    if np.array_equal(p, b.start):
+                    if np.array_equal(p, b.start):  # exclude the starting point
                         continue
-                    tMap = self.createTreeMap()
+                    tMap = self.createTreeMap()     # get the current binary treeMap
+
+                    # if the mean coverage is reached quit the loop
                     if meanCoverage(tMap, self.fovea) > self.covThreshold:
                         break
                     b.addBranch(p)
 
+    '''
+        createTreepImage
+        get the current tree image
+    '''
     def createTreeImage(self):
         return self.treeMap.getImg()
 
+    '''
+        createTreeMap
+        get the current binary treemap
+    '''
     def createTreeMap(self):
         return self.treeMap.getMap()
 
+    '''
+        coverage
+        calculate the current coverage
+    '''
     def coverage(self):
-        treeMap = self.createTreeMap()
+        treeMap = self.createTreeMap()          # get current binary map
         return coverage(treeMap, self.fovea)
 
+    '''
+        b2arr
+        collect all points from all branches of this tree
+    '''
     def b2arr(self):
-        arr = np.array([[0,0]])
-        for b in self.branches:
+        arr = np.array([[0,0]])                 # init array
+        for b in self.branches:                 # add points
             arr = np.vstack((arr, np.asarray(b.points)))
-        return arr[1:]
-
-if __name__ == '__main__':
-    import faulthandler
-    faulthandler.enable()
-    for i in range(10):
-        print i
-        t = Tree([250,150], [150, 150])
-        t.growTree()
-        points = np.array([0,0])
-        for b in t.branches:
-            points = np.vstack((points, b.points))
-            points = np.vstack((points, b.goal))
-        points = np.vstack((points, t.fovea))
-        showImage(t.createTreeMap())
-        showImage(t.createTreeImage())
+        return arr[1:]                          # remove init point
