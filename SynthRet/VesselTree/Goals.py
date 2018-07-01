@@ -82,8 +82,6 @@ def nextGoalPoint(self, point):
             len_result = np.linalg.norm(to_result)
             normed_result = to_result / len_result
             if normed_g.dot(normed_result) > 0.94:
-                alpha = np.random.randint(20,70)
-                result = self.Rotate(alpha).dot(to_result) + point
 
                 # test if center was already used
                 for c in self.tree.centers:
