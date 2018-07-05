@@ -7,6 +7,7 @@ from IPython.display import clear_output
 import numpy as np
 import time
 import tqdm
+import gc
 
 '''
     generate synthetic images. if you want to save the generated files adjust save and path to your needs.
@@ -46,6 +47,7 @@ def generateImages(k=1, start=0, showImages=True, save=False, groundTruthPath=".
         if save:
             saveImage(i, j, False, k, groundTruthPath, imagesPath)
             saveImage(g, j, True,  k, groundTruthPath, imagesPath)
+            gc.collect()
 
     print("\n" + str(k) + " pictures needed " + str(time.time() - start_time) + " sec!\n")
  
@@ -54,5 +56,5 @@ def generateImages(k=1, start=0, showImages=True, save=False, groundTruthPath=".
         showImage(gt)
 
 if __name__ == '__main__':
-    images = 200
-    generateImages(images, showImages=False, save=True)
+    images = 175
+    generateImages(images, 156, showImages=False, save=True)
