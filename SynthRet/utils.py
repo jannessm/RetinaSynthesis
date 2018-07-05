@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from skimage import exposure, transform, draw
-from scipy.misc import imread, imsave
+from skimage.io import imread, imsave
 import os
 
 '''
@@ -118,7 +118,7 @@ def _plotHelper(img, pointsBlue, pointsYellow):
         x, y = zip(*pointsYellow)
         plt.scatter(x=x, y=y, c='y')
 
-def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/", png=False):
+def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/"):
     if not type(imgs) == list:
         imgs = [imgs]
 
@@ -136,11 +136,12 @@ def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./gro
         if groundtruth:
             path = groundtruthPath
         print '%svessel%s.jpg'%(path,i_str)
-        if png:
-            imsave('%svessel%s.png'%(path,i_str), np.transpose(imgs[i], (1,0,2)))      # save images as png
-        else:
-            rgb = rgba2rgb(np.transpose(imgs[i], (1,0,2)))
-            imsave('%svessel%s.jpg'%(path,i_str), rgb)      # save images as jpg
+        imsave(                                                 # save image
+            '%svessel%s.jpg'%(path,i_str), 
+            np.transpose(imgs[i], (1,0,2)), 
+            plugin="PIL", 
+            quality=100
+        )
 
 def rgba2rgb(img):
     r = np.multiply(img[:, :, 0], img[:, :, 3]) 

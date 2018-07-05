@@ -48,9 +48,9 @@ class TreeMap:
         # calculate widths for each point
         r = np.linspace(0, total_len * 2, total_len * 2)
         if branch.level == 1:                   # for main vessels
-            widths = 0.003 * r + 0.7
+            widths = 0.001 * r + 1
         else:                                   # for each other vessel
-            widths = 0.003 * r + 0.3
+            widths = 0.003 * r + 0.4
 
         # put points together
         points = np.array([xi, yi]).T.reshape(-1, 1, 2)
@@ -80,7 +80,8 @@ class TreeMap:
             ax.add_collection(lc)
 
         # convert plt to np.ndarray
-        plt.show(block=False)                               # render plt
+        #plt.show(block=False)                               # render plt
+        plt.show()                               # render plt
         fig.canvas.draw()                                   # draw the canveas
         w,h = fig.canvas.get_width_height()                 # get canvas properties
         assert(w == h)                                      # make sure that resize wont change location of OD
