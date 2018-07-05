@@ -11,8 +11,8 @@ from utils import showImage, makeBinary, meanCoverage
 '''
 class TreeMap:
     def __init__(self):
-        self.veinColor = np.array((221. / 255, 125. / 255, 94. / 255))
-        self.arteryColor = np.array((209. / 255, 93. / 255, 74. / 255))
+        self.veinColor = np.array((150. / 255, 30. / 255, 10. / 255))
+        self.arteryColor = np.array((110. / 255, 10. / 255, 5. / 255))
         self.vessels = []
         self.treeMap = np.zeros((300,300,4), dtype=int)
         self.treeImage = np.zeros((300,300,4), dtype=int)
@@ -95,6 +95,7 @@ class TreeMap:
         buf = np.roll(buf, 3, axis=2)
         buf = np.transpose(buf, (1,0,2))                    # transpose the image
         buf = transform.resize(buf, (300,300))              # resize image to 300 x 300
+        buf = np.fliplr(buf)                                # correct orientation (opticaldisc bug)
         if buf.dtype == float:                              # if buf is of type float convert it to int
             buf = buf * 255
 
