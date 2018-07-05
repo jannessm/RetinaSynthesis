@@ -11,8 +11,8 @@ from utils import showImage, makeBinary, meanCoverage
 '''
 class TreeMap:
     def __init__(self):
-        self.veinColor = (161. / 255, 25. / 255, 44. / 255, 0.6)
-        self.arteryColor = (97. / 255, 33. / 255, 43. / 255, 0.5)
+        self.veinColor = np.array((221. / 255, 125. / 255, 94. / 255))
+        self.arteryColor = np.array((209. / 255, 93. / 255, 74. / 255))
         self.vessels = []
         self.treeMap = np.zeros((300,300,4), dtype=int)
         self.treeImage = np.zeros((300,300,4), dtype=int)
@@ -47,17 +47,20 @@ class TreeMap:
         
         # calculate widths for each point
         r = np.linspace(0, total_len * 2, total_len * 2)
+        colors = np.repeat(color[None, :], total_len * 2, axis=0)
         if branch.level == 1:                   # for main vessels
             widths = 0.001 * r + 1
+            colors = np.hstack((colors, np.linspace(0.4, 0.7, total_len * 2)[:, None]))
         else:                                   # for each other vessel
             widths = 0.003 * r + 0.4
+            colors = np.hstack((colors, np.linspace(0.2, 0.5, total_len * 2)[:, None]))
 
         # put points together
         points = np.array([xi, yi]).T.reshape(-1, 1, 2)
         # create array of all lines from x_i to x_i+1
         segments = np.concatenate([points[:-1], points[1:]], axis=1)[::-1]
 
-        self.vessels.append([segments, widths, color])
+        self.vessels.append([segments, widths, colors])
         self.updateImg()
     
     '''
