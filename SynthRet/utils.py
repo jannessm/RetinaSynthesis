@@ -3,22 +3,24 @@ from matplotlib import pyplot as plt
 from skimage import exposure, transform, draw
 from scipy.misc import imread, imsave
 import os
-import config
 
-#merge 4-chanel RGBA images
-def mergeLayer(collect, lastIsVessel=False):
+'''
+    mergeLayer
+    collect - list of rgba integer images 
+    merges all rgba images in collect. the first will be the lowest image
+'''
+def mergeLayer(collect):
 
     # change each img to float
     for i in range(len(collect)):
         collect[i] = collect[i].astype(float) / 255
 
-    dimg = collect[0]
-    #merge layers
-    for img in collect:
-        if img is None or np.array_equal(img, dimg):
+    dimg = collect[0]                               # init lowest layer
+    for img in collect:                             # interate over all other images
+        if img is None or np.array_equal(img, dimg):# skip first image because of init
             continue
 
-        # a (img) over b (dimg)
+        # a (img) over b (dimg) (porter-duff-algorithm)
         a_a = img[:, :, 3][:, :, np.newaxis]
         a_b = dimg[:, :, 3][:, :, np.newaxis]
         a_c = a_a + (1 - a_a) * a_b
@@ -30,24 +32,37 @@ def mergeLayer(collect, lastIsVessel=False):
         dimg[zero[0], zero[1], :] = [0,0,0,0]
     return (dimg * 255).astype(int)
 
+'''
+    makeBinary
+    img     - image to make binary
+    threshold - the threshold
+    make an image binary by a given threshold
+'''
 def makeBinary(img, threshold):
+    # if image is rgba convert to rgb and split to r,g,b
     if img.shape[2] == 4:
         r = np.multiply(img[:, :, 0], img[:, :, 3]) 
         g = np.multiply(img[:, :, 1], img[:, :, 3]) 
-        b = np.multiply(img[:, :, 2], img[:, :, 3]) 
-    else: 
-        r = img[:, :, 0] 
-        g = img[:, :, 1] 
-        b = img[:, :, 2] 
-    rgb = np.dstack((r, g, b)) 
-    grey = np.multiply(rgb, [0.21, 0.72, 0.07]) 
+        b = np.multiply(img[:, :, 2], img[:, :, 3])
+        rgb = np.dstack((r, g, b)) # put them back together
+    else:
+        rgb = img[:]
+    
+    # convert to greyscale
+    grey = np.multiply(rgb, [0.21, 0.72, 0.07])
     grey = np.sum(grey, axis=2)
+
+    # apply threshold
     binary = np.ones(grey.shape) * 255
     binary[np.where(grey > threshold)] = 255
     binary[np.where(grey < threshold)] = 0
+
     return binary.astype(int)
 
-#
+'''
+    addIllumination
+    image - image to add illumination to
+'''
 def addIllumination(image): # rewrite with skimage
     
     # set parameters (random)
@@ -99,15 +114,19 @@ def _plotHelper(img, pointsBlue, pointsYellow):
         x, y = zip(*pointsYellow)
         plt.scatter(x=x, y=y, c='y')
 
-def saveImage(imgs, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/", png=False):
+def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/", png=False):
     if not type(imgs) == list:
         imgs = [imgs]
 
     for i in range(len(imgs)):
-        if maxId:
-            i_str = str(i).rjust(int(np.log10(maxId)) + 1, '0')
+        if not j:
+            id = i
         else:
-            i_str = str(i).rjust(int(np.log10(len(imgs))) + 1, '0')
+            id = j
+        if maxId:
+            i_str = str(id).rjust(int(np.log10(maxId)) + 1, '0')
+        else:
+            i_str = str(id).rjust(int(np.log10(len(imgs))) + 1, '0')
 
         path = imagePath
         if groundtruth:

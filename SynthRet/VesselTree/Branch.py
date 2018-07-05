@@ -2,6 +2,15 @@ import numpy as np
 from utils import showImage
 from Goals import nextGoalPoint
 
+'''
+    class Branch
+    tree            - tree the branch will belong to
+    startingPoint   - point the branch is starting at
+    goalPoint       - point where the branch will grow to
+    level           - level of the branch
+    artery          - is the branch an artery?
+    this class is used to organize each branch which is generated.
+'''
 class Branch:
     def __init__(self, tree, startingPoint, goalPoint, level=1, artery=True):
         self.points = [np.array(startingPoint)]
@@ -13,62 +22,82 @@ class Branch:
         self.finished = False
         self.level = level
         self.artery = artery
-        self.subBranchesFovea = 0
-        self.subBranchesNotFovea = 0
+        self.subBranchesFovea = 0                       # amount of subbranches that go to the fovea
+        self.subBranchesNotFovea = 0                    # amount of subbranches that go into the opposite direction
 
         #constants
         self.goalThreshold = 10                         # pixels away from goal point are sufficent
-        self.maxAngle = 60                              # upper boundary for random angle
+        self.maxAngle = 60                              # upper boundary for random angle of the next segment
         self.covThreshold = 0.9                         # threshold for total coverage
     
-
+    '''
+        setLevel
+        l - new level
+        sets the level of a branch
+    '''
     def setLevel(self, l):
         self.level = l
 
     '''
         addSegment
-        adds a segment to the current branch if goal point is not reached yet (see goalThreshold)
+        adds a segment to the current branch if goal point is not reached yet (see goalThreshold) 
+        or the current point is out of the images boundaries
         else set finished to true
     '''
     def addSegment(self):
         x = self.points[len(self.points) - 1]                   # current point
-        if (np.mean(np.abs(self.goal - x)) < self.goalThreshold / self.level # if goal point distance < goalThreshold Branch is finished
-                or                                              # or
-            x[0] < 0 or x[0] > 299 or x[1] < 0 or x[1] > 299):  # if x is out of the image
+
+        # if goal point distance < goalThreshold Branch is finished or if x is out of the images range
+        # add this branch to the treeMap and set the finished property to true
+        if (np.mean(np.abs(self.goal - x)) < self.goalThreshold / self.level
+                or                                              
+            x[0] < 0 or x[0] > 299 or x[1] < 0 or x[1] > 299):
+
             self.finished = True
             self.tree.treeMap.addBranch(self)                   # add Branch to Map
             return
         
+
         length = np.random.randint(5, 25) / self.level          # set random length
         i = self.getCurrentGoalPoint(x, length)                 # get currentGoalPoint
-        angle = np.random.rand() * self.maxAngle - self.maxAngle / 2 # set random angle around currentGoalPoint
+        # get random angle to make vessel curly
+        angle = np.random.rand() * self.maxAngle - self.maxAngle / 2
 
         rot = self.Rotate(angle)
-        newX = np.dot(rot, i - x) + x                           # calculate new Point to branch
-        self.points.append(newX)                                # add new Point to queue
+        newX = np.dot(rot, i - x) + x                           # calculate new Point
+        self.points.append(newX)                                # add new Point to branchs points
 
+    '''
+        addBranch
+        x - starting point from new branch
+        this method adds a subbranch to this branch starting from point x
+    '''
     def addBranch(self, x):
         newBranch = np.random.rand()                            # roll the dice for new branch
+
+        # if dice was successful and the starting point is not next to another branch
+        # add a branch
         if (newBranch <  0.5 and 
             not np.array_equal(x, self.points[len(self.points) - 1]) and 
             not self.closeToAnotherBranch(x)):
 
             g = nextGoalPoint(self, x)                           # get goal point for branch
-            if type(g) == np.ndarray:
+            if type(g) == np.ndarray:                            # if a goalPoint was found
+                # create a branch
                 b = Branch(self.tree, x, g, self.level + 1, self.artery)
                 
-                self.tree.growingBranches.append(b)
+                self.tree.growingBranches.append(b)             # add branch to tree
                 self.tree.branches.append(b)
                 
+                # if level is greater than 0, first grow the new branch before continuing
                 if self.level > 0:
                     while not b.finished:
                         b.addSegment()
-                    #showImage(self.tree.createTreeImage())
 
     '''
         getCurrenGoalPoint
-        x -> starting point (x_x,x_y)
-        l -> length
+        x - starting point (x_x,x_y)
+        l - length
         if angle between x -> fovea and fovea -> goal is greater than 90 deg
         assume circle with radius of x -> fovea around fovea
         else just use the direct line between x and g and scale it to the length l
@@ -76,35 +105,45 @@ class Branch:
     def getCurrentGoalPoint(self, x, l):
         r = x - self.tree.fovea                         # radius
         rg = self.goal - self.tree.fovea                # radius to goal
+
+        # if angle is greater than 90 deg use radius from x to fovea
+        # else use the direct path to goal
         if np.dot(r, rg) < 0:
-            theta = l * 180 / (np.pi * (np.linalg.norm(r)) + np.random.randint(-20,10)) # angle from fovea -> x to fovea -> goal
-            blub = self.goal[1] - self.tree.fovea[1]
-            if blub < 0: 
-                Rot = self.Rotate(-theta)               # current goal point if r=1 (identity circle)
+
+            # angle from fovea -> x to fovea -> goal
+            theta = l * 180 / (np.pi * (np.linalg.norm(r)) + np.random.randint(-20,10))
+            
+            # if the goal point is lower than the fovea rotate the radius clockwise,
+            # else in the opposite direction
+            if self.goal[1] - self.tree.fovea[1] < 0: 
+                Rot = self.Rotate(-theta)               # rotation matrix
             else:
                 Rot = self.Rotate(theta)
-            i = np.dot(Rot, r) + self.tree.fovea        # goal point shifted by fovea location
+            i = np.dot(Rot, r) + self.tree.fovea        # new segment goal
         else:
-            i = self.goal - x
+            i = self.goal - x                           # direction x -> goalpoint 
             i = (i / np.linalg.norm(i) * l) + x         # set length to l and add vector to x
 
         return i
 
     '''
         Rotate
-        alpha angle of rotation
-        return rotation matrix
+        alpha - angle of rotation
+        return 2D rotation matrix
     '''
     def Rotate(self, alpha):
         theta = np.radians(alpha)
         c, s = np.cos(theta), np.sin(theta)
         return np.array(((c, -s), (s, c)))
 
+    '''
+        closeToAnotherBranch
+        x - point to check wheter another branch is close to it
+    '''
     def closeToAnotherBranch(self, x):
-        branches = self.tree.b2arr()
-        if branches.shape[0] > 0:
+        branches = self.tree.b2arr()                    # get all points of branches of the tree as an np.ndarray
+        if branches.shape[0] > 0:                       # if branches has any point compute the shortest distance to x
             shortestDistance = np.min(np.linalg.norm(branches - x))
-            #showImage(self.tree.createTreeMap(), branches, pointsYellow=[x], sec=0.1)
-            return shortestDistance < 1000
+            return shortestDistance < 1000              # if the shortest distance is below 1000 it is near to another branch
         else:
             return False
