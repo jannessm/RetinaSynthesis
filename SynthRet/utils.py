@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 from skimage import exposure, transform, draw
 from skimage.io import imread, imsave
 import os
-
+np.seterr(divide="ignore", invalid="ignore")
 '''
     mergeLayer
     collect - list of rgba integer images 
@@ -24,6 +24,7 @@ def mergeLayer(collect):
         a_a = img[:, :, 3][:, :, np.newaxis]
         a_b = dimg[:, :, 3][:, :, np.newaxis]
         a_c = a_a + (1 - a_a) * a_b
+        a_c[ a_c == 0 ] = 1                         # make sure no division by 0 is happening
 
         a_A = np.multiply(img, a_a)
         a_B = np.multiply(dimg, a_b)
@@ -81,9 +82,9 @@ def addIllumination(image): # rewrite with skimage
         img = np.fliplr(img)
 
     # add gaussian noise
-    img += np.random.normal(0,0.1, (300,300,4)) * 255
+    img += (np.random.normal(0,0.1, (300,300,4)) * 255).astype(int)
 
-    return img
+    return np.clip(img, 0, 255)
 
 def showImage(img, pointsBlue=None, pointsYellow=None, sec=-1):
     if type(img) == list:
