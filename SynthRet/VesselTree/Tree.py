@@ -31,8 +31,7 @@ class Tree:
             self.growingBranches.append(b)  # add it to list of growing branches
 
         # constants
-        self.covThreshold = 0.33             # coverage threshold
-        #self.covThreshold = 0.341972        # coverage threshold of groundtruth
+        self.covThreshold = 0.341972        # coverage threshold of groundtruth
 
     '''
         getRandomGoal

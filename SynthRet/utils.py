@@ -82,10 +82,10 @@ def addIllumination(image): # rewrite with skimage
         img = np.fliplr(img)
 
     # add gaussian noise
-    gauss = np.random.normal(0, 0.1, (300, 300, 3)) * 255 * np.random.rand() * 0.4
-    alpha = np.zeros((300,300))
-    gauss = np.dstack((gauss, alpha))
-    img += gauss.astype(int)
+    #gauss = np.random.normal(0, 0.1, (300, 300, 3)) * 255 * np.random.rand() * 0.1
+    #alpha = np.zeros((300,300))
+    #gauss = np.dstack((gauss, alpha))
+    #img += gauss.astype(int)
 
     return np.clip(img, 0, 255)
 

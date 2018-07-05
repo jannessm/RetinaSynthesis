@@ -52,8 +52,8 @@ class TreeMap:
             widths = 0.001 * r + 1
             colors = np.hstack((colors, np.linspace(0.4, 0.7, total_len * 2)[:, None]))
         else:                                   # for each other vessel
-            widths = 0.003 * r + 0.4
-            colors = np.hstack((colors, np.linspace(0.2, 0.5, total_len * 2)[:, None]))
+            widths = 0.003 * r + 0.5
+            colors = np.hstack((colors, np.linspace(0.3, 0.7, total_len * 2)[:, None]))
 
         # put points together
         points = np.array([xi, yi]).T.reshape(-1, 1, 2)

@@ -26,7 +26,7 @@ def generateVesselsTree(fovea, od):
     tree.growTree()
     return tree.createTreeImage(), tree.createTreeMap()
 
-def generateImages(i=0, total=1, showImages=True, save=False, groundTruthPath="./groundtruths/", imagesPath="./images/"):    
+def generateImages(i=0, total=1, showImages=True, save=False, groundTruthPath="./test/groundtruths/", imagesPath="./test/images/"):    
     im, gt = _generateImage()
     if save:
         saveImage(im, i, False, total, groundTruthPath, imagesPath)
@@ -39,4 +39,4 @@ def generateImages(i=0, total=1, showImages=True, save=False, groundTruthPath=".
 if __name__ == '__main__':
     i = int(sys.argv[1])
     total = int(sys.argv[2])
-    generateImages(i, total, showImages=True, save=True)
+    generateImages(i, total, showImages=False, save=True)
