@@ -79,6 +79,10 @@ def addIllumination(image): # rewrite with skimage
     # mirror by probability of 0.5
     if np.random.rand() < 0.5:
         img = np.fliplr(img)
+
+    # add gaussian noise
+    img += np.random.normal(0,0.1, (300,300,4)) * 255
+
     return img
 
 def showImage(img, pointsBlue=None, pointsYellow=None, sec=-1):

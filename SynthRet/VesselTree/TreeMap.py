@@ -83,8 +83,7 @@ class TreeMap:
             ax.add_collection(lc)
 
         # convert plt to np.ndarray
-        #plt.show(block=False)                               # render plt
-        plt.show()                               # render plt
+        plt.show(block=False)                               # render plt
         fig.canvas.draw()                                   # draw the canveas
         w,h = fig.canvas.get_width_height()                 # get canvas properties
         assert(w == h)                                      # make sure that resize wont change location of OD
