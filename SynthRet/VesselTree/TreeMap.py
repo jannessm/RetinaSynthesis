@@ -65,7 +65,7 @@ class TreeMap:
         updates both images treeImage and treeMap
     '''
     def updateImg(self):
-        fig, ax = plt.subplots(figsize=(3,3),dpi=100)       # init plt
+        fig, ax = plt.subplots(figsize=(3,3), dpi=100)       # init plt
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
         plt.axis("off")
@@ -83,13 +83,15 @@ class TreeMap:
         plt.show(block=False)                               # render plt
         fig.canvas.draw()                                   # draw the canveas
         w,h = fig.canvas.get_width_height()                 # get canvas properties
+        assert(w == h)                                      # make sure that resize wont change location of OD
+
         # save canvas as numpy array in buf
         buf = np.fromstring (fig.canvas.tostring_argb(), dtype=np.uint8)
         plt.close()                                         # close plt
         buf.shape = (w, h, 4)                               # set shape of buffer
         buf = np.roll(buf, 3, axis=2)
         buf = np.transpose(buf, (1,0,2))                    # transpose the image
-        buf = transform.resize(buf, (300,300,4))            # resize image to 300 x 300
+        buf = transform.resize(buf, (300,300))              # resize image to 300 x 300
         if buf.dtype == float:                              # if buf is of type float convert it to int
             buf = buf * 255
 

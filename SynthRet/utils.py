@@ -75,6 +75,10 @@ def addIllumination(image): # rewrite with skimage
     
     # enhance contrast 
     img = exposure.rescale_intensity(image1,out_range=(low,high))
+
+    # mirror by probability of 0.5
+    if np.random.rand() < 0.5:
+        img = np.fliplr(img)
     return img
 
 def showImage(img, pointsBlue=None, pointsYellow=None, sec=-1):
