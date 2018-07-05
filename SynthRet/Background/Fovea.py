@@ -22,7 +22,7 @@ def generateBackgroundAndFovea():
                 img[y,x,1] = gValue(x,y,cx,cy,gbx,gby) 
                 img[y,x,2] = bValue(x,y,cx,cy,gbx,gby)
        
-       return img.astype(int),PosFovea
+       return img,PosFovea
 
 	
 def rValue(x,y,cx,cy):
@@ -64,5 +64,6 @@ def gValue(x,y,cx,cy,gbx,gby):
     return green
 
 #b,p=generateBackgroundAndFovea()
+#plt.figure()
 #plt.imshow(b)
-#plt.savefig("E:/a.png")
+##plt.savefig("E:/a.png")
