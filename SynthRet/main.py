@@ -37,6 +37,6 @@ def generateImages(i=0, total=1, showImages=True, save=False, groundTruthPath=".
         showImage(gt)
 
 if __name__ == '__main__':
-    i = sys.argv[1]
-    total = sys.argv[2]
-    generateImages(i, total, showImages=False, save=True)
+    i = int(sys.argv[1])
+    total = int(sys.argv[2])
+    generateImages(i, total, showImages=True, save=True)

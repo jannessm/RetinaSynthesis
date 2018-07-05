@@ -87,7 +87,7 @@ class TreeMap:
         fig.canvas.draw()                                   # draw the canveas
         w,h = fig.canvas.get_width_height()                 # get canvas properties
         assert(w == h)                                      # make sure that resize wont change location of OD
-
+        
         # save canvas as numpy array in buf
         buf = np.fromstring (fig.canvas.tostring_argb(), dtype=np.uint8)
         plt.close()                                         # close plt

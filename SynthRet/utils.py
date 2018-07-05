@@ -82,7 +82,10 @@ def addIllumination(image): # rewrite with skimage
         img = np.fliplr(img)
 
     # add gaussian noise
-    img += (np.random.normal(0,0.1, (300,300,4)) * 255).astype(int)
+    gauss = np.random.normal(0, 0.1, (300, 300, 3)) * 255 * np.random.rand() * 0.4
+    alpha = np.zeros((300,300))
+    gauss = np.dstack((gauss, alpha))
+    img += gauss.astype(int)
 
     return np.clip(img, 0, 255)
 
@@ -143,9 +146,7 @@ def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./gro
         print '%svessel%s.jpg'%(path,i_str)
         imsave(                                                 # save image
             '%svessel%s.jpg'%(path,i_str), 
-            np.transpose(imgs[i], (1,0,2)), 
-            plugin="PIL", 
-            quality=100
+            np.transpose(imgs[i], (1,0,2))[:,:,:3]
         )
 
 def rgba2rgb(img):
