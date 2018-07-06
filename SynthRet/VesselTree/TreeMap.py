@@ -11,8 +11,8 @@ from utils import showImage, makeBinary, meanCoverage
 '''
 class TreeMap:
     def __init__(self):
-        self.veinColor = (161. / 255, 25. / 255, 44. / 255, 0.6)
-        self.arteryColor = (97. / 255, 33. / 255, 43. / 255, 0.5)
+        self.veinColor = np.array((150. / 255, 30. / 255, 10. / 255))
+        self.arteryColor = np.array((110. / 255, 10. / 255, 5. / 255))
         self.vessels = []
         self.treeMap = np.zeros((300,300,4), dtype=int)
         self.treeImage = np.zeros((300,300,4), dtype=int)
@@ -47,17 +47,20 @@ class TreeMap:
         
         # calculate widths for each point
         r = np.linspace(0, total_len * 2, total_len * 2)
+        colors = np.repeat(color[None, :], total_len * 2, axis=0)
         if branch.level == 1:                   # for main vessels
-            widths = 0.003 * r + 0.7
+            widths = 0.001 * r + 1
+            colors = np.hstack((colors, np.linspace(0.4, 0.7, total_len * 2)[:, None]))
         else:                                   # for each other vessel
-            widths = 0.003 * r + 0.3
+            widths = 0.003 * r + 0.5
+            colors = np.hstack((colors, np.linspace(0.3, 0.7, total_len * 2)[:, None]))
 
         # put points together
         points = np.array([xi, yi]).T.reshape(-1, 1, 2)
         # create array of all lines from x_i to x_i+1
         segments = np.concatenate([points[:-1], points[1:]], axis=1)[::-1]
 
-        self.vessels.append([segments, widths, color])
+        self.vessels.append([segments, widths, colors])
         self.updateImg()
     
     '''
@@ -65,7 +68,7 @@ class TreeMap:
         updates both images treeImage and treeMap
     '''
     def updateImg(self):
-        fig, ax = plt.subplots(figsize=(3,3),dpi=100)       # init plt
+        fig, ax = plt.subplots(figsize=(3,3), dpi=100)       # init plt
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
         plt.axis("off")
@@ -83,13 +86,16 @@ class TreeMap:
         plt.show(block=False)                               # render plt
         fig.canvas.draw()                                   # draw the canveas
         w,h = fig.canvas.get_width_height()                 # get canvas properties
+        assert(w == h)                                      # make sure that resize wont change location of OD
+        
         # save canvas as numpy array in buf
         buf = np.fromstring (fig.canvas.tostring_argb(), dtype=np.uint8)
         plt.close()                                         # close plt
         buf.shape = (w, h, 4)                               # set shape of buffer
         buf = np.roll(buf, 3, axis=2)
         buf = np.transpose(buf, (1,0,2))                    # transpose the image
-        buf = transform.resize(buf, (300,300,4))            # resize image to 300 x 300
+        buf = transform.resize(buf, (300,300))              # resize image to 300 x 300
+        buf = np.fliplr(buf)                                # correct orientation (opticaldisc bug)
         if buf.dtype == float:                              # if buf is of type float convert it to int
             buf = buf * 255
 
