@@ -89,6 +89,15 @@ def addIllumination(image): #detail addjustment
 
     return np.clip(img, 0, 255)
 
+'''
+    showImage
+
+    img - image or list of images to plot
+    pointsBlue - list of points to plot with blue color
+    pointsYellow - list of points to plot with yellow color
+    sec - seconds the plot is shown. if sec == -1 it is show until it is closed
+    plots images into a plot and 
+'''
 def showImage(img, pointsBlue=None, pointsYellow=None, sec=-1):
     if type(img) == list:
         pointsBlue = pointsBlue if type(pointsBlue) == list else [None] * len(img)
@@ -110,6 +119,13 @@ def showImage(img, pointsBlue=None, pointsYellow=None, sec=-1):
     else:
         plt.show()
 
+'''
+    subfunction of showImage()
+    img - Image to show
+    pointsBlue - points that are displayed blue
+    pointsYellow - points that are displayed yellow
+    plots the given image and points into a plt
+'''
 def _plotHelper(img, pointsBlue, pointsYellow):
     plt.axis("off")
     plt.gcf().patch.set_alpha(0.0)
@@ -126,6 +142,16 @@ def _plotHelper(img, pointsBlue, pointsYellow):
         x, y = zip(*pointsYellow)
         plt.scatter(x=x, y=y, c='y')
 
+'''
+    saveImage
+    imgs - image or list of images which should be saved
+    j - current id of image
+    groundtruth - is the image a groundtruth
+    maxId - maximal id which is used to pad the id with 0s
+    groundtruthPath - path where to save the groundtruths
+    imagePath - path where images are saved which are not a groundtruth
+    saves one image or all images with the id j to the given path
+'''
 def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/"):
     if not type(imgs) == list:
         imgs = [imgs]
@@ -149,6 +175,10 @@ def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./gro
             np.transpose(imgs[i], (1,0,2))[:,:,:3]
         )
 
+'''
+    rgba2rgb
+    convert an rgba image to a rgb image
+'''
 def rgba2rgb(img):
     r = np.multiply(img[:, :, 0], img[:, :, 3]) 
     g = np.multiply(img[:, :, 1], img[:, :, 3]) 
@@ -169,6 +199,10 @@ def addMask(image):
             final_mask = prepareMask(dir_path)
     return mergeLayer([image, final_mask])
 
+'''
+    prepareMask
+    load a mask from the DRIVE dataset and bring it into the wanted format 
+'''
 def prepareMask(dir_path):
     mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
     mask = transform.resize(mask, (300, 300))
@@ -181,6 +215,10 @@ def prepareMask(dir_path):
     np.save(dir_path + '/mask.npy', final_mask)
     return final_mask
 
+'''
+    calculateMeanCoverage
+    calculates the mean coverage of all groundtruths in a given path
+'''
 def calculateMeanCoverage(path):
     images = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     means = []
@@ -198,11 +236,19 @@ def calculateMeanCoverage(path):
         means.append(meanCoverage(binary, [150,150]))
     return np.mean(np.asarray(means))
 
+'''
+    coverage
+    creates a coverage map of a binary image
+'''
 def coverage(binary, fovea):
     # add mask
     binary = addMask(binary)
     return binary
 
+'''
+    meanCoverage
+    calculates the mean coverage of a given groundtruth
+'''
 def meanCoverage(img, fovea):
     return np.mean(coverage(img, fovea)) / 255
 
