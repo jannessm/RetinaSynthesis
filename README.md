@@ -7,6 +7,8 @@ This repository is structured in 4 important parts.
     - SynthRet/             scripts for generating synthesized images
     - SynthRetSet/          the generated images for training porpuses
     - ODregression/         find the wanted parameters for generating od
+    - DRIVE/			DRIVE dataset
+    - High-Resolution Fundus/ 	HRF dataset
 
 ## SynthRet
 

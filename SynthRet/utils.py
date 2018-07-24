@@ -64,7 +64,7 @@ def makeBinary(img, threshold):
     addIllumination
     image - image to add illumination to
 '''
-def addIllumination(image): # rewrite with skimage
+def addIllumination(image): #detail addjustment
     
     # set parameters (random)
     brightness = np.random.uniform(0.1,3)
