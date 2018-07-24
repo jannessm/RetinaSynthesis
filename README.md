@@ -20,7 +20,7 @@ or if an offset is used:
 
     python SynthRet/generate_images.py <start index> <end index>
     
-##ODregression
+## ODregression
 
 Run regression.py to get the best-fit parameters of the mathematical model for generating optic disc. 
 The first output list is the parameters [zr,xr,yr,a,sr] for Red channel. 
