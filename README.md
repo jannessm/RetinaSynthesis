@@ -2,16 +2,16 @@
 
 This repository is structured in 4 important parts. 
 
-    /
-    - Retina Unet/              evaluation by a U-Net from [Retina Unet](https://github.com/orobix/retina-unet).
-    - SynthRet/                 scripts for generating synthesized images
-    - SynthRetSet/              the generated images for training porpuses
-    - ODregression/             find the wanted parameters for generating od
-    - DRIVE/			        [DRIVE dataset](https://www.isi.uu.nl/Research/Databases/DRIVE/)
-    - High-Resolution Fundus/ 	[HRF dataset](https://www5.cs.fau.de/research/data/fundus-images/)
-    - tex/                      latex documents
-    - who_did_what.txt          who did what document
-    - plot.py                   plot fig. 9
+- /
+- /Retina Unet/              evaluation by a U-Net from [Retina Unet](https://github.com/orobix/retina-unet).
+- /SynthRet/                 scripts for generating synthesized images
+- /SynthRetSet/              the generated images for training porpuses
+- /ODregression/             find the wanted parameters for generating od
+- /DRIVE/			         [DRIVE dataset](https://www.isi.uu.nl/Research/Databases/DRIVE/)
+- /High-Resolution Fundus/   [HRF dataset](https://www5.cs.fau.de/research/data/fundus-images/)
+- /tex/                      latex documents
+- /who_did_what.txt          who did what document
+- /plot.py                   plot fig. 9
 
 ## SynthRet
 
