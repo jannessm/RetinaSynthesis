@@ -1,6 +1,6 @@
 from VesselTree import Tree
 from utils import mergeLayer, addIllumination, showImage, addMask, saveImage
-from OpticalDisc import generateOpticalDisc
+from OpticDisc import generateOpticDisc
 from Background import generateBackgroundAndFovea
 from IPython.display import clear_output
 
@@ -13,7 +13,7 @@ import sys
 '''
 def _generateImage():
     bkg, fovea = generateBackgroundAndFovea()
-    od_img, od = generateOpticalDisc(fovea)
+    od_img, od = generateOpticDisc(fovea)
     vt, groundTruth = generateVesselsTree(fovea, od)
     merged = mergeLayer([bkg, od_img, vt])
     image = addIllumination(merged)

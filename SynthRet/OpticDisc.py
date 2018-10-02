@@ -1,33 +1,34 @@
 import numpy as np
-from skimage import io, draw
+from skimage import io
+import time
 
-def generateOpticalDisc(fovea):
+def generateOpticDisc(fovea):
     odimg = np.zeros((300, 300, 4),np.uint8)
     
     
     rx = fovea[0] + 77*np.random.choice([1]) + np.random.randint(-5,6)
     ry = fovea[1] + np.random.randint(-3,4)
-    ra = 17 + np.random.randint(-2,3)
-    rb = ra + np.random.randint(-2,0)
     gbx = rx + np.random.randint(-2,3)
     gby = ry + np.random.randint(-2,3)
     
-    rr, cc=draw.ellipse(ry,rx,ra,rb)
-    draw.set_color(odimg,[rr,cc],np.array([255,255,255,255]))
-    
-    for i in range(len(rr)):
-            y=rr[i]
-            x=cc[i]
-            odimg[y,x,0] = odr(x,y,rx,ry) 
-            odimg[y,x,1] = odg(x,y,rx,ry,gbx,gby) 
-            odimg[y,x,2] = odb(x,y,rx,ry,gbx,gby) 
+    for i in np.arange(300):
+        for j in np.arange(300):
+            if odr(i,j,rx,ry) > 240:
+                odimg[j,i,0] = odr(i,j,rx,ry)
+                odimg[j,i,1] = odg(i,j,rx,ry,gbx,gby) 
+                odimg[j,i,2] = odb(i,j,rx,ry,gbx,gby)
+                odimg[j,i,3] = 255
+
     return np.transpose(odimg,(1,0,2)), [rx,ry] #TODO select random point according to fovea pos.
 
 def odr(x,y,rx,ry):
     #parameters
     zr = 254.211+(np.random.random_sample()-0.5)*1
-    xr = rx
-    yr = ry
+    
+    w=60
+    xr = rx+np.cos(w*time.time())
+    yr = ry+np.cos(w*time.time())
+    
     a = 0.0207176
     sr = 11.9622
     
@@ -82,5 +83,5 @@ def odg(x,y,rx,ry,gx,gy):
     return green
 
 ##OD generate test
-#d,p=generateOpticalDisc()
+#d,p=generateOpticDisc([150,150])
 #io.imshow(d)
