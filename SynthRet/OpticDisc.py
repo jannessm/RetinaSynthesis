@@ -13,7 +13,7 @@ def generateOpticDisc(fovea):
     
     for i in np.arange(300):
         for j in np.arange(300):
-            if odr(i,j,rx,ry) > 240:
+            if odr(i,j,rx,ry) > 245:
                 odimg[j,i,0] = odr(i,j,rx,ry)
                 odimg[j,i,1] = odg(i,j,rx,ry,gbx,gby) 
                 odimg[j,i,2] = odb(i,j,rx,ry,gbx,gby)
