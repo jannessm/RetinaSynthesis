@@ -169,7 +169,7 @@ def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./gro
         path = imagePath
         if groundtruth:
             path = groundtruthPath
-        print '%svessel%s.png'%(path,i_str)
+        print('%svessel%s.png'%(path,i_str))
         imsave(                                                 # save image
             '%svessel%s.png'%(path,i_str), 
             np.transpose(imgs[i], (1,0,2))[:,:,:3]
@@ -189,7 +189,7 @@ def rgba2rgb(img):
 '''
     add black mask on top of the image
 '''
-def addMask(image):
+def addMask(image, sizeX, sizeY):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     if not os.path.isfile(dir_path + '/mask.npy'):
         final_mask = prepareMask(dir_path)
@@ -219,12 +219,12 @@ def prepareMask(dir_path):
     calculateMeanCoverage
     calculates the mean coverage of all groundtruths in a given path
 '''
-def calculateMeanCoverage(path):
+def calculateMeanCoverage(path, sizeX, sizeY):
     images = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     means = []
     for f in images: 
         binary = imread(path+f)
-        binary = transform.resize(binary, (300, 300))
+        binary = transform.resize(binary, (sizeX, sizeY))
         binary[np.where(binary > 0)] = 1
         if len(binary.shape) < 3:
             binary = np.dstack((binary, binary, binary, binary))
@@ -233,26 +233,28 @@ def calculateMeanCoverage(path):
         binary = (binary * 255).astype(int)
         binary = np.transpose(binary, (1,0,2))
         binary[:,:,3] = 255
-        means.append(meanCoverage(binary, [150,150]))
+        means.append(meanCoverage(binary, [150,150], sizeX, sizeY))
     return np.mean(np.asarray(means))
 
 '''
     coverage
     creates a coverage map of a binary image
 '''
-def coverage(binary, fovea):
+def coverage(binary, fovea, sizeX, sizeY):
     # add mask
-    binary = addMask(binary)
+    binary = addMask(binary, sizeX, sizeY)
     return binary
 
 '''
     meanCoverage
     calculates the mean coverage of a given groundtruth
 '''
-def meanCoverage(img, fovea):
-    return np.mean(coverage(img, fovea)) / 255
+def meanCoverage(img, fovea, sizeX, sizeY):
+    return np.mean(coverage(img, fovea, sizeX, sizeY)) / 255
 
 if __name__ == '__main__':
+    sizeX = 300
+    sizeY = 300
     paths = [
         '/../DRIVE/test/1st_manual/'
     ]
@@ -260,7 +262,7 @@ if __name__ == '__main__':
     for p in paths:
         dir_path = os.path.dirname(os.path.realpath(__file__))
         mypath = dir_path + p
-        means.append(calculateMeanCoverage(mypath))
+        means.append(calculateMeanCoverage(mypath, sizeX, sizeY))
     print("MEAN COVERAGE: " + str(np.mean(np.asarray(means))))
     print("STDDEV COVERAGE: " + str(np.std(np.asarray(means))))
 

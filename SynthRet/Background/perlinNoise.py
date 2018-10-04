@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import math
 from itertools import product, count
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -60,10 +61,10 @@ def generate_2D_perlin_noise(size, ns):
 
 #get natural peformance by mixing noise functions
 def getTexture(size):    
-    img0 = generate_2D_perlin_noise(size,math.ceil(size/10))
-    img1 = generate_2D_perlin_noise(size,math.ceil(size/10))
-    img2 = generate_2D_perlin_noise(size,math.ceil(size/10))
-    img3 = generate_2D_perlin_noise(size,math.ceil(size/5))
+    img0 = generate_2D_perlin_noise(size,int(math.ceil(size/10)))
+    img1 = generate_2D_perlin_noise(size,int(math.ceil(size/10)))
+    img2 = generate_2D_perlin_noise(size,int(math.ceil(size/10)))
+    img3 = generate_2D_perlin_noise(size,int(math.ceil(size/5)))
     img = img0*0.4+img1*0.2+img2*0.1+img3*0.2
     #map noise value to RGB value of retinal image's  background
     cmap = LinearSegmentedColormap.from_list('cloud', [ '#BD321C','#D9321C','#D93823'])                                     

@@ -16,7 +16,7 @@ def generateBackgroundAndFovea(sizeX, sizeY):
        cy=sizeX/2.0+np.random.randint(-10,10)
        PosFovea=(cy,cx)
        #Perlin noise texture
-       img1=getTexture(size)
+       img1=getTexture(sizeX)
        img[:,:,]=img1[:,:,]*255
       
        rr,cc=draw.circle(cy,cx,sizeX/12.0)
