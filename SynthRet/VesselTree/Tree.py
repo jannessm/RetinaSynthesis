@@ -62,7 +62,7 @@ class Tree:
 
         # while the mean coverage is below the wanted threshold and there are non finished branches
         # keep growing
-        while (meanCoverage(tMap, self.fovea, self.sizeX, self.sizeY) < self.covThreshold and 
+        while (meanCoverage(tMap, self.sizeX, self.sizeY) < self.covThreshold and 
             len(self.growingBranches) > 0):
             
             branches = self.growingBranches[:]      # deepcopy of all non finished branches
@@ -79,7 +79,7 @@ class Tree:
                     tMap = self.createTreeMap()     # get the current binary treeMap
 
                     # if the mean coverage is reached quit the loop
-                    if meanCoverage(tMap, self.fovea, self.sizeX, self.sizeY) > self.covThreshold:
+                    if meanCoverage(tMap, self.sizeX, self.sizeY) > self.covThreshold:
                         break
                     b.addBranch(p)
 

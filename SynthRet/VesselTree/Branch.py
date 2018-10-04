@@ -56,7 +56,7 @@ class Branch:
             self.finished = True
             self.tree.treeMap.addBranch(self)                   # add Branch to Map
             
-            showImage(self.tree.treeMap.treeImage, sec=0.01)
+            #showImage(self.tree.treeMap.treeImage, sec=0.01)
             return
         
 

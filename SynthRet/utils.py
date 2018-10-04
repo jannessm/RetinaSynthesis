@@ -67,19 +67,19 @@ def makeBinary(img, threshold):
 def addIllumination(image): #detail addjustment
     
     # set parameters (random)
-    brightness = np.random.uniform(0.1,3)
-    low, high = np.random.randint(low=0,high=30), np.random.randint(low=225,high=255)
+    #brightness = np.random.uniform(0.1,3)
+    #low, high = np.random.randint(low=0,high=30), np.random.randint(low=225,high=255)
 
     # enhance brightness
-    image1 = exposure.adjust_gamma(image.astype(float) / 255, brightness)
-    image1 = (image1 * 255).astype(int)
+    #image1 = exposure.adjust_gamma(image.astype(float) / 255, brightness)
+    #image1 = (image1 * 255).astype(int)
     
     # enhance contrast 
-    img = exposure.rescale_intensity(image1,out_range=(low,high))
+    #img = exposure.rescale_intensity(image1,out_range=(low,high))
 
     # mirror by probability of 0.5
     if np.random.rand() < 0.5:
-        img = np.fliplr(img)
+        image = np.fliplr(image)
 
     # add gaussian noise
     #gauss = np.random.normal(0, 0.1, (300, 300, 3)) * 255 * np.random.rand() * 0.1
@@ -87,7 +87,7 @@ def addIllumination(image): #detail addjustment
     #gauss = np.dstack((gauss, alpha))
     #img += gauss.astype(int)
 
-    return np.clip(img, 0, 255)
+    return np.clip(image, 0, 255)
 
 '''
     showImage
@@ -155,6 +155,11 @@ def _plotHelper(img, pointsBlue, pointsYellow):
 def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./groundtruth/", imagePath="./images/"):
     if not type(imgs) == list:
         imgs = [imgs]
+    
+    if not os.path.exists(groundtruthPath):
+        os.mkdir(groundtruthPath)
+    if not os.path.exists(imagePath):
+        os.mkdir(imagePath)
 
     for i in range(len(imgs)):
         if not j:
@@ -224,7 +229,7 @@ def calculateMeanCoverage(path, sizeX, sizeY):
     means = []
     for f in images: 
         binary = imread(path+f)
-        binary = transform.resize(binary, (sizeX, sizeY))
+        binary = transform.resize(binary, (sizeY, sizeX))
         binary[np.where(binary > 0)] = 1
         if len(binary.shape) < 3:
             binary = np.dstack((binary, binary, binary, binary))
@@ -233,14 +238,14 @@ def calculateMeanCoverage(path, sizeX, sizeY):
         binary = (binary * 255).astype(int)
         binary = np.transpose(binary, (1,0,2))
         binary[:,:,3] = 255
-        means.append(meanCoverage(binary, [150,150], sizeX, sizeY))
+        means.append(meanCoverage(binary, sizeX, sizeY))
     return np.mean(np.asarray(means))
 
 '''
     coverage
     creates a coverage map of a binary image
 '''
-def coverage(binary, fovea, sizeX, sizeY):
+def coverage(binary, sizeX, sizeY):
     # add mask
     binary = addMask(binary, sizeX, sizeY)
     return binary
@@ -249,12 +254,12 @@ def coverage(binary, fovea, sizeX, sizeY):
     meanCoverage
     calculates the mean coverage of a given groundtruth
 '''
-def meanCoverage(img, fovea, sizeX, sizeY):
-    return np.mean(coverage(img, fovea, sizeX, sizeY)) / 255
+def meanCoverage(img, sizeX, sizeY):
+    return np.mean(coverage(img, sizeX, sizeY)) / 255
 
 if __name__ == '__main__':
-    sizeX = 300
-    sizeY = 300
+    sizeX = 565
+    sizeY = 584
     paths = [
         '/../DRIVE/test/1st_manual/'
     ]

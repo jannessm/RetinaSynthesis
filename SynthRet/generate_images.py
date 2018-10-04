@@ -18,5 +18,5 @@ else:
 for i in tqdm(range(start, images), total=images - start):
     t = time.time()
     path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/main.py")
-    subprocess.check_call("python \"" + path + "\" " + str(i) + " " + str(images) + " " + str(sizeX) + " " + str(sizeY), shell=True)
+    subprocess.check_call("python -W ignore \"" + path + "\" " + str(i) + " " + str(images) + " " + str(sizeX) + " " + str(sizeY), shell=True)
     print (str(i) + " needed " + str(time.time() - t) + "sec")
