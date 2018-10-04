@@ -13,7 +13,7 @@ import sys
 '''
 def _generateImage():
     bkg, fovea = generateBackgroundAndFovea(sizeX,sizeY)
-    od_img, od = generateOpticDisc(fovea,size)
+    od_img, od = generateOpticDisc(fovea,sizeX,sizeY)
     vt, groundTruth = generateVesselsTree(fovea, od)
     merged = mergeLayer([bkg, od_img, vt])
     image = addIllumination(merged)
