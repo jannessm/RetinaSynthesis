@@ -1,4 +1,3 @@
-
 import numpy as np
 import math
 import random
@@ -6,9 +5,8 @@ import time
 import matplotlib.pyplot as plt
 from skimage import io, transform, draw, data
 from perlinNoise import getTexture
-
 # generate an image with the background and fovea
-def generateBackgroundAndFovea(sizeX, sizeY):
+def generateBackgroundAndFovea(sizeX,sizeY):
     
        img=np.zeros((sizeX, sizeY, 4),np.uint8)  
        #fovea position
@@ -17,7 +15,7 @@ def generateBackgroundAndFovea(sizeX, sizeY):
        PosFovea=(cy,cx)
        #Perlin noise texture
        img1=getTexture(sizeX)
-       img[:,:,]=img1[:,:,]*255
+       img[:,:,]=img1[:sizeX,:sizeY,]*255
       
        rr,cc=draw.circle(cy,cx,sizeX/12.0)
        gbx=cx + np.random.randint(-1,1)
@@ -31,7 +29,6 @@ def generateBackgroundAndFovea(sizeX, sizeY):
                 img[y,x,2] = bValue(x,y,cx,cy,gbx,gby,sizeX)
        
        return img,PosFovea
-
 #RGB intensity model based on equations in the paper of Samuele Fiorini12 et al 	
 def rValue(x,y,cx,cy,size):
     #amplitude
@@ -79,5 +76,5 @@ def gValue(x,y,cx,cy,gbx,gby,size):
     green = r-k*math.exp(exponentgb)  
     return green
 
-#img,pos=generateBackgroundAndFovea(5000)
+#img,pos=generateBackgroundAndFovea(569.596)
 #io.imshow(img)
