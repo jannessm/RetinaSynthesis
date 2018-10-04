@@ -59,17 +59,16 @@ def generate_2D_perlin_noise(size, ns):
 
 
 #get natural peformance by mixing noise functions
-def getTexture():    
-    size=300
-    img0 = generate_2D_perlin_noise(size,1)
-    img1 = generate_2D_perlin_noise(size,1)
-    img2 = generate_2D_perlin_noise(size,20)
-    img3 = generate_2D_perlin_noise(size,50)
-    img = img0*0.5+img1*0.2+img2*0.1+img3*0.1
+def getTexture(size):    
+    img0 = generate_2D_perlin_noise(size,math.ceil(size/10))
+    img1 = generate_2D_perlin_noise(size,math.ceil(size/10))
+    img2 = generate_2D_perlin_noise(size,math.ceil(size/10))
+    img3 = generate_2D_perlin_noise(size,math.ceil(size/5))
+    img = img0*0.4+img1*0.2+img2*0.1+img3*0.2
     #map noise value to RGB value of retinal image's  background
     cmap = LinearSegmentedColormap.from_list('cloud', [ '#BD321C','#D9321C','#D93823'])                                     
     img = cm.ScalarMappable(cmap=cmap).to_rgba(img)
     
     return img
-
-
+#img=getTexture(1500)
+#plt.imshow(img)
