@@ -6,10 +6,10 @@ def generateOpticDisc(fovea,sizeX,sizeY):
     odimg = np.zeros((sizeY, sizeX, 4),np.uint8)
     
     
-    rx = fovea[0] + 77*np.random.choice([1]) + np.random.randint(-5,6)
-    ry = fovea[1] + np.random.randint(-3,4)
-    gbx = rx + np.random.randint(-2,3)
-    gby = ry + np.random.randint(-2,3)
+    rx = fovea[0] + 77*np.random.choice([1])*round(sizeX/300.0) + np.random.randint(-5,6)*round(sizeX/300.0)
+    ry = fovea[1] + np.random.randint(-3,4)*round(sizeX/300.0)
+    gbx = rx + np.random.randint(-2,3)*round(sizeX/300.0)
+    gby = ry + np.random.randint(-2,3)*round(sizeX/300.0)
     
     for i in np.arange(sizeY):
         for j in np.arange(sizeX):
