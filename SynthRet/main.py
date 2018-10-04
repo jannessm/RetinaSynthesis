@@ -12,7 +12,7 @@ import sys
     path is relative to this file.
 '''
 def _generateImage():
-    bkg, fovea = generateBackgroundAndFovea(size)
+    bkg, fovea = generateBackgroundAndFovea(sizeX,sizeY)
     od_img, od = generateOpticDisc(fovea,size)
     vt, groundTruth = generateVesselsTree(fovea, od)
     merged = mergeLayer([bkg, od_img, vt])
