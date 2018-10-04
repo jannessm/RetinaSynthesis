@@ -192,22 +192,22 @@ def rgba2rgb(img):
 def addMask(image, sizeX, sizeY):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     if not os.path.isfile(dir_path + '/mask.npy'):
-        final_mask = prepareMask(dir_path)
+        final_mask = prepareMask(dir_path, sizeX, sizeY)
     else:
         final_mask = np.load(dir_path + '/mask.npy')
-        if not final_mask.shape == (300,300,4):
-            final_mask = prepareMask(dir_path)
+        if not final_mask.shape == (sizeX,sizeY,4):
+            final_mask = prepareMask(dir_path, sizeX, sizeY)
     return mergeLayer([image, final_mask])
 
 '''
     prepareMask
     load a mask from the DRIVE dataset and bring it into the wanted format 
 '''
-def prepareMask(dir_path):
+def prepareMask(dir_path, sizeX, sizeY):
     mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
-    mask = transform.resize(mask, (300, 300))
+    mask = transform.resize(mask, (sizeY, sizeX))
     mask = mask.T
-    final_mask = np.zeros((300,300,4))
+    final_mask = np.zeros((sizeX, sizeY, 4))
     black = np.where(mask < 0.5)
     transparent = np.where(mask >= 0.5)
     final_mask[black] = [0,0,0,255]
@@ -266,4 +266,4 @@ if __name__ == '__main__':
     print("MEAN COVERAGE: " + str(np.mean(np.asarray(means))))
     print("STDDEV COVERAGE: " + str(np.std(np.asarray(means))))
 
-    # result: dilation of 0 mean = 0.93107; std = 0.06892986
+    # result: dilation of 0 mean = 0.3419720833333334; std = 0.0

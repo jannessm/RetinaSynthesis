@@ -17,6 +17,8 @@ class Tree:
         self.opticaldisc = startingPoint    # optical disc location [x, y]
         self.treeMap = TreeMap(sizeX, sizeY)            # treeMap object to handle the images
         self.centers = []                   # list of used centers for branches with a level > 1
+        self.sizeX = sizeX
+        self.sizeY = sizeY
 
         for i in range(4):                  # init 4 arteries
             g = self.getRandomGoal(i)       # get it's goalpoint
@@ -40,10 +42,10 @@ class Tree:
     '''
     def getRandomGoal(self, i):
         switch = {
-            0: np.array([[-300, -150], [50, 200]]) + self.fovea,
-            1: np.array([[-300, -150], [-200, -50]]) + self.fovea,
-            2: np.array([[50, 200], [20, 200]]) + self.opticaldisc,
-            3: np.array([[50, 200], [-200, -20]]) + self.opticaldisc
+            0: np.array([[-1, -0.5], [0.167, 0.667]]) * self.sizeX + self.fovea,
+            1: np.array([[-1, -0.5], [-.667, -.167]]) * self.sizeY + self.fovea,
+            2: np.array([[0.167, 0.667], [0.067, 0.667]]) * self.sizeX + self.opticaldisc,
+            3: np.array([[0.067, 0.667], [-.667, -.067]]) * self.sizeY + self.opticaldisc
         }
         boundaries = switch.get(i%4)    # get random boundaries
         if boundaries is not None:      # if there are boundaries run np.randint()
@@ -60,7 +62,7 @@ class Tree:
 
         # while the mean coverage is below the wanted threshold and there are non finished branches
         # keep growing
-        while (meanCoverage(tMap, self.fovea) < self.covThreshold and 
+        while (meanCoverage(tMap, self.fovea, self.sizeX, self.sizeY) < self.covThreshold and 
             len(self.growingBranches) > 0):
             
             branches = self.growingBranches[:]      # deepcopy of all non finished branches
@@ -77,7 +79,7 @@ class Tree:
                     tMap = self.createTreeMap()     # get the current binary treeMap
 
                     # if the mean coverage is reached quit the loop
-                    if meanCoverage(tMap, self.fovea) > self.covThreshold:
+                    if meanCoverage(tMap, self.fovea, self.sizeX, self.sizeY) > self.covThreshold:
                         break
                     b.addBranch(p)
 

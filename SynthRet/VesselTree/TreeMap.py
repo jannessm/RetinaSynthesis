@@ -14,8 +14,8 @@ class TreeMap:
         self.veinColor = np.array((150. / 255, 30. / 255, 10. / 255))
         self.arteryColor = np.array((110. / 255, 10. / 255, 5. / 255))
         self.vessels = []
-        self.treeMap = np.zeros((imageX,imageY,4), dtype=int)
-        self.treeImage = np.zeros((imageX,imageY,4), dtype=int)
+        self.treeMap = np.zeros((sizeX,sizeY,4), dtype=int)
+        self.treeImage = np.zeros((sizeX,sizeY,4), dtype=int)
         self.sizeX = sizeX
         self.sizeY = sizeY
 
@@ -51,10 +51,10 @@ class TreeMap:
         r = np.linspace(0, total_len * 2, total_len * 2)
         colors = np.repeat(color[None, :], total_len * 2, axis=0)
         if branch.level == 1:                   # for main vessels
-            widths = 0.001 * r + 1
-            colors = np.hstack((colors, np.linspace(0.4, 0.7, total_len * 2)[:, None]))
+            widths = 2 * r / self.sizeX + 1.5
+            colors = np.hstack((colors, np.linspace(0.4, 0.8, total_len * 2)[:, None]))
         else:                                   # for each other vessel
-            widths = 0.003 * r + 0.5
+            widths = 2 * r / self.sizeX + 1
             colors = np.hstack((colors, np.linspace(0.3, 0.7, total_len * 2)[:, None]))
 
         # put points together

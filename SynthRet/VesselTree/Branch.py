@@ -26,7 +26,7 @@ class Branch:
         self.subBranchesNotFovea = 0                    # amount of subbranches that go into the opposite direction
 
         #constants
-        self.goalThreshold = 10                         # pixels away from goal point are sufficent
+        self.goalThreshold = 0.03 * self.tree.sizeX     # pixels away from goal point are sufficent
         self.maxAngle = 60                              # upper boundary for random angle of the next segment
         self.covThreshold = 0.9                         # threshold for total coverage
     
@@ -51,14 +51,16 @@ class Branch:
         # add this branch to the treeMap and set the finished property to true
         if (np.mean(np.abs(self.goal - x)) < self.goalThreshold / self.level
                 or                                              
-            x[0] < 0 or x[0] > 299 or x[1] < 0 or x[1] > 299):
+            x[0] < 0 or x[0] > self.tree.sizeX or x[1] < 0 or x[1] > self.tree.sizeY):
 
             self.finished = True
             self.tree.treeMap.addBranch(self)                   # add Branch to Map
+            
+            showImage(self.tree.treeMap.treeImage, sec=0.01)
             return
         
 
-        length = np.random.randint(5, 25) / self.level          # set random length
+        length = np.random.randint(5 * self.tree.sizeX / 300, 25 * self.tree.sizeX / 300) / self.level          # set random length
         i = self.getCurrentGoalPoint(x, length)                 # get currentGoalPoint
         # get random angle to make vessel curly
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2
@@ -77,7 +79,7 @@ class Branch:
 
         # if dice was successful and the starting point is not next to another branch
         # add a branch
-        if (newBranch <  0.5 and 
+        if (newBranch <  0.25 and 
             not np.array_equal(x, self.points[len(self.points) - 1]) and 
             not self.closeToAnotherBranch(x)):
 

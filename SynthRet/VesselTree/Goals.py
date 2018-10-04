@@ -25,7 +25,7 @@ def nextGoalPoint(self, point):
             # normalized vector from starting point to the parents goal point
             goalVector = (self.goal - point) / np.linalg.norm(self.goal - point)
 
-            length = np.random.randint(40, 100)     # random length
+            length = np.random.randint(40, 0.3 * self.tree.sizeX)    # random length
             alpha = np.random.randint(30, 70)       # random angle
             left = -1 if np.random.rand() else 1    # roll the dice if the it should go left
             
@@ -47,10 +47,10 @@ def nextGoalPoint(self, point):
             # else select a random point in opposite direction
             if toFovea < 0.5:
                 self.subBranchesFovea += 1
-                y = self.tree.fovea[1] - overFovea * np.random.randint(10, 30)
+                y = self.tree.fovea[1] - overFovea * np.random.randint(10, 0.1 * self.tree.sizeX)
             else:
                 self.subBranchesNotFovea += 1
-                y = point[1] - overFovea * np.random.randint(40, 100)
+                y = point[1] - overFovea * np.random.randint(40, 0.3 * self.tree.sizeX)
         return np.array((x, y))
     
     if self.level > 1:
@@ -62,7 +62,7 @@ def nextGoalPoint(self, point):
         old_ncenters = 0                                        # amount of old centers
 
         # increase the window until #(centers) decreased or size is larger than 200
-        while len(centers) >= old_ncenters and size < 200:
+        while len(centers) >= old_ncenters and size < 0.667 * self.tree.sizeX:
             # label the window
             img, new_centers, _ = createLabeledImage(size, tmap, point)
 
@@ -74,7 +74,7 @@ def nextGoalPoint(self, point):
                     breakWhile = True
             
             # break loop if breakWhile or no center was found until a size of 50x50
-            if breakWhile or (len(new_centers) == 0 and size > 50):
+            if breakWhile or (len(new_centers) == 0 and size > 50 / 300 * self.tree.sizeX):
                 break
             
             # set all variables for next iteration
