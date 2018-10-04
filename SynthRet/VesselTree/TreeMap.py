@@ -77,7 +77,7 @@ class TreeMap:
         self.treeImage = self._update('color')
 
     def updateMap(self):
-        self.treeMap = np.fliplr(self._update('black_white'))
+        self.treeMap = self._update('black_white')
 
     def _update(self, color):
         color_id = 3 if color == 'black_white' else 2
@@ -106,7 +106,7 @@ class TreeMap:
         buf.shape = (w, h, 4)                               # set shape of buffer
         buf = np.roll(buf, 3, axis=2)
         buf = np.transpose(buf, (1,0,2))                    # transpose the image
-        buf = transform.resize(buf, (self.sizeX,self.sizeY))              # resize image to 300 x 300
+        buf = transform.resize(buf, (self.sizeX,self.sizeY))              # resize image wished size
         buf = np.fliplr(buf)                                # correct orientation
         if buf.dtype == float:                              # if buf is of type float convert it to int
             buf = buf * 255
