@@ -169,9 +169,9 @@ def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./gro
         path = imagePath
         if groundtruth:
             path = groundtruthPath
-        print '%svessel%s.jpg'%(path,i_str)
+        print '%svessel%s.png'%(path,i_str)
         imsave(                                                 # save image
-            '%svessel%s.jpg'%(path,i_str), 
+            '%svessel%s.png'%(path,i_str), 
             np.transpose(imgs[i], (1,0,2))[:,:,:3]
         )
 

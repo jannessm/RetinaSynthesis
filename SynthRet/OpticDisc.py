@@ -2,8 +2,8 @@ import numpy as np
 from skimage import io
 import time
 
-def generateOpticDisc(fovea,size):
-    odimg = np.zeros((size, size, 4),np.uint8)
+def generateOpticDisc(sizeX, sizeY, fovea):
+    odimg = np.zeros((sizeX, sizeY, 4),np.uint8)
     
     
     rx = fovea[0] + 77*np.random.choice([1]) + np.random.randint(-5,6)
@@ -11,8 +11,8 @@ def generateOpticDisc(fovea,size):
     gbx = rx + np.random.randint(-2,3)
     gby = ry + np.random.randint(-2,3)
     
-    for i in np.arange(size):
-        for j in np.arange(size):
+    for i in np.arange(sizeX):
+        for j in np.arange(sizeY):
             if odr(i,j,rx,ry) > 245:
                 odimg[j,i,0] = odr(i,j,rx,ry)
                 odimg[j,i,1] = odg(i,j,rx,ry,gbx,gby) 

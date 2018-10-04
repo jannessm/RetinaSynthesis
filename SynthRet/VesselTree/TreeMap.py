@@ -10,12 +10,14 @@ from utils import showImage, makeBinary, meanCoverage
     this class manages the colored vessel image and the binary map
 '''
 class TreeMap:
-    def __init__(self):
+    def __init__(self, sizeX, sizeY):
         self.veinColor = np.array((150. / 255, 30. / 255, 10. / 255))
         self.arteryColor = np.array((110. / 255, 10. / 255, 5. / 255))
         self.vessels = []
-        self.treeMap = np.zeros((300,300,4), dtype=int)
-        self.treeImage = np.zeros((300,300,4), dtype=int)
+        self.treeMap = np.zeros((imageX,imageY,4), dtype=int)
+        self.treeImage = np.zeros((imageX,imageY,4), dtype=int)
+        self.sizeX = sizeX
+        self.sizeY = sizeY
 
     '''
         addBranch
@@ -68,15 +70,15 @@ class TreeMap:
         updates both images treeImage and treeMap
     '''
     def updateImg(self):
-        fig, ax = plt.subplots(figsize=(3,3), dpi=100)       # init plt
+        fig, ax = plt.subplots(figsize=(self.sizeX/100,self.sizeY/100), dpi=100)       # init plt
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
         plt.axis("off")
         plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
 
         # set dimensions of plot
-        ax.set_xlim(0,300)
-        ax.set_ylim(0,300)
+        ax.set_xlim(0,self.sizeX)
+        ax.set_ylim(0,self.sizeY)
 
         for l in self.vessels:                              # add each vessel to plt
             lc = LineCollection(l[0], linewidths=l[1], color=l[2])
@@ -86,7 +88,6 @@ class TreeMap:
         plt.show(block=False)                               # render plt
         fig.canvas.draw()                                   # draw the canveas
         w,h = fig.canvas.get_width_height()                 # get canvas properties
-        assert(w == h)                                      # make sure that resize wont change location of OD
         
         # save canvas as numpy array in buf
         buf = np.fromstring (fig.canvas.tostring_argb(), dtype=np.uint8)
@@ -94,7 +95,7 @@ class TreeMap:
         buf.shape = (w, h, 4)                               # set shape of buffer
         buf = np.roll(buf, 3, axis=2)
         buf = np.transpose(buf, (1,0,2))                    # transpose the image
-        buf = transform.resize(buf, (300,300))              # resize image to 300 x 300
+        buf = transform.resize(buf, (self.sizeX,self.sizeY))              # resize image to 300 x 300
         buf = np.fliplr(buf)                                # correct orientation (opticaldisc bug)
         if buf.dtype == float:                              # if buf is of type float convert it to int
             buf = buf * 255

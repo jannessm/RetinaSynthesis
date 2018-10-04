@@ -8,27 +8,27 @@ from skimage import io, transform, draw, data
 from perlinNoise import getTexture
 
 # generate an image with the background and fovea
-def generateBackgroundAndFovea(size):
+def generateBackgroundAndFovea(sizeX, sizeY):
     
-       img=np.zeros((size, size, 4),np.uint8)  
+       img=np.zeros((sizeX, sizeY, 4),np.uint8)  
        #fovea position
-       cx=size/2.0+np.random.randint(-10,10)
-       cy=size/2.0+np.random.randint(-10,10)
+       cx=sizeX/2.0+np.random.randint(-10,10)
+       cy=sizeX/2.0+np.random.randint(-10,10)
        PosFovea=(cy,cx)
        #Perlin noise texture
        img1=getTexture(size)
        img[:,:,]=img1[:,:,]*255
       
-       rr,cc=draw.circle(cy,cx,size/12.0)
+       rr,cc=draw.circle(cy,cx,sizeX/12.0)
        gbx=cx + np.random.randint(-1,1)
        gby=cy + np.random.randint(-1,1)
        for i in range(len(rr)):
                 y=rr[i]
                 x=cc[i]
                 #r,g,b channel intensity value
-                img[y,x,0] = rValue(x,y,cx,cy,size) 
-                img[y,x,1] = gValue(x,y,cx,cy,gbx,gby,size) 
-                img[y,x,2] = bValue(x,y,cx,cy,gbx,gby,size)
+                img[y,x,0] = rValue(x,y,cx,cy,sizeX) 
+                img[y,x,1] = gValue(x,y,cx,cy,gbx,gby,sizeX) 
+                img[y,x,2] = bValue(x,y,cx,cy,gbx,gby,sizeX)
        
        return img,PosFovea
 

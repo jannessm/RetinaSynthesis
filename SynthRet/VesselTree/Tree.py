@@ -10,12 +10,12 @@ from utils import showImage, makeBinary, coverage, meanCoverage
     This class manages the whole tree.
 '''
 class Tree:
-    def __init__(self, startingPoint, fovea):
+    def __init__(self, sizeX, sizeY, startingPoint, fovea):
         self.branches = []                  # all branches
         self.growingBranches = []           # all branches which are not finished yet
         self.fovea = fovea                  # fovea location [x, y]
         self.opticaldisc = startingPoint    # optical disc location [x, y]
-        self.treeMap = TreeMap()            # treeMap object to handle the images
+        self.treeMap = TreeMap(sizeX, sizeY)            # treeMap object to handle the images
         self.centers = []                   # list of used centers for branches with a level > 1
 
         for i in range(4):                  # init 4 arteries
