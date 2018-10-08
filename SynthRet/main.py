@@ -16,7 +16,7 @@ def _generateImage(sizeX, sizeY):
     od_img, od = generateOpticDisc(fovea,sizeX,sizeY)
     vt, groundTruth = generateVesselsTree(sizeX, sizeY, fovea, od)
     merged = mergeLayer([bkg, od_img, vt])
-    image = addIllumination(merged)
+    image, groundTruth = addIllumination(merged, groundTruth)
     return addMask(image, sizeX, sizeY), addMask(groundTruth, sizeX, sizeY)
 
 

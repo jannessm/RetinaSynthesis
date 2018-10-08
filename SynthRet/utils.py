@@ -64,7 +64,7 @@ def makeBinary(img, threshold):
     addIllumination
     image - image to add illumination to
 '''
-def addIllumination(image): #detail addjustment
+def addIllumination(image, groundtruth): #detail addjustment
     
     # set parameters (random)
     #brightness = np.random.uniform(0.1,3)
@@ -79,7 +79,8 @@ def addIllumination(image): #detail addjustment
 
     # mirror by probability of 0.5
     if np.random.rand() < 0.5:
-        image = np.fliplr(image)
+        image = np.flipud(image)
+        groundtruth = np.flipud(groundtruth)
 
     # add gaussian noise
     #gauss = np.random.normal(0, 0.1, (300, 300, 3)) * 255 * np.random.rand() * 0.1
@@ -87,7 +88,7 @@ def addIllumination(image): #detail addjustment
     #gauss = np.dstack((gauss, alpha))
     #img += gauss.astype(int)
 
-    return np.clip(image, 0, 255)
+    return np.clip(image, 0, 255), np.clip(groundtruth, 0, 255)
 
 '''
     showImage
@@ -242,20 +243,18 @@ def calculateMeanCoverage(path, sizeX, sizeY):
     return np.mean(np.asarray(means))
 
 '''
-    coverage
-    creates a coverage map of a binary image
-'''
-def coverage(binary, sizeX, sizeY):
-    # add mask
-    binary = addMask(binary, sizeX, sizeY)
-    return binary
-
-'''
     meanCoverage
     calculates the mean coverage of a given groundtruth
 '''
 def meanCoverage(img, sizeX, sizeY):
-    return np.mean(coverage(img, sizeX, sizeY)) / 255
+    black = np.zeros(img.shape)
+    black[:,:,3] = 255
+    if not np.max(img) == 255:
+        image = img * 255
+    else:
+        image = img
+    image = mergeLayer([black, image])
+    return np.mean(addMask(image, sizeX, sizeY)[:,:,:3]) / 255
 
 if __name__ == '__main__':
     sizeX = 565

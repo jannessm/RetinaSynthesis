@@ -48,16 +48,16 @@ class TreeMap:
         # get all points on spline for total_len * 2 to cover each pixel
         xi, yi = interpolate.splev(np.linspace(t[0], t[-1], total_len * 2), tck)
         
-        # calculate widths for each point
+        # calculate widths and colors for each point
         r = np.linspace(0, total_len * 2, total_len * 2)
         colors = np.repeat(color[None, :], total_len * 2, axis=0)
         black_white = np.repeat(self.white[None, :], total_len * 2, axis=0)
         black_white = np.hstack((black_white, np.linspace(1, 1, total_len * 2)[:, None]))
         if branch.level == 1:                   # for main vessels
-            widths = 2 * r / self.sizeX + 1.5
+            widths = 0.6 * r / self.sizeX + 1.5
             colors = np.hstack((colors, np.linspace(0.4, 0.9, total_len * 2)[:, None]))
         else:                                   # for each other vessel
-            widths = 2 * r / self.sizeX + 1
+            widths = 0.8 * r / self.sizeX + 0.3
             colors = np.hstack((colors, np.linspace(0.3, 0.7, total_len * 2)[:, None]))
 
         # put points together

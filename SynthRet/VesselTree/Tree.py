@@ -1,7 +1,7 @@
 import numpy as np
 from Branch import Branch
 from TreeMap import TreeMap
-from utils import showImage, makeBinary, coverage, meanCoverage
+from utils import showImage, makeBinary, meanCoverage
 
 '''
     Tree
@@ -96,14 +96,6 @@ class Tree:
     '''
     def createTreeMap(self):
         return self.treeMap.getMap()
-
-    '''
-        coverage
-        calculate the current coverage
-    '''
-    def coverage(self):
-        treeMap = self.createTreeMap()          # get current binary map
-        return coverage(treeMap, self.fovea)
 
     '''
         b2arr

@@ -56,7 +56,6 @@ class Branch:
             self.finished = True
             self.tree.treeMap.addBranch(self)                   # add Branch to Map
             
-            #showImage(self.tree.treeMap.treeImage, sec=0.01)
             return
         
 
@@ -79,7 +78,7 @@ class Branch:
 
         # if dice was successful and the starting point is not next to another branch
         # add a branch
-        if (newBranch <  0.25 and 
+        if (newBranch <  0.5 and 
             not np.array_equal(x, self.points[len(self.points) - 1]) and 
             not self.closeToAnotherBranch(x)):
 
@@ -95,6 +94,8 @@ class Branch:
                 if self.level > 0:
                     while not b.finished:
                         b.addSegment()
+        elif (newBranch < 0.5 and not np.array_equal(x, self.points[len(self.points) - 1])):
+            print(self.closeToAnotherBranch(x))
 
     '''
         getCurrenGoalPoint
@@ -146,6 +147,6 @@ class Branch:
         branches = self.tree.b2arr()                    # get all points of branches of the tree as an np.ndarray
         if branches.shape[0] > 0:                       # if branches has any point compute the shortest distance to x
             shortestDistance = np.min(np.linalg.norm(branches - x))
-            return shortestDistance < 1000              # if the shortest distance is below 1000 it is near to another branch
+            return shortestDistance < 1000 / (self.level * self.tree.sizeX) # if the shortest distance is below 1000 it is near to another branch
         else:
             return False
