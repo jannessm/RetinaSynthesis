@@ -82,6 +82,7 @@ class Tree:
                     if meanCoverage(tMap, self.sizeX, self.sizeY) > self.covThreshold:
                         break
                     b.addBranch(p)
+        print(meanCoverage(tMap, self.sizeX, self.sizeY))
 
     '''
         createTreepImage

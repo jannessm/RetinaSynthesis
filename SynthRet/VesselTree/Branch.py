@@ -28,7 +28,6 @@ class Branch:
         #constants
         self.goalThreshold = 0.03 * self.tree.sizeX     # pixels away from goal point are sufficent
         self.maxAngle = 60                              # upper boundary for random angle of the next segment
-        self.covThreshold = 0.9                         # threshold for total coverage
     
     '''
         setLevel
@@ -58,8 +57,8 @@ class Branch:
             
             return
         
-
-        length = np.random.randint(5 * self.tree.sizeX / 300, 25 * self.tree.sizeX / 300) / self.level          # set random length
+        print(self.level)
+        length = np.random.randint(0.0167 * self.tree.sizeX, 0.0833 * self.tree.sizeX) / self.level          # set random length
         i = self.getCurrentGoalPoint(x, length)                 # get currentGoalPoint
         # get random angle to make vessel curly
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2
@@ -78,7 +77,7 @@ class Branch:
 
         # if dice was successful and the starting point is not next to another branch
         # add a branch
-        if (newBranch <  0.5 and 
+        if (newBranch <  0.7 and 
             not np.array_equal(x, self.points[len(self.points) - 1]) and 
             not self.closeToAnotherBranch(x)):
 
@@ -94,7 +93,9 @@ class Branch:
                 if self.level > 0:
                     while not b.finished:
                         b.addSegment()
-        elif (newBranch < 0.5 and not np.array_equal(x, self.points[len(self.points) - 1])):
+                print(len(self.tree.growingBranches))
+        elif (self.closeToAnotherBranch(x)):
+            print("too close")
             print(self.closeToAnotherBranch(x))
 
     '''
