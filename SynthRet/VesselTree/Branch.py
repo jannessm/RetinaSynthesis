@@ -50,14 +50,13 @@ class Branch:
         # add this branch to the treeMap and set the finished property to true
         if (np.mean(np.abs(self.goal - x)) < self.goalThreshold / self.level
                 or                                              
-            x[0] < 0 or x[0] > self.tree.sizeX or x[1] < 0 or x[1] > self.tree.sizeY):
+            x[0] < 0 or x[0] >= self.tree.sizeX or x[1] < 0 or x[1] >= self.tree.sizeY):
 
             self.finished = True
             self.tree.treeMap.addBranch(self)                   # add Branch to Map
             
             return
         
-        print(self.level)
         length = np.random.randint(0.0167 * self.tree.sizeX, 0.0833 * self.tree.sizeX) / self.level          # set random length
         i = self.getCurrentGoalPoint(x, length)                 # get currentGoalPoint
         # get random angle to make vessel curly
@@ -85,15 +84,15 @@ class Branch:
             if type(g) == np.ndarray:                            # if a goalPoint was found
                 # create a branch
                 b = Branch(self.tree, x, g, self.level + 1, self.artery)
-                
+                if self.level == 2:
+                    print 'newBranch of level ' + str(self.level + 1)
                 self.tree.growingBranches.append(b)             # add branch to tree
                 self.tree.branches.append(b)
                 
                 # if level is greater than 0, first grow the new branch before continuing
-                if self.level > 0:
+                if self.level > 1:
                     while not b.finished:
                         b.addSegment()
-                print(len(self.tree.growingBranches))
         elif (self.closeToAnotherBranch(x)):
             print("too close")
             print(self.closeToAnotherBranch(x))

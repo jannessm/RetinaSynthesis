@@ -78,12 +78,13 @@ class TreeMap:
 
     def updateMap(self):
         self.treeMap = self._update('black_white')
+        showImage(self.treeMap)
 
     def _update(self, color):
         color_id = 3 if color == 'black_white' else 2
         fig, ax = plt.subplots(figsize=(self.sizeX/100,self.sizeY/100), dpi=100)       # init plt
-        fig.patch.set_alpha(0.0)
-        ax.patch.set_alpha(0.0)
+        fig.set_facecolor((0., 0., 0., 0.))
+        ax.set_facecolor((0., 0., 0., 0.))
         plt.axis("off")
         plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
 
