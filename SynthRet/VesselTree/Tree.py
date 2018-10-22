@@ -33,7 +33,8 @@ class Tree:
             self.growingBranches.append(b)  # add it to list of growing branches
 
         # constants
-        self.covThreshold = 0.341972        # coverage threshold of groundtruth
+        self.covThreshold = 0.057        # coverage threshold of groundtruth
+#        self.covThreshold = 0.1        # coverage threshold of groundtruth (0.1142374833313129 - 0.009810901203399423)
 
     '''
         getRandomGoal
@@ -82,7 +83,6 @@ class Tree:
                     if meanCoverage(tMap, self.sizeX, self.sizeY) > self.covThreshold:
                         break
                     b.addBranch(p)
-        print(meanCoverage(tMap, self.sizeX, self.sizeY))
 
     '''
         createTreepImage

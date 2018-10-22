@@ -1,5 +1,5 @@
 import numpy as np
-from utils import showImage
+from utils import showImage, meanCoverage
 from Goals import nextGoalPoint
 
 '''
@@ -76,16 +76,16 @@ class Branch:
 
         # if dice was successful and the starting point is not next to another branch
         # add a branch
-        if (newBranch <  0.7 and 
+        if (
+            newBranch <  0.5 and 
             not np.array_equal(x, self.points[len(self.points) - 1]) and 
-            not self.closeToAnotherBranch(x)):
+            not self.closeToAnotherBranch(x)
+        ):
 
             g = nextGoalPoint(self, x)                           # get goal point for branch
             if type(g) == np.ndarray:                            # if a goalPoint was found
                 # create a branch
                 b = Branch(self.tree, x, g, self.level + 1, self.artery)
-                if self.level == 2:
-                    print 'newBranch of level ' + str(self.level + 1)
                 self.tree.growingBranches.append(b)             # add branch to tree
                 self.tree.branches.append(b)
                 
@@ -93,9 +93,7 @@ class Branch:
                 if self.level > 1:
                     while not b.finished:
                         b.addSegment()
-        elif (self.closeToAnotherBranch(x)):
-            print("too close")
-            print(self.closeToAnotherBranch(x))
+                    print('current mean coverage: ' + str(meanCoverage(self.tree.createTreeMap(), self.tree.sizeX, self.tree.sizeY)))
 
     '''
         getCurrenGoalPoint

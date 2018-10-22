@@ -87,7 +87,6 @@ def nextGoalPoint(self, point):
         img, centers, areas = createLabeledImage(self, size, tmap, point)
 
         # if a candidate was found
-        print len(areas)
         if len(areas) > 0:
             max_area = np.where(areas == np.max(areas))[0][0]   # get id for the largest area
             
@@ -137,7 +136,6 @@ def createLabeledImage(self, size, tmap, point):
                                 bounds[0, 1]: bounds[1, 1], :3], background=255)
 
     # if labels were found, get centers and len(areas)
-    showImage(tmap[bounds[0, 0]: bounds[1, 0], bounds[0, 1]: bounds[1, 1], :])
     if len(labels) > 0:
         for i in range(1, np.max(labels)):                  #iterate over labels
 
@@ -148,10 +146,6 @@ def createLabeledImage(self, size, tmap, point):
 
             # if the distance of the nearest position of an id is smaller than 3 it is next to point
             # and if there are a minimum of 200 points labeled, calculate the center
-            print np.min(np.linalg.norm(np.abs(ids - point), axis=1))
-            print 0.01 * self.tree.sizeX
-            print ids.shape[0]
-            print 2./3 * self.tree.sizeX
             if np.min(np.linalg.norm(np.abs(ids - point), axis=1)) < 0.01 * self.tree.sizeX and ids.shape[0] > 2./3 * self.tree.sizeX:
                 
                 center = np.mean(ids, axis=0)               # get center point
@@ -183,7 +177,6 @@ def createLabeledImage(self, size, tmap, point):
 def crossingVessel(self, center, point, tmap):
     # if center is out of the image boundaries get largest point in image on
     # the path from point to center
-    print 'l.181'
     if center[0] >= self.tree.sizeX or center[0] < 0 or center[1] >= self.tree.sizeY or center[1] < 0:
         point2center = center - point               # vector point -> center
         for i in np.linspace(1, 0, 100):            # check 100 points on the path
@@ -203,7 +196,6 @@ def crossingVessel(self, center, point, tmap):
     points = np.vstack((x_spaced, y_spaced)).T
 
     # check all points in list if they are white (a vessel)
-    print'l.200 ' + str(len(points[int(5./300 * self.tree.sizeX):]))
     for p in points[int(5./300 * self.tree.sizeX):]:
         if np.array_equal(tmap[p[0], p[1]], [255, 255, 255, 255]):
             return True

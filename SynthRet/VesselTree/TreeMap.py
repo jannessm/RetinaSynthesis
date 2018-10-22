@@ -54,10 +54,13 @@ class TreeMap:
         black_white = np.repeat(self.white[None, :], total_len * 2, axis=0)
         black_white = np.hstack((black_white, np.linspace(1, 1, total_len * 2)[:, None]))
         if branch.level == 1:                   # for main vessels
-            widths = 0.6 * r / self.sizeX + 1.5
+            widths = 0.75 * r / self.sizeX + 2. * self.sizeX / 565.
             colors = np.hstack((colors, np.linspace(0.4, 0.9, total_len * 2)[:, None]))
-        else:                                   # for each other vessel
-            widths = 0.8 * r / self.sizeX + 0.3
+        elif branch.level == 2:
+            widths = 2. * r / self.sizeX + 1.2 * self.sizeX / 565.
+            colors = np.hstack((colors, np.linspace(0.3, 0.7, total_len * 2)[:, None]))
+        elif branch.level > 2:                                   # for each other vessel
+            widths = 1. * r / self.sizeX + .5 * self.sizeX / 565.
             colors = np.hstack((colors, np.linspace(0.3, 0.7, total_len * 2)[:, None]))
 
         # put points together
@@ -78,7 +81,7 @@ class TreeMap:
 
     def updateMap(self):
         self.treeMap = self._update('black_white')
-        showImage(self.treeMap)
+        self.treeMap[self.treeMap.sum() <= 1000] = [0,0,0,0]
 
     def _update(self, color):
         color_id = 3 if color == 'black_white' else 2
@@ -111,6 +114,8 @@ class TreeMap:
         buf = np.fliplr(buf)                                # correct orientation
         if buf.dtype == float:                              # if buf is of type float convert it to int
             buf = buf * 255
+        
+        buf[buf.sum(axis=2) == 765] = [0,0,0,0]             # make sure that background is black
 
         return buf.astype(int)                              # return result buf
 

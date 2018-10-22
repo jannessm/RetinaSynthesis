@@ -240,6 +240,8 @@ def calculateMeanCoverage(path, sizeX, sizeY):
         binary = np.transpose(binary, (1,0,2))
         binary[:,:,3] = 255
         means.append(meanCoverage(binary, sizeX, sizeY))
+    print("MEAN COVERAGE: " + str(np.mean(np.asarray(means))))
+    print("STDDEV COVERAGE: " + str(np.std(np.asarray(means))))
     return np.mean(np.asarray(means))
 
 '''
@@ -266,8 +268,6 @@ if __name__ == '__main__':
     for p in paths:
         dir_path = os.path.dirname(os.path.realpath(__file__))
         mypath = dir_path + p
-        means.append(calculateMeanCoverage(mypath, sizeX, sizeY))
-    print("MEAN COVERAGE: " + str(np.mean(np.asarray(means))))
-    print("STDDEV COVERAGE: " + str(np.std(np.asarray(means))))
+        means = calculateMeanCoverage(mypath, sizeX, sizeY)
 
-    # result: dilation of 0 mean = 0.3419720833333334; std = 0.0
+    # result: dilation of 0 mean = 0.1142374833313129; std = 0.009810901203399423
