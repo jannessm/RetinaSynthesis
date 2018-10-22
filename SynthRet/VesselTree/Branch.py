@@ -93,7 +93,7 @@ class Branch:
                 if self.level > 1:
                     while not b.finished:
                         b.addSegment()
-                    print('current mean coverage: ' + str(meanCoverage(self.tree.createTreeMap(), self.tree.sizeX, self.tree.sizeY)))
+                    print('current mean coverage: ' + str(meanCoverage(self.tree.createTreeMap(), self.tree.sizeX, self.tree.sizeY)) + ' from: '+str(self.tree.covThreshold))
 
     '''
         getCurrenGoalPoint
