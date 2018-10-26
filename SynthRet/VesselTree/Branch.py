@@ -1,5 +1,5 @@
 import numpy as np
-from utils import showImage
+from utils import showImage, meanCoverage
 from Goals import nextGoalPoint
 
 '''
@@ -26,9 +26,8 @@ class Branch:
         self.subBranchesNotFovea = 0                    # amount of subbranches that go into the opposite direction
 
         #constants
-        self.goalThreshold = 10                         # pixels away from goal point are sufficent
+        self.goalThreshold = 0.03 * self.tree.sizeX     # pixels away from goal point are sufficent
         self.maxAngle = 60                              # upper boundary for random angle of the next segment
-        self.covThreshold = 0.9                         # threshold for total coverage
     
     '''
         setLevel
@@ -51,14 +50,14 @@ class Branch:
         # add this branch to the treeMap and set the finished property to true
         if (np.mean(np.abs(self.goal - x)) < self.goalThreshold / self.level
                 or                                              
-            x[0] < 0 or x[0] > 299 or x[1] < 0 or x[1] > 299):
+            x[0] < 0 or x[0] >= self.tree.sizeX or x[1] < 0 or x[1] >= self.tree.sizeY):
 
             self.finished = True
             self.tree.treeMap.addBranch(self)                   # add Branch to Map
+            
             return
         
-
-        length = np.random.randint(5, 25) / self.level          # set random length
+        length = np.random.randint(0.0167 * self.tree.sizeX, 0.0833 * self.tree.sizeX) / self.level          # set random length
         i = self.getCurrentGoalPoint(x, length)                 # get currentGoalPoint
         # get random angle to make vessel curly
         angle = np.random.rand() * self.maxAngle - self.maxAngle / 2
@@ -77,22 +76,24 @@ class Branch:
 
         # if dice was successful and the starting point is not next to another branch
         # add a branch
-        if (newBranch <  0.5 and 
+        if (
+            newBranch <  0.5 and 
             not np.array_equal(x, self.points[len(self.points) - 1]) and 
-            not self.closeToAnotherBranch(x)):
+            not self.closeToAnotherBranch(x)
+        ):
 
             g = nextGoalPoint(self, x)                           # get goal point for branch
             if type(g) == np.ndarray:                            # if a goalPoint was found
                 # create a branch
                 b = Branch(self.tree, x, g, self.level + 1, self.artery)
-                
                 self.tree.growingBranches.append(b)             # add branch to tree
                 self.tree.branches.append(b)
                 
                 # if level is greater than 0, first grow the new branch before continuing
-                if self.level > 0:
+                if self.level > 1:
                     while not b.finished:
                         b.addSegment()
+                    print('current mean coverage: ' + str(meanCoverage(self.tree.createTreeMap(), self.tree.sizeX, self.tree.sizeY)) + ' from: '+str(self.tree.covThreshold))
 
     '''
         getCurrenGoalPoint
@@ -144,6 +145,6 @@ class Branch:
         branches = self.tree.b2arr()                    # get all points of branches of the tree as an np.ndarray
         if branches.shape[0] > 0:                       # if branches has any point compute the shortest distance to x
             shortestDistance = np.min(np.linalg.norm(branches - x))
-            return shortestDistance < 1000              # if the shortest distance is below 1000 it is near to another branch
+            return shortestDistance < 1000 / (self.level * self.tree.sizeX) # if the shortest distance is below 1000 it is near to another branch
         else:
             return False

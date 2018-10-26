@@ -3,7 +3,7 @@ from skimage import io
 import time
 
 def generateOpticDisc(fovea,sizeX,sizeY):
-    odimg = np.zeros((sizeX, sizeY, 4),np.uint8)
+    odimg = np.zeros((sizeY, sizeX, 4),np.uint8)
     
     
     rx = fovea[0] + 77*np.random.choice([1])*round(sizeX/300.0) + np.random.randint(-5,6)*round(sizeX/300.0)

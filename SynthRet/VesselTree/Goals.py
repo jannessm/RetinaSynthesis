@@ -13,7 +13,7 @@ from skimage import measure
 '''
 def nextGoalPoint(self, point):
     if self.level == 1:
-        #showImage(self.tree.createTreeMap())
+
         pf = point - self.tree.fovea                # direction from fovea to the point
         overFovea = 1 if pf[1] < 0 else -1          # starting point is over the fovea
 
@@ -25,7 +25,7 @@ def nextGoalPoint(self, point):
             # normalized vector from starting point to the parents goal point
             goalVector = (self.goal - point) / np.linalg.norm(self.goal - point)
 
-            length = np.random.randint(40, 100)     # random length
+            length = np.random.randint(40, 0.3 * self.tree.sizeX)    # random length
             alpha = np.random.randint(30, 70)       # random angle
             left = -1 if np.random.rand() else 1    # roll the dice if the it should go left
             
@@ -47,24 +47,23 @@ def nextGoalPoint(self, point):
             # else select a random point in opposite direction
             if toFovea < 0.5:
                 self.subBranchesFovea += 1
-                y = self.tree.fovea[1] - overFovea * np.random.randint(10, 30)
+                y = self.tree.fovea[1] - overFovea * np.random.randint(10, 0.1 * self.tree.sizeX)
             else:
                 self.subBranchesNotFovea += 1
-                y = point[1] - overFovea * np.random.randint(40, 100)
+                y = point[1] - overFovea * np.random.randint(40, 0.3 * self.tree.sizeX)
         return np.array((x, y))
     
     if self.level > 1:
         tmap = self.tree.createTreeMap()                        # current treeMap
-        #imgs = [self.tree.createTreeImage()]
         size = 20                                               # window size
         centers = []                                            # all candidates
         new_centers = []
         old_ncenters = 0                                        # amount of old centers
 
         # increase the window until #(centers) decreased or size is larger than 200
-        while len(centers) >= old_ncenters and size < 200:
+        while len(centers) >= old_ncenters and size < 0.667 * self.tree.sizeX:
             # label the window
-            img, new_centers, _ = createLabeledImage(size, tmap, point)
+            img, new_centers, _ = createLabeledImage(self, size, tmap, point)
 
             breakWhile = False                                  # finish the search for a fitting point
             for p in centers:                                   # test if a center point has moved more
@@ -74,7 +73,7 @@ def nextGoalPoint(self, point):
                     breakWhile = True
             
             # break loop if breakWhile or no center was found until a size of 50x50
-            if breakWhile or (len(new_centers) == 0 and size > 50):
+            if breakWhile or (len(new_centers) == 0 and size > 5./ 30 * self.tree.sizeX):
                 break
             
             # set all variables for next iteration
@@ -85,7 +84,7 @@ def nextGoalPoint(self, point):
         
         result = None                                           # init return value
         # label last working image
-        img, centers, areas = createLabeledImage(size, tmap, point)
+        img, centers, areas = createLabeledImage(self, size, tmap, point)
 
         # if a candidate was found
         if len(areas) > 0:
@@ -124,9 +123,9 @@ def nextGoalPoint(self, point):
     of the area, if point -> center is crossing any vessels, and if area is a neighbour of the vessel
     returns labeled image, all centers, and all areasizes
 '''
-def createLabeledImage(size, tmap, point):
+def createLabeledImage(self, size, tmap, point):
 
-    img = np.zeros((300,300,4))                 # init labeled image
+    img = np.zeros((self.tree.sizeX, self.tree.sizeY,4))                 # init labeled image
     centers = []                                # init list of centers
     areas = []                                  # init list of areas
     # get boundaries of the window
@@ -147,21 +146,21 @@ def createLabeledImage(size, tmap, point):
 
             # if the distance of the nearest position of an id is smaller than 3 it is next to point
             # and if there are a minimum of 200 points labeled, calculate the center
-            if np.min(np.linalg.norm(np.abs(ids - point), axis=1)) < 3 and ids.shape[0] > 200:
+            if np.min(np.linalg.norm(np.abs(ids - point), axis=1)) < 0.01 * self.tree.sizeX and ids.shape[0] > 2./3 * self.tree.sizeX:
                 
                 center = np.mean(ids, axis=0)               # get center point
 
                 # if point -> center dont crosses any vessel add center to centerlist
                 # and add the length to list of areas
-                if not crossingVessel(center, point, tmap):
+                if not crossingVessel(self, center, point, tmap):
                     centers.append(center)
                     areas.append(ids.shape[0])
 
             # apply a random color to all points on the id for displaying the image
             color = np.hstack((np.random.choice(range(255), (3,)), np.array(255)))
             for p in ids:
-                # only add the color if the location is part of the image of (300x300px)
-                if p[0] < 0 or p[0] > 299 or p[1] < 0 or p[1] > 299:
+                # only add the color if the location is part of the image
+                if p[0] < 0 or p[0] >= self.tree.sizeX - 1 or p[1] < 0 or p[1] >= self.tree.sizeY:
                     continue
                 else:
                     img[p[0], p[1]] = color
@@ -175,17 +174,17 @@ def createLabeledImage(size, tmap, point):
     tmap    - binary treemap
     check wheter on the path from point to center is another vessel.
 '''
-def crossingVessel(center, point, tmap):
+def crossingVessel(self, center, point, tmap):
     # if center is out of the image boundaries get largest point in image on
     # the path from point to center
-    if center[0] > 299 or center[0] < 0 or center[1] > 299 or center[1] < 0:
+    if center[0] >= self.tree.sizeX or center[0] < 0 or center[1] >= self.tree.sizeY or center[1] < 0:
         point2center = center - point               # vector point -> center
         for i in np.linspace(1, 0, 100):            # check 100 points on the path
             tmp = point2center * i + point          # get current point
             
             # if they are still out of bounds try next one
             # else use this point
-            if tmp[0] > 299 or tmp[0] < 0 or tmp[1] > 299 or tmp[1] < 0:
+            if tmp[0] >= self.tree.sizeX or tmp[0] < 0 or tmp[1] >= self.tree.sizeY or tmp[1] < 0:
                 continue
             else:
                 center = tmp
@@ -197,7 +196,7 @@ def crossingVessel(center, point, tmap):
     points = np.vstack((x_spaced, y_spaced)).T
 
     # check all points in list if they are white (a vessel)
-    for p in points[5:]:
+    for p in points[int(5./300 * self.tree.sizeX):]:
         if np.array_equal(tmap[p[0], p[1]], [255, 255, 255, 255]):
             return True
     

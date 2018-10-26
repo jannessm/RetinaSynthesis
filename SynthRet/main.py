@@ -11,23 +11,23 @@ import sys
     generate synthetic images. if you want to save the generated files adjust save and path to your needs.
     path is relative to this file.
 '''
-def _generateImage():
+def _generateImage(sizeX, sizeY):
     bkg, fovea = generateBackgroundAndFovea(sizeX,sizeY)
     od_img, od = generateOpticDisc(fovea,sizeX,sizeY)
-    vt, groundTruth = generateVesselsTree(fovea, od)
+    vt, groundTruth = generateVesselsTree(sizeX, sizeY, fovea, od)
     merged = mergeLayer([bkg, od_img, vt])
-    image = addIllumination(merged)
-    return addMask(image), addMask(groundTruth)
+    image, groundTruth = addIllumination(merged, groundTruth)
+    return addMask(image, sizeX, sizeY), addMask(groundTruth, sizeX, sizeY)
 
 
 # generate an image containing the vessels tree
-def generateVesselsTree(fovea, od):
-    tree = Tree(od, fovea)
+def generateVesselsTree(sizeX, sizeY, fovea, od):
+    tree = Tree(sizeX, sizeY, od, fovea)
     tree.growTree()
     return tree.createTreeImage(), tree.createTreeMap()
 
-def generateImages(i=0, total=1, showImages=True, save=False, groundTruthPath="./groundtruths/", imagesPath="./images/"):    
-    im, gt = _generateImage()
+def generateImages(i=0, total=1, sizeX=300, sizeY=300, showImages=True, save=False, groundTruthPath="./groundtruths/", imagesPath="./images/"):    
+    im, gt = _generateImage(sizeX, sizeY)
     if save:
         saveImage(im, i, False, total, groundTruthPath, imagesPath)
         saveImage(gt, i, True,  total, groundTruthPath, imagesPath)
@@ -39,4 +39,6 @@ def generateImages(i=0, total=1, showImages=True, save=False, groundTruthPath=".
 if __name__ == '__main__':
     i = int(sys.argv[1])
     total = int(sys.argv[2])
-    generateImages(i, total, showImages=False, save=True)
+    sizeX = int(sys.argv[3])
+    sizeY = int(sys.argv[4])
+    generateImages(i, total, sizeX, sizeY, showImages=False, save=True)

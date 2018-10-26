@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import math
 from itertools import product, count
 from matplotlib.colors import LinearSegmentedColormap
 
