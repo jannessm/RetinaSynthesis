@@ -21,6 +21,7 @@ def generate_unit_vectors(n):
     phi = np.random.uniform(0, 2*np.pi, (n, n))
     v = np.stack((np.cos(phi), np.sin(phi)), axis=-1)
     return v
+
 #Perlin noise function in 2D
 #noise function implementation based on Ken perlin's paper (improving noise) and python version of ruslan karimov
 def generate_2D_perlin_noise(size, ns):
@@ -46,7 +47,7 @@ def generate_2D_perlin_noise(size, ns):
     d0 = d[..., 0].copy().reshape(ns, ns, 1, 2)
     d1 = d[..., 1].copy().reshape(ns, ns, 2, 1)
  
-    m=np.zeros((size,size))
+    m=np.zeros((size,size), dtype=np.float32)
     t = m.reshape(nc, ns, nc, ns)
 
     # calculate values for a NSxNS patch at a time

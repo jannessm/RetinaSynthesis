@@ -4,6 +4,7 @@ from skimage import transform
 import numpy as np
 import matplotlib.pyplot as plt
 from utils import showImage, makeBinary, meanCoverage
+from PIL import Image, ImageDraw
 
 '''
     TreeMap
@@ -15,10 +16,15 @@ class TreeMap:
         self.arteryColor = np.array((110. / 255, 10. / 255, 5. / 255))
         self.white = np.array((1., 1., 1.))
         self.vessels = []
-        self.treeMap = np.zeros((sizeX,sizeY,4), dtype=int)
-        self.treeImage = np.zeros((sizeX,sizeY,4), dtype=int)
+        self.treeMap = np.zeros((sizeX,sizeY,4), dtype=np.float32)
+        self.treeImage = np.zeros((sizeX,sizeY,4), dtype=np.float32)
         self.sizeX = sizeX
         self.sizeY = sizeY
+
+        self.img = Image.new('RGBA', (self.sizeY, self.sizeX))
+        self.mask = Image.new('L', (self.sizeY, self.sizeX))
+        self.draw = ImageDraw.Draw(self.img)
+        self.drawMask = ImageDraw.Draw(self.mask)
 
     '''
         addBranch
@@ -51,8 +57,8 @@ class TreeMap:
         # calculate widths and colors for each point
         r = np.linspace(0, total_len * 2, total_len * 2)
         colors = np.repeat(color[None, :], total_len * 2, axis=0)
-        black_white = np.repeat(self.white[None, :], total_len * 2, axis=0)
-        black_white = np.hstack((black_white, np.linspace(1, 1, total_len * 2)[:, None]))
+        #black_white = np.repeat(self.white[None, :], total_len * 2, axis=0)
+        #black_white = np.hstack((black_white, np.linspace(1, 1, total_len * 2)[:, None]))
         if branch.level == 1:                   # for main vessels
             widths = 0.75 * r / self.sizeX + 2. * self.sizeX / 565.
             colors = np.hstack((colors, np.linspace(0.4, 0.9, total_len * 2)[:, None]))
@@ -68,62 +74,33 @@ class TreeMap:
         # create array of all lines from x_i to x_i+1
         segments = np.concatenate([points[:-1], points[1:]], axis=1)[::-1]
 
-        self.vessels.append([segments, widths, colors, black_white])
-        self.updateImg()
-        self.updateMap()
+        newVessels = [segments, widths, colors]
+        self.vessels.append(newVessels)#, black_white])
+        self.update(newVessels)
     
     '''
-        updateImg
+        update
         updates both images treeImage and treeMap
     '''
-    def updateImg(self):
-        self.treeImage = self._update('color')
+    def update(self, l):
+        segments = l[0];
+        for i in range(0, segments.shape[0]): # todo: draw.line also accepts lists of tuples
+            self.draw.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(tuple((l[2][i]*255).astype(int))), width=int(l[1][i] + 0.5))
+            self.drawMask.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(255), width=int(l[1][i] + 0.5))
 
-    def updateMap(self):
-        self.treeMap = self._update('black_white')
-        self.treeMap[self.treeMap.sum() <= 1000] = [0,0,0,0]
-
-    def _update(self, color):
-        color_id = 3 if color == 'black_white' else 2
-        fig, ax = plt.subplots(figsize=(self.sizeX/100,self.sizeY/100), dpi=100)       # init plt
-        fig.set_facecolor((0., 0., 0., 0.))
-        ax.set_facecolor((0., 0., 0., 0.))
-        plt.axis("off")
-        plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
-
-        # set dimensions of plot
-        ax.set_xlim(0,self.sizeX)
-        ax.set_ylim(0,self.sizeY)
-
-        for l in self.vessels:                              # add each vessel to plt
-            lc = LineCollection(l[0], linewidths=l[1], color=l[color_id])
-            ax.add_collection(lc)
-
-        # convert plt to np.ndarray
-        plt.show(block=False)                               # render plt
-        fig.canvas.draw()                                   # draw the canveas
-        w,h = fig.canvas.get_width_height()                 # get canvas properties
-        
-        # save canvas as numpy array in buf
-        buf = np.fromstring (fig.canvas.tostring_argb(), dtype=np.uint8)
-        plt.close()                                         # close plt
-        buf.shape = (w, h, 4)                               # set shape of buffer
-        buf = np.roll(buf, 3, axis=2)
-        buf = np.transpose(buf, (1,0,2))                    # transpose the image
-        buf = transform.resize(buf, (self.sizeX,self.sizeY))              # resize image wished size
-        buf = np.fliplr(buf)                                # correct orientation
-        if buf.dtype == float:                              # if buf is of type float convert it to int
-            buf = buf * 255
-        
-        buf[buf.sum(axis=2) == 765] = [0,0,0,0]             # make sure that background is black
-
-        return buf.astype(int)                              # return result buf
+        self.treeImage = np.array(self.img).astype(np.float32) 
+        # print(self.treeImage.shape)
+        treeMap = np.array(self.mask).astype(np.float32)            # make image binary
+        notransp = np.ones(treeMap.shape, dtype=np.float32) * 255             
+        # update treeMap
+        self.treeMap = np.dstack((treeMap, treeMap, treeMap, notransp))
 
     '''
         getImg
         return the current image
     '''
     def getImg(self):
+        assert(self.treeImage.dtype == np.float32)
         return self.treeImage
 
     '''
@@ -131,4 +108,5 @@ class TreeMap:
         return the current binary image
     '''
     def getMap(self):
+        assert(self.treeMap.dtype == np.float32)
         return self.treeMap

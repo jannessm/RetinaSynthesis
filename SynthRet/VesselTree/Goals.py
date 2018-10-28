@@ -83,6 +83,7 @@ def nextGoalPoint(self, point):
             size += 5
         
         result = None                                           # init return value
+
         # label last working image
         img, centers, areas = createLabeledImage(self, size, tmap, point)
 
@@ -123,7 +124,7 @@ def nextGoalPoint(self, point):
     of the area, if point -> center is crossing any vessels, and if area is a neighbour of the vessel
     returns labeled image, all centers, and all areasizes
 '''
-def createLabeledImage(self, size, tmap, point):
+def createLabeledImage(self, size, tmap, point, createIdImage=False):
 
     img = np.zeros((self.tree.sizeX, self.tree.sizeY,4))                 # init labeled image
     centers = []                                # init list of centers
@@ -155,15 +156,16 @@ def createLabeledImage(self, size, tmap, point):
                 if not crossingVessel(self, center, point, tmap):
                     centers.append(center)
                     areas.append(ids.shape[0])
-
-            # apply a random color to all points on the id for displaying the image
-            color = np.hstack((np.random.choice(range(255), (3,)), np.array(255)))
-            for p in ids:
-                # only add the color if the location is part of the image
-                if p[0] < 0 or p[0] >= self.tree.sizeX - 1 or p[1] < 0 or p[1] >= self.tree.sizeY:
-                    continue
-                else:
-                    img[p[0], p[1]] = color
+            
+            if createIdImage:
+                # apply a random color to all points on the id for displaying the image
+                color = np.hstack((np.random.choice(range(255), (3,)), np.array(255)))
+                for p in ids:
+                    # only add the color if the location is part of the image
+                    if p[0] < 0 or p[0] >= self.tree.sizeX - 1 or p[1] < 0 or p[1] >= self.tree.sizeY:
+                        continue
+                    else:
+                        img[p[0], p[1]] = color
 
     return img, centers, areas
 

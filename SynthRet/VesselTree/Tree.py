@@ -33,7 +33,7 @@ class Tree:
             self.growingBranches.append(b)  # add it to list of growing branches
 
         # constants
-        self.covThreshold = 0.058        # coverage threshold of groundtruth
+        self.covThreshold = 0.0002        # coverage threshold of groundtruth
 #        self.covThreshold = 0.1        # coverage threshold of groundtruth (0.1142374833313129 - 0.009810901203399423)
 
     '''

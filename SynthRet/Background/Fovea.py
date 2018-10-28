@@ -8,7 +8,7 @@ from perlinNoise import getTexture
 # generate an image with the background and fovea
 def generateBackgroundAndFovea(sizeX,sizeY):
     
-       img=np.zeros((sizeX, sizeY, 4),np.uint8)  
+       img=np.zeros((sizeX, sizeY, 4), dtype=np.float32)  
        #fovea position
        cx=sizeX/2.0+np.random.randint(-10,10)
        cy=sizeX/2.0+np.random.randint(-10,10)

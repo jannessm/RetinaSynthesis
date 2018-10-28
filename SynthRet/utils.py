@@ -14,24 +14,26 @@ def mergeLayer(collect):
     # change each img to float
     for i in range(len(collect)):
         collect[i] = collect[i].astype(float) / 255
+        assert(not collect[i].dtype == np.float32)
 
     dimg = collect[0]                               # init lowest layer
-    for img in collect:                             # interate over all other images
-        if img is None or np.array_equal(img, dimg):# skip first image because of init
+    for idx in range(1, len(collect)):
+        img = collect[idx]
+        if img is None:
             continue
-
+            
         # a (img) over b (dimg) (porter-duff-algorithm)
-        a_a = img[:, :, 3][:, :, np.newaxis]
-        a_b = dimg[:, :, 3][:, :, np.newaxis]
+        a_a = img[:, :, 3][:, :, np.newaxis] / 255
+        a_b = dimg[:, :, 3][:, :, np.newaxis] / 255
         a_c = a_a + (1 - a_a) * a_b
         a_c[ a_c == 0 ] = 1                         # make sure no division by 0 is happening
 
         a_A = np.multiply(img, a_a)
         a_B = np.multiply(dimg, a_b)
         dimg = np.divide(a_A + np.multiply(a_B, 1 - a_a), a_c)
-        zero = np.where(a_c == 0)
-        dimg[zero[0], zero[1], :] = [0,0,0,0]
-    return (dimg * 255).astype(int)
+        #zero = np.where(a_c == 0)
+        #dimg[zero[0], zero[1], :] = [0,0,0,0]
+    return dimg
 
 '''
     makeBinary
@@ -58,7 +60,7 @@ def makeBinary(img, threshold):
     binary[np.where(grey > threshold)] = 255
     binary[np.where(grey < threshold)] = 0
 
-    return binary.astype(int)
+    return binary
 
 '''
     addIllumination
@@ -178,7 +180,7 @@ def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./gro
         print('%svessel%s.png'%(path,i_str))
         imsave(                                                 # save image
             '%svessel%s.png'%(path,i_str), 
-            np.transpose(imgs[i], (1,0,2))[:,:,:3]
+            np.transpose(imgs[i].astype(int), (1,0,2))[:,:,:3]
         )
 
 '''
@@ -196,14 +198,21 @@ def rgba2rgb(img):
     add black mask on top of the image
 '''
 def addMask(image, sizeX, sizeY):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    if not os.path.isfile(dir_path + '/mask.npy'):
-        final_mask = prepareMask(dir_path, sizeX, sizeY)
-    else:
-        final_mask = np.load(dir_path + '/mask.npy')
-        if not final_mask.shape == (sizeX,sizeY,4):
-            final_mask = prepareMask(dir_path, sizeX, sizeY)
-    return mergeLayer([image, final_mask])
+    if not addMask.final_mask_initialized:
+        print("loading mask")
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        if not os.path.isfile(dir_path + '/mask.npy'):
+            addMask.final_mask = prepareMask(dir_path, sizeX, sizeY).astype(np.float32)
+        else:
+            addMask.final_mask = np.load(dir_path + '/mask.npy').astype(np.float32)
+            if not addMask.final_mask.shape == (sizeX,sizeY,4):
+                addMask.final_mask = prepareMask(dir_path, sizeX, sizeY).astype(np.float32)
+        addMask.final_mask_initialized = True
+        return mergeLayer([image, addMask.final_mask])
+    return mergeLayer([image, addMask.final_mask])
+
+addMask.final_mask_initialized = False
+addMask.final_mask = None
 
 '''
     prepareMask
@@ -248,15 +257,8 @@ def calculateMeanCoverage(path, sizeX, sizeY):
     meanCoverage
     calculates the mean coverage of a given groundtruth
 '''
-def meanCoverage(img, sizeX, sizeY):
-    black = np.zeros(img.shape)
-    black[:,:,3] = 255
-    if not np.max(img) == 255:
-        image = img * 255
-    else:
-        image = img
-    image = mergeLayer([black, image])
-    return np.mean(addMask(image, sizeX, sizeY)[:,:,:3]) / 255
+def meanCoverage(image, sizeX, sizeY):
+    return np.mean(addMask(image, sizeX, sizeY)[:,:,0]) / 255
 
 if __name__ == '__main__':
     sizeX = 565
@@ -270,4 +272,4 @@ if __name__ == '__main__':
         mypath = dir_path + p
         means = calculateMeanCoverage(mypath, sizeX, sizeY)
 
-    # result: dilation of 0 mean = 0.1142374833313129; std = 0.009810901203399423
+    # result: dilation of 0 mean = 0.00044903899554091833; std = 3.860214848429707e-05
