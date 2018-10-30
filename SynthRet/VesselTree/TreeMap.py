@@ -57,8 +57,6 @@ class TreeMap:
         # calculate widths and colors for each point
         r = np.linspace(0, total_len * 2, total_len * 2)
         colors = np.repeat(color[None, :], total_len * 2, axis=0)
-        #black_white = np.repeat(self.white[None, :], total_len * 2, axis=0)
-        #black_white = np.hstack((black_white, np.linspace(1, 1, total_len * 2)[:, None]))
         if branch.level == 1:                   # for main vessels
             widths = 0.75 * r / self.sizeX + 2. * self.sizeX / 565.
             colors = np.hstack((colors, np.linspace(0.4, 0.9, total_len * 2)[:, None]))
@@ -75,7 +73,7 @@ class TreeMap:
         segments = np.concatenate([points[:-1], points[1:]], axis=1)[::-1]
 
         newVessels = [segments, widths, colors]
-        self.vessels.append(newVessels)#, black_white])
+        self.vessels.append(newVessels)
         self.update(newVessels)
     
     '''
@@ -88,10 +86,10 @@ class TreeMap:
             self.draw.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(tuple((l[2][i]*255).astype(int))), width=int(l[1][i] + 0.5))
             self.drawMask.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(255), width=int(l[1][i] + 0.5))
 
-        self.treeImage = np.array(self.img).astype(np.float32) 
+        self.treeImage = np.array(self.img).astype(np.float32) / 255
         # print(self.treeImage.shape)
         treeMap = np.array(self.mask).astype(np.float32)            # make image binary
-        notransp = np.ones(treeMap.shape, dtype=np.float32) * 255             
+        notransp = np.ones(treeMap.shape, dtype=np.float32) / 255
         # update treeMap
         self.treeMap = np.dstack((treeMap, treeMap, treeMap, notransp))
 

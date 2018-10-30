@@ -28,7 +28,7 @@ def generateBackgroundAndFovea(sizeX,sizeY):
                 img[y,x,1] = gValue(x,y,cx,cy,gbx,gby,sizeX) 
                 img[y,x,2] = bValue(x,y,cx,cy,gbx,gby,sizeX)
        
-       return img,PosFovea
+       return img / 255,PosFovea
 #RGB intensity model based on equations in the paper of Samuele Fiorini12 et al 	
 def rValue(x,y,cx,cy,size):
     #amplitude

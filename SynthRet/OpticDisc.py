@@ -19,7 +19,7 @@ def generateOpticDisc(fovea,sizeX,sizeY):
                 odimg[j,i,2] = odb(i,j,rx,ry,gbx,gby,sizeX,sizeY)
                 odimg[j,i,3] = 255
 
-    return np.transpose(odimg,(1,0,2)), [rx,ry] 
+    return np.transpose(odimg,(1,0,2)) / 255, [rx,ry] 
 
 def odr(x,y,rx,ry,sizeX,sizeY):
     #parameters

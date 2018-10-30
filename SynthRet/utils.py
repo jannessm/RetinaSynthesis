@@ -13,8 +13,8 @@ def mergeLayer(collect):
 
     # change each img to float
     for i in range(len(collect)):
-        collect[i] = collect[i].astype(float) / 255
-        assert(not collect[i].dtype == np.float32)
+        if np.max(collect[i]) == 255:
+            collect[i] = collect[i].astype(float) / 255
 
     dimg = collect[0]                               # init lowest layer
     for idx in range(1, len(collect)):
@@ -23,8 +23,8 @@ def mergeLayer(collect):
             continue
             
         # a (img) over b (dimg) (porter-duff-algorithm)
-        a_a = img[:, :, 3][:, :, np.newaxis] / 255
-        a_b = dimg[:, :, 3][:, :, np.newaxis] / 255
+        a_a = img[:, :, 3][:, :, np.newaxis]
+        a_b = dimg[:, :, 3][:, :, np.newaxis]
         a_c = a_a + (1 - a_a) * a_b
         a_c[ a_c == 0 ] = 1                         # make sure no division by 0 is happening
 
@@ -178,9 +178,10 @@ def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./gro
         if groundtruth:
             path = groundtruthPath
         print('%svessel%s.png'%(path,i_str))
+        print(np.min(imgs[i]), np.max(imgs[i]))
         imsave(                                                 # save image
             '%svessel%s.png'%(path,i_str), 
-            np.transpose(imgs[i].astype(int), (1,0,2))[:,:,:3]
+            np.transpose(imgs[i], (1,0,2))[:,:,:3]
         )
 
 '''
