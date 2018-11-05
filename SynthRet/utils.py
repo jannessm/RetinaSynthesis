@@ -177,8 +177,7 @@ def saveImage(imgs, j=None, groundtruth=None, maxId=None, groundtruthPath="./gro
         path = imagePath
         if groundtruth:
             path = groundtruthPath
-        print('%svessel%s.png'%(path,i_str))
-        print(np.min(imgs[i]), np.max(imgs[i]))
+        #print('%svessel%s.png'%(path,i_str))
         imsave(                                                 # save image
             '%svessel%s.png'%(path,i_str), 
             np.transpose(imgs[i], (1,0,2))[:,:,:3]
@@ -200,7 +199,7 @@ def rgba2rgb(img):
 '''
 def addMask(image, sizeX, sizeY):
     if not addMask.final_mask_initialized:
-        print("loading mask")
+        #print("loading mask")
         dir_path = os.path.dirname(os.path.realpath(__file__))
         if not os.path.isfile(dir_path + '/mask.npy'):
             addMask.final_mask = prepareMask(dir_path, sizeX, sizeY).astype(np.float32)
