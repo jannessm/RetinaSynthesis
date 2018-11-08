@@ -24,7 +24,7 @@ def _generateImage(sizeX, sizeY):
 def generateVesselsTree(sizeX, sizeY, fovea, od):
     tree = Tree(sizeX, sizeY, od, fovea)
     tree.growTree()
-    return tree.createTreeImage(), tree.createTreeMap()
+    return tree.createAliasedImages()
 
 def generateImages(i=0, total=1, sizeX=300, sizeY=300, showImages=True, save=False, groundTruthPath="./groundtruths/", imagesPath="./images/"):    
     im, gt = _generateImage(sizeX, sizeY)
