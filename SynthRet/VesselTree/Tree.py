@@ -33,7 +33,7 @@ class Tree:
             self.growingBranches.append(b)  # add it to list of growing branches
 
         # constants
-        self.covThreshold = 0.00023         # coverage threshold of groundtruth
+        self.covThreshold = 0.00021         # coverage threshold of groundtruth
 
     '''
         getRandomGoal
@@ -84,7 +84,7 @@ class Tree:
                     b.addBranch(p)
 
     '''
-        createTreepImage
+        createTreeImage
         get the current tree image
     '''
     def createTreeImage(self):
@@ -96,6 +96,13 @@ class Tree:
     '''
     def createTreeMap(self):
         return self.treeMap.getMap()
+
+    '''
+        createAliasedTreeImage
+        get the current tree image
+    '''
+    def createAliasedImages(self):
+        return self.treeMap.getAliasedImgs()
 
     '''
         b2arr
