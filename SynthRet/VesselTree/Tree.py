@@ -101,8 +101,8 @@ class Tree:
         createAliasedTreeImage
         get the current tree image
     '''
-    def createAliasedImages(self):
-        return self.treeMap.getAliasedImgs()
+    def createSupersampledImages(self, supersampling):
+        return self.treeMap.createSupersampledImages(supersampling)
 
     '''
         b2arr

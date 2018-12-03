@@ -3,6 +3,9 @@ from matplotlib import pyplot as plt
 from skimage import exposure, transform, draw
 from skimage.io import imread, imsave
 import os
+import math
+import random
+
 np.seterr(divide="ignore", invalid="ignore")
 '''
     mergeLayer
@@ -13,15 +16,15 @@ def mergeLayer(collect):
 
     # change each img to float
     for i in range(len(collect)):
-        if np.max(collect[i]) == 255:
-            collect[i] = collect[i].astype(float) / 255
+        assert(collect[i].dtype == np.float32)
 
     dimg = collect[0]                               # init lowest layer
     for idx in range(1, len(collect)):
         img = collect[idx]
-        if img is None:
-            continue
+        #if img is None:
+        #    continue
             
+        
         # a (img) over b (dimg) (porter-duff-algorithm)
         a_a = img[:, :, 3][:, :, np.newaxis]
         a_b = dimg[:, :, 3][:, :, np.newaxis]
@@ -56,8 +59,8 @@ def makeBinary(img, threshold):
     grey = np.sum(grey, axis=2)
 
     # apply threshold
-    binary = np.ones(grey.shape) * 255
-    binary[np.where(grey > threshold)] = 255
+    binary = np.ones(grey.shape, dtype=np.float32)
+    binary[np.where(grey > threshold)] = 1
     binary[np.where(grey < threshold)] = 0
 
     return binary
@@ -83,6 +86,28 @@ def addIllumination(image, groundtruth): #detail addjustment
     if np.random.rand() < 0.5:
         image = np.flipud(image)
         groundtruth = np.flipud(groundtruth)
+        
+        
+    chromaticAbberation = True
+    if chromaticAbberation:
+        center = np.array([[image.shape[0]/2, image.shape[1]/2]])
+        scale = 1.0 / (image.shape[0]*image.shape[0])
+
+        def computeDistortionMap(coeff, pairs):
+            pairs = pairs - center
+            sqrD = np.sum(pairs**2, axis=1)
+            pairs = pairs * (1.0 + sqrD[:,np.newaxis] * scale * coeff) + center
+            return pairs
+            
+        def radialDistortion(coeff):
+            return lambda pairs : computeDistortionMap(coeff, pairs)
+        
+        kappa = random.uniform(-0.04, 0.04)
+        
+        image[:,:,0] = transform.warp(image[:,:,0], 
+                             radialDistortion(-kappa))
+        image[:,:,2] = transform.warp(image[:,:,2], 
+                             radialDistortion(kappa))
 
     # add gaussian noise
     #gauss = np.random.normal(0, 0.1, (300, 300, 3)) * 255 * np.random.rand() * 0.1
@@ -90,7 +115,7 @@ def addIllumination(image, groundtruth): #detail addjustment
     #gauss = np.dstack((gauss, alpha))
     #img += gauss.astype(int)
 
-    return np.clip(image, 0, 255), np.clip(groundtruth, 0, 255)
+    return np.clip(image*255, 0, 255), np.clip(groundtruth*255, 0, 255)
 
 '''
     showImage
@@ -197,16 +222,38 @@ def rgba2rgb(img):
 '''
     add black mask on top of the image
 '''
+def addMaskSupersampled(image, sizeX, sizeY,supersample):
+    if not addMaskSupersampled.final_mask_initialized:
+        #print("loading mask")
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        if not os.path.isfile(dir_path + '/maskSupersample.npy'):
+            addMaskSupersampled.final_mask = prepareMask(dir_path, sizeX*supersample, sizeY*supersample, '/maskSupersample.npy')
+        else:
+            addMaskSupersampled.final_mask = np.load(dir_path + '/maskSupersample.npy').astype(np.float32)
+            if not addMaskSupersampled.final_mask.shape == (sizeX*supersample,sizeY*supersample,4):
+                addMaskSupersampled.final_mask = prepareMask(dir_path, sizeX*supersample, sizeY*supersample, '/maskSupersample.npy')
+        addMaskSupersampled.final_mask_initialized = True
+        return mergeLayer([image, addMaskSupersampled.final_mask])
+    return mergeLayer([image, addMaskSupersampled.final_mask])
+
+addMaskSupersampled.final_mask_initialized = False
+addMaskSupersampled.final_mask = None
+
+
+'''
+    add black mask on top of the image
+'''
 def addMask(image, sizeX, sizeY):
+    assert(image.dtype == np.float32)
     if not addMask.final_mask_initialized:
         #print("loading mask")
         dir_path = os.path.dirname(os.path.realpath(__file__))
         if not os.path.isfile(dir_path + '/mask.npy'):
-            addMask.final_mask = prepareMask(dir_path, sizeX, sizeY).astype(np.float32)
+            addMask.final_mask = prepareMask(dir_path, sizeX, sizeY, '/mask.npy')
         else:
             addMask.final_mask = np.load(dir_path + '/mask.npy').astype(np.float32)
             if not addMask.final_mask.shape == (sizeX,sizeY,4):
-                addMask.final_mask = prepareMask(dir_path, sizeX, sizeY).astype(np.float32)
+                addMask.final_mask = prepareMask(dir_path, sizeX, sizeY, '/mask.npy')
         addMask.final_mask_initialized = True
         return mergeLayer([image, addMask.final_mask])
     return mergeLayer([image, addMask.final_mask])
@@ -214,20 +261,21 @@ def addMask(image, sizeX, sizeY):
 addMask.final_mask_initialized = False
 addMask.final_mask = None
 
+
 '''
     prepareMask
     load a mask from the DRIVE dataset and bring it into the wanted format 
 '''
-def prepareMask(dir_path, sizeX, sizeY):
+def prepareMask(dir_path, sizeX, sizeY, filename):
     mask = imread(dir_path + '/../DRIVE/test/mask/01_test_mask.gif')
     mask = transform.resize(mask, (sizeY, sizeX))
     mask = mask.T
-    final_mask = np.zeros((sizeX, sizeY, 4))
+    final_mask = np.zeros((sizeX, sizeY, 4), dtype=np.float32)
     black = np.where(mask < 0.5)
     transparent = np.where(mask >= 0.5)
-    final_mask[black] = [0,0,0,255]
+    final_mask[black] = [0,0,0,1.0]
     final_mask[transparent] = [0,0,0,0]
-    np.save(dir_path + '/mask.npy', final_mask)
+    np.save(dir_path + filename, final_mask)
     return final_mask
 
 '''
@@ -238,14 +286,14 @@ def calculateMeanCoverage(path, sizeX, sizeY):
     images = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     means = []
     for f in images: 
-        binary = imread(path+f)
-        binary = transform.resize(binary, (sizeY, sizeX))
+        binary = imread(path+f).astype(np.float32)
+        binary = transform.resize(binary, (sizeY, sizeX), preserve_range=True, mode='edge', anti_aliasing=True).astype(np.float32)
         binary[np.where(binary > 0)] = 1
         if len(binary.shape) < 3:
             binary = np.dstack((binary, binary, binary, binary))
         else:
-            binary = np.dstack((binary, np.ones((binary.shape[0], binary.shape[1]))))
-        binary = (binary * 255).astype(int)
+            binary = np.dstack((binary, np.ones((binary.shape[0], binary.shape[1]), dtype=np.float32)))
+        binary = binary * 255
         binary = np.transpose(binary, (1,0,2))
         binary[:,:,3] = 255
         means.append(meanCoverage(binary, sizeX, sizeY))
@@ -258,7 +306,10 @@ def calculateMeanCoverage(path, sizeX, sizeY):
     calculates the mean coverage of a given groundtruth
 '''
 def meanCoverage(image, sizeX, sizeY):
-    return np.mean(addMask(image, sizeX, sizeY)[:,:,0]) / 255
+    m = addMask(image, sizeX, sizeY)[:,:,0]
+    cov = np.mean(m) / 255
+    #print("coverage: {}".format(cov))
+    return cov
 
 if __name__ == '__main__':
     sizeX = 565

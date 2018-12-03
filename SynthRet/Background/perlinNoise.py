@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import matplotlib.colors as colors
 import math
+import random
 from itertools import product, count
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -62,17 +64,41 @@ def generate_2D_perlin_noise(size, ns):
 
 #get natural peformance by mixing noise functions
 def getTexture(size):
-    size=int((size/100)+1)*100
-    img0 = generate_2D_perlin_noise(size,int(size/10))
-    img1 = generate_2D_perlin_noise(size,int(size/10))
-    img2 = generate_2D_perlin_noise(size,int(size/10))
-    img3 = generate_2D_perlin_noise(size,int(size/5))
-    
-    img = img0*0.4+img1*0.2+img2*0.1+img3*0.2
+    size=int((size/128)+1)*128
+    img0 = generate_2D_perlin_noise(size,int(size/8))
+    img1 = generate_2D_perlin_noise(size,int(size/16))
+    img2 = generate_2D_perlin_noise(size,int(size/32))
+    img3 = generate_2D_perlin_noise(size,int(size/64))
+    img4 = generate_2D_perlin_noise(size,int(size/128))
+    img = img0*0.1+img1*0.1+img2*0.1+img3*0.1+img4*0.1
+    img = img*0.35 * (300 / size)
     #map noise value to RGB value of retinal image's  background
-    cmap = LinearSegmentedColormap.from_list('cloud', [ '#BD321C','#D9321C','#D93823'])                                     
-    img = cm.ScalarMappable(cmap=cmap).to_rgba(img)
+    #cmap = LinearSegmentedColormap.from_list('cloud', [ '#BD321C','#D9321C','#D93823'])
+    #cmap = LinearSegmentedColormap.from_list('cloud', [ '#000000', '#FFFFFF'])
+    cmap0 = LinearSegmentedColormap.from_list('cloud', [ '#b66451', '#dab375'])
+    cmap1 = LinearSegmentedColormap.from_list('cloud', [ '#cd6836', '#e5b177'])
+    cmap2 = LinearSegmentedColormap.from_list('cloud', [ '#ddb061', '#d25b56'])
+    cmap3 = LinearSegmentedColormap.from_list('cloud', [ '#d25662', '#cc7553'])
+    cmap4 = LinearSegmentedColormap.from_list('cloud', [ '#BD321C', '#D93823'])
+    norm = colors.Normalize(vmin=-1, vmax=1, clip=True)
+    img = cm.ScalarMappable(cmap=random.choice([cmap0, cmap1, cmap2, cmap3, cmap4]), norm=norm).to_rgba(img)
+#    img = cm.ScalarMappable(cmap=cmap, norm=norm).to_rgba(img)
+
+
+    img0 = generate_2D_perlin_noise(size,int(size/8))
+    img1 = generate_2D_perlin_noise(size,int(size/16))
+    img2 = generate_2D_perlin_noise(size,int(size/32))
+    img3 = generate_2D_perlin_noise(size,int(size/64))
+    img4 = generate_2D_perlin_noise(size,int(size/128))
+    brightness = img0*0.2+img1*0.1+img2*0.1+img3*0.1+img4*0.2
+    brightness = 1.0 + brightness * 0.04 * (300 / size)
+    
+    img[:,:,0] *= brightness
+    img[:,:,1] *= brightness
+    img[:,:,2] *= brightness
+
     
     return img
-#img=getTexture(596)
+
+#img=getTexture(600)
 #plt.imshow(img)

@@ -6,29 +6,50 @@ import matplotlib.pyplot as plt
 from skimage import io, transform, draw, data
 from perlinNoise import getTexture
 # generate an image with the background and fovea
-def generateBackgroundAndFovea(sizeX,sizeY):
+def generateBackgroundAndFovea(sizeX,sizeY,supersample):
     
-       img=np.zeros((sizeX, sizeY, 4), dtype=np.float32)  
+       img=np.zeros((sizeX*supersample, sizeY*supersample, 4), dtype=np.float32)  
        #fovea position
-       cx=sizeX/2.0+np.random.randint(-10,10)
-       cy=sizeX/2.0+np.random.randint(-10,10)
+       cx=(0.5+np.random.uniform(-10/300,10/300))*sizeX*supersample
+       cy=(0.5+np.random.uniform(-10/300,10/300))*sizeX*supersample
        PosFovea=(cy,cx)
        #Perlin noise texture
-       img1=getTexture(sizeX)
-       img[:,:,]=img1[:sizeX,:sizeY,]*255
+       img1=getTexture(sizeX*supersample)
+       img[:,:,]=img1[:sizeX*supersample,:sizeY*supersample,]
       
-       rr,cc=draw.circle(cy,cx,sizeX/12.0)
-       gbx=cx + np.random.randint(-1,1)
-       gby=cy + np.random.randint(-1,1)
+       radius = sizeX/12.0*supersample
+       rr,cc=draw.circle(cy,cx,radius)
+       
+
+       
+       
+       #gbx=cx + np.random.uniform(-1,1)/300*sizeX*supersample
+       #gby=cy + np.random.uniform(-1,1)/300*sizeX*supersample
+       
        for i in range(len(rr)):
                 y=rr[i]
                 x=cc[i]
+                
+                sqr_d = (x-cx)**2 + (y-cy)**2
+                f = sqr_d / (radius*radius)
+                
+                f = min(f, 1.0)
+                f = 3.0 * f - 2.0 * f**1.5
+                
+                f = 0.5 + 0.5 * f
+                
+                img[y,x,0] = img[y,x,0] * f
+                img[y,x,1] = img[y,x,1] * f
+                img[y,x,2] = img[y,x,2] * f
+                
+                '''
                 #r,g,b channel intensity value
-                img[y,x,0] = rValue(x,y,cx,cy,sizeX) 
-                img[y,x,1] = gValue(x,y,cx,cy,gbx,gby,sizeX) 
-                img[y,x,2] = bValue(x,y,cx,cy,gbx,gby,sizeX)
-       
-       return img / 255,PosFovea
+                img[y,x,0] = rValue(x,y,cx,cy,sizeX*supersample) 
+                img[y,x,1] = gValue(x,y,cx,cy,gbx,gby,sizeX*supersample) 
+                img[y,x,2] = bValue(x,y,cx,cy,gbx,gby,sizeX*supersample)
+                '''
+
+       return img,(PosFovea[0]/supersample, PosFovea[1]/supersample)
 #RGB intensity model based on equations in the paper of Samuele Fiorini12 et al 	
 def rValue(x,y,cx,cy,size):
     #amplitude
@@ -39,7 +60,8 @@ def rValue(x,y,cx,cy,size):
     # oscillating
     h=1.22
     w=2.0387
-    exponentr = -((x-cx+h*np.cos(w*time.time()))/ther)**2 - ((y-cy+h*np.cos(w*time.time()))/ther)**2
+    t = math.atan2(y-cy, x-cx)
+    exponentr = -((x-cx+h*np.cos(w*t))/ther)**2 - ((y-cy+h*np.cos(w*t))/ther)**2
     #r intensity value
     red = r+1/(a+math.exp(exponentr))  
     return red
@@ -76,5 +98,5 @@ def gValue(x,y,cx,cy,gbx,gby,size):
     green = r-k*math.exp(exponentgb)  
     return green
 
-#img,pos=generateBackgroundAndFovea(569.596)
+#img,pos=generateBackgroundAndFovea(300, 300, 2)
 #io.imshow(img)

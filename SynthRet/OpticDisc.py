@@ -1,33 +1,41 @@
 import numpy as np
 from skimage import io
-import time
+import math
 
-def generateOpticDisc(fovea,sizeX,sizeY):
-    odimg = np.zeros((sizeY, sizeX, 4), dtype=np.float32)
+def generateOpticDisc(fovea,sizeX,sizeY,supersample):
+    odimg = np.zeros((sizeY*supersample, sizeX*supersample, 4), dtype=np.float32)
     
     
-    rx = fovea[0] + 77*np.random.choice([1])*round(sizeX/300.0) + np.random.randint(-5,6)*round(sizeX/300.0)
-    ry = fovea[1] + np.random.randint(-3,4)*round(sizeX/300.0)
-    gbx = rx + np.random.randint(-2,3)*round(sizeX/300.0)
-    gby = ry + np.random.randint(-2,3)*round(sizeX/300.0)
-    
-    for i in np.arange(sizeX):
-        for j in np.arange(sizeY):
-            if odr(i,j,rx,ry,sizeX,sizeY) > 245:
-                odimg[j,i,0] = odr(i,j,rx,ry,sizeX,sizeY)
-                odimg[j,i,1] = odg(i,j,rx,ry,gbx,gby,sizeX,sizeY) 
-                odimg[j,i,2] = odb(i,j,rx,ry,gbx,gby,sizeX,sizeY)
-                odimg[j,i,3] = 255
+    rx = fovea[0]*supersample + 77*np.random.choice([1])*sizeX/300.0*supersample + np.random.uniform(-5,6)*sizeX/300.0*supersample
+    ry = fovea[1]*supersample + np.random.uniform(-3,4)*sizeX/300.0*supersample
+    gbx = rx + np.random.uniform(-2,3)*sizeX/300.0*supersample
+    gby = ry + np.random.uniform(-2,3)*sizeX/300.0*supersample
 
-    return np.transpose(odimg,(1,0,2)) / 255, [rx,ry] 
+    xrange = range(int(rx - 100*sizeX/300), int(rx + 100*sizeX/300))
+    yrange = range(int(ry - 100*sizeX/300), int(ry + 100*sizeX/300))
+    
+    for i in xrange:
+        for j in yrange:
+            if odr(i,j,rx,ry,sizeX*supersample,sizeY*supersample) > 245:
+                odimg[j,i,0] = odr(i,j,rx,ry,sizeX*supersample,sizeY*supersample)
+                odimg[j,i,1] = odg(i,j,rx,ry,gbx,gby,sizeX*supersample,sizeY*supersample) 
+                odimg[j,i,2] = odb(i,j,rx,ry,gbx,gby,sizeX*supersample,sizeY*supersample)
+                odimg[j,i,3] = 150 # make this a bit transparent
+
+    return np.transpose(odimg,(1,0,2)) / 255, [rx/supersample,ry/supersample] 
 
 def odr(x,y,rx,ry,sizeX,sizeY):
     #parameters
     zr = 254.211+(np.random.random_sample()-0.5)*1
     
-    w=60
-    xr = rx+np.cos(w*time.time())
-    yr = ry+np.cos(w*time.time())
+    
+    t = math.atan2(y-ry, x-rx)
+    
+    #w=60
+    w = 2
+    A = 1
+    xr = rx+A*np.cos(w*t)*sizeX/300
+    yr = ry+A*np.cos(w*t)*sizeY/300
     
     a = 0.0207176
     srx = 11.9622*sizeX/300
@@ -35,13 +43,13 @@ def odr(x,y,rx,ry,sizeX,sizeY):
     
     #calculate rchanel values
     exponentr = -((x-xr)/srx)**2 - ((y-yr)/sry)**2
-    red =  zr - 1/(a+np.exp(exponentr))
+    red =  zr - 1/(a+math.exp(exponentr))
     
     return red
 
 def odb(x,y,rx,ry,bx,by,sizeX,sizeY):
     #r parameters
-    zr = 90.9403++(np.random.random_sample()-0.5)*10
+    zr = 90.9403+(np.random.random_sample()-0.5)*10
     xr = rx
     yr = ry
     a = 0.0461424
@@ -60,7 +68,7 @@ def odb(x,y,rx,ry,bx,by,sizeX,sizeY):
     
     #calculate bchanel values
     exponentgb = -((x-xb)/sbx)**2 - ((y-yb)/sby)**2
-    blue = r+kb*np.exp(exponentgb)
+    blue = r+kb*math.exp(exponentgb)
     return blue
 
 def odg(x,y,rx,ry,gx,gy,sizeX,sizeY):
@@ -84,5 +92,5 @@ def odg(x,y,rx,ry,gx,gy,sizeX,sizeY):
     
     #calculate gchanel values
     exponentg = -((x-xg)/sgx)**2 - ((y-yg)/sgy)**2
-    green = r+kg*np.exp(exponentg)
+    green = r+kg*math.exp(exponentg)
     return green

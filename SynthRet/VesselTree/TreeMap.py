@@ -34,7 +34,13 @@ class TreeMap:
     def addBranch(self, branch):
         # select colors according to branch
         color = self.arteryColor if branch.artery else self.veinColor
-        x,y = np.array(zip(*branch.points))     # seperate x and y coordinates from branches.points
+        
+        # this seems broken in python 3
+        #x,y = np.array(zip(*branch.points))     # seperate x and y coordinates from branches.points
+        # this replacement seems to do the same
+        x_y = np.array(branch.points)
+        x = x_y[:,0]
+        y = x_y[:,1]
         
         s = 0                                   # smoothing condition (0 means passing all points) for interpolation
         k = 3 if x.shape[0] > 3 else x.shape[0]-1 # degree of spline
@@ -97,25 +103,26 @@ class TreeMap:
         update
         updates both images treeImage and treeMap
     '''
-    def updateAliased(self):
-        img = Image.new('RGBA', (self.sizeY * 3, self.sizeX * 3))
-        mask = Image.new('L', (self.sizeY * 3, self.sizeX * 3))
+    def createSupersampledImages(self, scalingFactor):
+        img = Image.new('RGBA', (self.sizeY * scalingFactor, self.sizeX * scalingFactor))
+        mask = Image.new('L', (self.sizeY * scalingFactor, self.sizeX * scalingFactor))
         draw = ImageDraw.Draw(img)
         drawMask = ImageDraw.Draw(mask)
 
         for l in self.vessels:
-            segments = l[0] * 3.
+            segments = l[0] * scalingFactor
             for i in range(0, segments.shape[0]): # todo: draw.line also accepts lists of tuples
-                draw.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(tuple((l[2][i]*255).astype(int))), width=int(l[1][i] * 3. + 0.5))
-                drawMask.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(255), width=int(l[1][i] * 3. + 0.5))
+                draw.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(tuple((l[2][i]*255).astype(int))), width=int(l[1][i] * scalingFactor + 0.5))
+                drawMask.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(255), width=int(l[1][i] * scalingFactor + 0.5))
         
         treeImage = np.array(img).astype(np.float32) / 255
         treeMap = np.array(mask).astype(np.float32) / 255           # make image binary
         notransp = np.ones(treeMap.shape, dtype=np.float32)
         # update treeMap
         treeMap = np.dstack((treeMap, treeMap, treeMap, notransp))
-        treeImage = resize(treeImage, (self.sizeX, self.sizeY, 4), anti_aliasing=True).astype(np.float32)
-        treeMap = resize(treeMap, (self.sizeX, self.sizeY, 4), anti_aliasing=True).astype(np.float32)
+        # resize later
+        #treeImage = resize(treeImage, (self.sizeX, self.sizeY, 4), anti_aliasing=True).astype(np.float32)
+        #treeMap = resize(treeMap, (self.sizeX, self.sizeY, 4), anti_aliasing=True).astype(np.float32)
         return treeImage, treeMap
 
     '''
@@ -138,8 +145,11 @@ class TreeMap:
         getAliasedImg
         return the current image
     '''
+    '''
     def getAliasedImgs(self):
         aliasedImg, aliasedMap = self.updateAliased()
         assert(aliasedImg.dtype == np.float32)
         assert(aliasedMap.dtype == np.float32)
         return aliasedImg, aliasedMap
+    '''
+        
