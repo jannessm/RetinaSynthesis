@@ -33,7 +33,8 @@ class Tree:
             self.growingBranches.append(b)  # add it to list of growing branches
 
         # constants
-        self.covThreshold = 0.00021         # coverage threshold of groundtruth
+        # self.covThreshold = 0.00021         # coverage threshold of groundtruth
+        self.covThreshold = 0.0005         # coverage threshold of groundtruth
 
     '''
         getRandomGoal
@@ -62,7 +63,9 @@ class Tree:
 
         # while the mean coverage is below the wanted threshold and there are non finished branches
         # keep growing
-        while (meanCoverage(tMap, self.sizeX, self.sizeY) < self.covThreshold and 
+        meanCoverageValue = .0
+        meanCoverageStart = .0
+        while (meanCoverageValue < meanCoverageStart + self.covThreshold and 
             len(self.growingBranches) > 0):
             
             branches = self.growingBranches[:]      # deepcopy of all non finished branches
@@ -79,9 +82,14 @@ class Tree:
                     tMap = self.createTreeMap()     # get the current binary treeMap
 
                     # if the mean coverage is reached quit the loop
-                    if meanCoverage(tMap, self.sizeX, self.sizeY) > self.covThreshold:
+                    meanCoverageValue = meanCoverage(tMap, self.sizeX, self.sizeY)
+                    if meanCoverageValue > self.covThreshold:
                         break
                     b.addBranch(p)
+            meanCoverageValue = meanCoverage(tMap, self.sizeX, self.sizeY)
+            if meanCoverageStart == .0:
+                meanCoverageStart = meanCoverageValue
+            print(meanCoverageValue)
 
     '''
         createTreeImage

@@ -101,4 +101,3 @@ if __name__ == '__main__':
         sizeY = int(sys.argv[4])
 
     generateImages(i, total, sizeX, sizeY, showImages=False, save=True)
-    #cProfile.run('generateImages(i, total, sizeX, sizeY, showImages=False, save=True)')
