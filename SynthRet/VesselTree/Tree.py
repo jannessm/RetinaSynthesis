@@ -34,7 +34,7 @@ class Tree:
 
         # constants
         # self.covThreshold = 0.00021         # coverage threshold of groundtruth
-        self.covThreshold = 0.0005         # coverage threshold of groundtruth
+        self.covThreshold = 0.0006         # coverage threshold of groundtruth
 
     '''
         getRandomGoal
