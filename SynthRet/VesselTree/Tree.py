@@ -33,8 +33,7 @@ class Tree:
             self.growingBranches.append(b)  # add it to list of growing branches
 
         # constants
-        # self.covThreshold = 0.00021         # coverage threshold of groundtruth
-        self.covThreshold = 0.0006         # coverage threshold of groundtruth
+        self.covThreshold = 0.0001         # coverage threshold of groundtruth
 
     '''
         getRandomGoal
@@ -83,13 +82,13 @@ class Tree:
 
                     # if the mean coverage is reached quit the loop
                     meanCoverageValue = meanCoverage(tMap, self.sizeX, self.sizeY)
-                    if meanCoverageValue > self.covThreshold:
+                    if meanCoverageValue > 0.0001 and meanCoverageStart == .0:
+                        meanCoverageStart = meanCoverageValue
+                    if meanCoverageValue > self.covThreshold + meanCoverageStart:
                         break
                     b.addBranch(p)
             meanCoverageValue = meanCoverage(tMap, self.sizeX, self.sizeY)
-            if meanCoverageStart == .0:
-                meanCoverageStart = meanCoverageValue
-            print(meanCoverageValue)
+            print(meanCoverageValue, meanCoverageStart)
 
     '''
         createTreeImage
