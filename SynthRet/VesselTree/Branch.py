@@ -79,7 +79,9 @@ class Branch:
         if (
             newBranch <  0.5 and 
             not np.array_equal(x, self.points[len(self.points) - 1]) and 
-            not self.closeToAnotherBranch(x)
+            not self.closeToAnotherBranch(x) and
+            len(self.tree.branches) < self.tree.maxBranches and
+            self.level < self.tree.maxLevel
         ):
 
             g = nextGoalPoint(self, x)                           # get goal point for branch

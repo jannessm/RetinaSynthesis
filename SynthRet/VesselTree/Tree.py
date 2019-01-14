@@ -33,7 +33,9 @@ class Tree:
             self.growingBranches.append(b)  # add it to list of growing branches
 
         # constants
-        self.covThreshold = 0.0001         # coverage threshold of groundtruth
+        self.covThreshold = 0.0001          # coverage threshold of groundtruth
+        self.maxBranches = 400             # max amount of branches that can be added
+        self.maxLevel = 5                   # max level of branches to prevent clustering
 
     '''
         getRandomGoal
@@ -88,7 +90,7 @@ class Tree:
                         break
                     b.addBranch(p)
             meanCoverageValue = meanCoverage(tMap, self.sizeX, self.sizeY)
-            print(meanCoverageValue, meanCoverageStart)
+        print('branches: ' + str(len(self.branches)))
 
     '''
         createTreeImage
