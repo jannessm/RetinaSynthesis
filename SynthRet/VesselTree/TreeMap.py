@@ -64,7 +64,7 @@ class TreeMap:
         r = np.linspace(0, total_len * 2, total_len * 2)
         colors = np.repeat(color[None, :], total_len * 2, axis=0)
         if branch.level == 1:                   # for main vessels
-            widths = 0.75 * r / self.sizeX + 2. * self.sizeX / 565.
+            widths = 2 * r / self.sizeX + 2. * self.sizeX / 565.
             colors = np.hstack((colors, np.linspace(0.4, 0.9, total_len * 2)[:, None]))
         elif branch.level == 2:
             widths = 2. * r / self.sizeX + 1.2 * self.sizeX / 565.
@@ -104,18 +104,37 @@ class TreeMap:
         updates both images treeImage and treeMap
     '''
     def createSupersampledImages(self, scalingFactor):
-        img = Image.new('RGBA', (self.sizeY * scalingFactor, self.sizeX * scalingFactor))
+        img = Image.new('RGB', (self.sizeY * scalingFactor, self.sizeX * scalingFactor))
+        imgAlpha = Image.new('L', (self.sizeY * scalingFactor, self.sizeX * scalingFactor))
         mask = Image.new('L', (self.sizeY * scalingFactor, self.sizeX * scalingFactor))
         draw = ImageDraw.Draw(img)
+        drawAlpha = ImageDraw.Draw(imgAlpha)
         drawMask = ImageDraw.Draw(mask)
 
         for l in self.vessels:
             segments = l[0] * scalingFactor
+            
+            segmentDirections = segments[:,1,:] - segments[:,0,:]
+            scale = 1.0 / np.sqrt(segmentDirections[:,0]*segmentDirections[:,0] + segmentDirections[:,1]*segmentDirections[:,1])
+            segmentDirections[:,0] = segmentDirections[:,0] * scale
+            segmentDirections[:,1] = segmentDirections[:,1] * scale
+            
+            segments[:,1,:] = segments[:,1,:] + segmentDirections * 3
+            
             for i in range(0, segments.shape[0]): # todo: draw.line also accepts lists of tuples
                 draw.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(tuple((l[2][i]*255).astype(int))), width=int(l[1][i] * scalingFactor + 0.5))
-                drawMask.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(255), width=int(l[1][i] * scalingFactor + 0.5))
+                alpha = 10+int(l[1][i] * 20)
+                if alpha > 255:
+                    alpha = 255
+                drawAlpha.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=alpha, width=int(l[1][i] * scalingFactor + 0.5))
+                if l[1][i]*scalingFactor >= 2.5:
+                    drawAlpha.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=alpha//3, width=int(l[1][i] * scalingFactor/2.5 + 0.5))
+                drawMask.line((segments[i, 0, 1], segments[i, 0, 0], segments[i, 1, 1], segments[i, 1, 0]), fill=(255), width=max(int(l[1][i] * scalingFactor*1.1 + 0.5), int(1.2*scalingFactor)))
         
-        treeImage = np.array(img).astype(np.float32) / 255
+        img = np.array(img).astype(np.float32) / 255
+        imgAlpha = np.array(imgAlpha).astype(np.float32) / 255
+        treeImage = np.dstack((img[:,:,0], img[:,:,1], img[:,:,2], imgAlpha))
+        
         treeMap = np.array(mask).astype(np.float32) / 255           # make image binary
         notransp = np.ones(treeMap.shape, dtype=np.float32)
         # update treeMap

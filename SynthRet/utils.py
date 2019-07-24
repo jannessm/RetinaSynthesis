@@ -90,6 +90,9 @@ def addIllumination(image, groundtruth): #detail addjustment
         
     chromaticAbberation = True
     if chromaticAbberation:
+        # FU python
+        image = image * 0.01
+
         center = np.array([[image.shape[0]/2, image.shape[1]/2]])
         scale = 1.0 / (image.shape[0]*image.shape[0])
 
@@ -108,6 +111,9 @@ def addIllumination(image, groundtruth): #detail addjustment
                              radialDistortion(-kappa))
         image[:,:,2] = transform.warp(image[:,:,2], 
                              radialDistortion(kappa))
+
+        # FU python
+        image = image * 100
 
     # add gaussian noise
     #gauss = np.random.normal(0, 0.1, (300, 300, 3)) * 255 * np.random.rand() * 0.1

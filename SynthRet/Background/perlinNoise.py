@@ -70,7 +70,7 @@ def getTexture(size):
     img2 = generate_2D_perlin_noise(size,int(size/32))
     img3 = generate_2D_perlin_noise(size,int(size/64))
     img4 = generate_2D_perlin_noise(size,int(size/128))
-    img = img0*0.1+img1*0.1+img2*0.1+img3*0.1+img4*0.1
+    img = img0*0.1+img1*0.1+img2*0.1+img3*0.2+img4*0.3
     img = img*0.35 * (300 / size)
     #map noise value to RGB value of retinal image's  background
     #cmap = LinearSegmentedColormap.from_list('cloud', [ '#BD321C','#D9321C','#D93823'])
@@ -90,7 +90,7 @@ def getTexture(size):
     img2 = generate_2D_perlin_noise(size,int(size/32))
     img3 = generate_2D_perlin_noise(size,int(size/64))
     img4 = generate_2D_perlin_noise(size,int(size/128))
-    brightness = img0*0.2+img1*0.1+img2*0.1+img3*0.1+img4*0.2
+    brightness = img0*0.2+img1*0.1+img2*0.1+img3*0.2+img4*0.3
     brightness = 1.0 + brightness * 0.04 * (300 / size)
     
     img[:,:,0] *= brightness

@@ -90,7 +90,7 @@ class Tree:
                         break
                     b.addBranch(p)
             meanCoverageValue = meanCoverage(tMap, self.sizeX, self.sizeY)
-        print('branches: ' + str(len(self.branches)))
+        #print('branches: ' + str(len(self.branches)))
 
     '''
         createTreeImage
