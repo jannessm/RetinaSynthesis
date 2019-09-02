@@ -9,7 +9,6 @@ import os
 def spatial_dropout_inference(input, factor, spatial):
     return input
 
-
 def concatRelu(input):
     a = F.relu(input)
     b = F.relu(-input)
@@ -153,7 +152,6 @@ class Network(nn.Module):
         self.C__out = nn.Conv2d(in_channels=8, out_channels=1, kernel_size=(3,3), stride=(1,1), padding=(1,1))
         self.C__out.weight.data = torch.from_numpy(self.np_parameters['C__out_filters'])
         self.C__out.bias.data = torch.from_numpy(self.np_parameters['C__out_biases'])
-
 
     def forward(self, input):
         C_unet_in = self.C__in(input)

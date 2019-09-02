@@ -15,6 +15,7 @@ import utils
 parser = argparse.ArgumentParser(description='Evaluate across entire DRIVE test dataset.')
 parser.add_argument('--drive', dest='drive', help='Path to DRIVE dataset')
 parser.add_argument('--network', dest='network', default='combined', help='Which network to use (combined, synthetic, drive_large, drive_small)')
+parser.add_argument('--curveCSV', dest='curveCSV', help='Filename of output .csv file for ROC curve')
 
 parser.print_help()
 
@@ -54,11 +55,16 @@ if args.drive != None and net != None:
     TP_curve = np.array(TP_curve).astype(float) / P_total
     TN_curve = np.array(TN_curve).astype(float) / N_total
         
-    print("TP/TN curve:")
-    print(TP_curve, TN_curve)
-
     plt.plot(TP_curve, TN_curve)
     plt.xlabel('True Positive')
     plt.xlabel('True Negative')
     plt.show()
+
+    if args.curveCSV != None:
+        f = open(args.curveCSV, 'w')
+        f.write("{};Evaluation on DRIVE test set;;\n".format(args.network))
+        f.write("Threshold;True positive rate;True negative rate;\n")
+        for t,TP,TN in zip(thresholds,TP_curve,TN_curve):
+            f.write("{};{};{};\n".format(t, TP, TN))
+        f.close()
 

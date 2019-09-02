@@ -1,3 +1,5 @@
+import torch
+
 import net_combined.net as net_combined
 import net_synthetic.net as net_synthetic
 import net_drive_large.net as net_drive_large
@@ -29,7 +31,7 @@ def loadImg(filename):
     im = Image.open(filename) 
     image = np.array(im).astype(float)
     image = np.stack((image[:,:,0], image[:,:,1], image[:,:,2]), axis=0)
-    return image / 255.0 * 6.0 - 3.0
+    return (image / 128.0 - 1.0) * 3.0
 
 def saveMaskImg(img, filename, scale):
     image = np.stack((img[:,:], img[:,:], img[:,:]), axis=-1)
@@ -97,5 +99,52 @@ def accumulateROC(output, thresholds, TP_curve, TN_curve, GT, mask):
 
 
 
+
+def runNetwork(input, net):
+    padded = padImageMultipleOf(input, 32)
+
+    padded = torch.from_numpy(padded[np.newaxis,:,:,:]).float()
+    output = net.forward(padded)
+    output = output.detach().numpy()[0,:,:,:]
+
+    return output[0, 0:input.shape[1], 0:input.shape[2]]
+
+def runNetwork_tiled(input, net):
+
+    crop_size = 128
+    overlap = 32
+    output_crop_size = crop_size - 2*overlap
+
+    num_blocks1 = (input.shape[1] + output_crop_size-1)//output_crop_size
+    num_blocks2 = (input.shape[2] + output_crop_size-1)//output_crop_size
+
+    output = np.zeros((num_blocks1*output_crop_size, num_blocks2*output_crop_size))
+
+    padded = np.zeros((3, num_blocks1*output_crop_size + overlap*2, num_blocks2*output_crop_size + overlap*2)) - 3.0
+
+    padded[:, overlap:input.shape[1]+overlap, overlap:input.shape[2]+overlap] = input
+
+    print(padded.shape)
+
+    for block1 in range(0, num_blocks1):
+        for block2 in range(0, num_blocks2):
+            output_offset_1 = block1 * output_crop_size
+            output_offset_2 = block2 * output_crop_size
+            inputOffset1 = output_offset_1 - overlap + overlap
+            inputOffset2 = output_offset_2 - overlap + overlap
+
+            input_crop = padded[:, inputOffset1:inputOffset1+crop_size, inputOffset2:inputOffset2+crop_size]
+            print(input_crop.shape)
+
+
+            input_crop = torch.from_numpy(input_crop[np.newaxis,:,:,:]).float()
+            output_crop = net.forward(input_crop)
+            output_crop = output_crop.detach().numpy()[0,:,:,:]
+            
+
+            output[output_offset_1:output_offset_1+output_crop_size, output_offset_2:output_offset_2+output_crop_size] = output_crop[0,overlap:-overlap,overlap:-overlap]
+
+
+    return output[0:input.shape[1], 0:input.shape[2]]
 
 
