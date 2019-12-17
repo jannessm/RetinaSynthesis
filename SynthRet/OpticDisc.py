@@ -26,16 +26,15 @@ def generateOpticDisc(fovea,sizeX,sizeY,supersample):
 
 def odr(x,y,rx,ry,sizeX,sizeY):
     #parameters
-    zr = 254.211+(np.random.random_sample()-0.5)*1
+    zr = 254.211+(np.random.random_sample()-0.5)
     
     
     t = math.atan2(y-ry, x-rx)
     
     #w=60
     w = 2
-    A = 1
-    xr = rx+A*np.cos(w*t)*sizeX/300
-    yr = ry+A*np.cos(w*t)*sizeY/300
+    xr = rx+np.cos(w*t)*sizeX/300
+    yr = ry+np.cos(w*t)*sizeY/300
     
     a = 0.0207176
     srx = 11.9622*sizeX/300
@@ -47,7 +46,7 @@ def odr(x,y,rx,ry,sizeX,sizeY):
     
     return red
 
-def odb(x,y,rx,ry,bx,by,sizeX,sizeY):
+def odb(x,y,rx,ry,xb,yb,sizeX,sizeY):
     #r parameters
     zr = 90.9403+(np.random.random_sample()-0.5)*10
     xr = rx
@@ -61,8 +60,6 @@ def odb(x,y,rx,ry,bx,by,sizeX,sizeY):
     
     #parameters
     kb = 2.08531+(np.random.random_sample()-0.5)*0.01
-    xb = bx
-    yb = by
     sbx = 3.90212*sizeX/300
     sby = 3.90212*sizeY/300
     
@@ -71,11 +68,9 @@ def odb(x,y,rx,ry,bx,by,sizeX,sizeY):
     blue = r+kb*math.exp(exponentgb)
     return blue
 
-def odg(x,y,rx,ry,gx,gy,sizeX,sizeY):
+def odg(x,y,xr,yr,xg,yg,sizeX,sizeY):
     #r parameters
     zr = 155.043+(np.random.random_sample()-0.5)*10
-    xr = rx
-    yr = ry
     a = 0.0403873
     srx = 13.3931*sizeX/300
     sry = 13.3931*sizeY/300
@@ -84,9 +79,7 @@ def odg(x,y,rx,ry,gx,gy,sizeX,sizeY):
     r =  zr - 1/(a+np.exp(exponentr))
     
     #parameters
-    kg = 63.1894+(np.random.random_sample()-0.5)*1
-    xg = gx
-    yg = gy
+    kg = 63.1894+(np.random.random_sample()-0.5)
     sgx = 8.05019*sizeX/300
     sgy = 8.05019*sizeY/300
     

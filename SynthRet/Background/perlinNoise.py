@@ -73,8 +73,6 @@ def getTexture(size):
     img = img0*0.1+img1*0.1+img2*0.1+img3*0.2+img4*0.3
     img = img*0.35 * (300 / size)
     #map noise value to RGB value of retinal image's  background
-    #cmap = LinearSegmentedColormap.from_list('cloud', [ '#BD321C','#D9321C','#D93823'])
-    #cmap = LinearSegmentedColormap.from_list('cloud', [ '#000000', '#FFFFFF'])
     cmap0 = LinearSegmentedColormap.from_list('cloud', [ '#b66451', '#dab375'])
     cmap1 = LinearSegmentedColormap.from_list('cloud', [ '#cd6836', '#e5b177'])
     cmap2 = LinearSegmentedColormap.from_list('cloud', [ '#ddb061', '#d25b56'])
@@ -82,7 +80,6 @@ def getTexture(size):
     cmap4 = LinearSegmentedColormap.from_list('cloud', [ '#BD321C', '#D93823'])
     norm = colors.Normalize(vmin=-1, vmax=1, clip=True)
     img = cm.ScalarMappable(cmap=random.choice([cmap0, cmap1, cmap2, cmap3, cmap4]), norm=norm).to_rgba(img)
-#    img = cm.ScalarMappable(cmap=cmap, norm=norm).to_rgba(img)
 
 
     img0 = generate_2D_perlin_noise(size,int(size/8))
