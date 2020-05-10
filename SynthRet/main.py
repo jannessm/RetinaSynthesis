@@ -58,13 +58,13 @@ def _generateImage(sizeX, sizeY, supersample):
     assert(groundTruth.dtype == np.float32)
 
 #    print(np.mean(image[:,:,3]))
-#    io.imshow(image)
+#    io.imshow(image / 255)
 #    io.show()
 
     image = resize(image, (sizeX, sizeY, 4), anti_aliasing=True)
     groundTruth = resize(groundTruth, (sizeX, sizeY, 4), anti_aliasing=True)
     
-#    io.imshow(image)
+#    io.imshow(image / 255)
 #    io.show()
 
     return image.astype('uint8'), groundTruth.astype('uint8')

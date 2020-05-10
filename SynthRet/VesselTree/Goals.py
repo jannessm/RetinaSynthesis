@@ -192,7 +192,7 @@ def crossingVessel(self, center, point, tmap):
                 center = tmp
 
     # create a list of all points needed to check
-    points_needed = np.ceil(np.max(np.abs(center - point)) + 1)
+    points_needed = int(np.ceil(np.max(np.abs(center - point)) + 1))
     x_spaced = np.linspace(point[0], center[0], points_needed, dtype=int)
     y_spaced = np.linspace(point[1], center[1], points_needed, dtype=int)
     points = np.vstack((x_spaced, y_spaced)).T

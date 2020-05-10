@@ -49,7 +49,7 @@ class TreeMap:
         
         x_len = max(x) - min(x)                 # get length of the vessel in x direction
         y_len = max(y) - min(y)                 # get length of the vessel in y direction
-        total_len = np.sqrt(x_len**2 + y_len**2)
+        total_len = int(np.ceil(np.sqrt(x_len**2 + y_len**2) * 2))
         
         # sometimes it throws an error, this should fix it
         try:
@@ -57,21 +57,22 @@ class TreeMap:
             tck, t = interpolate.splprep([x, y], s=s, k=k)
         except:
             return
+        
         # get all points on spline for total_len * 2 to cover each pixel
-        xi, yi = interpolate.splev(np.linspace(t[0], t[-1], total_len * 2), tck)
+        xi, yi = interpolate.splev(np.linspace(t.astype(np.int)[0], t.astype(np.int)[-1], total_len), tck)
         
         # calculate widths and colors for each point
-        r = np.linspace(0, total_len * 2, total_len * 2)
-        colors = np.repeat(color[None, :], total_len * 2, axis=0)
+        r = np.linspace(0, total_len, total_len)
+        colors = np.repeat(color[None, :], total_len, axis=0)
         if branch.level == 1:                   # for main vessels
             widths = 2 * r / self.sizeX + 2. * self.sizeX / 565.
-            colors = np.hstack((colors, np.linspace(0.4, 0.9, total_len * 2)[:, None]))
+            colors = np.hstack((colors, np.linspace(0.4, 0.9, total_len)[:, None]))
         elif branch.level == 2:
             widths = 2. * r / self.sizeX + 1.2 * self.sizeX / 565.
-            colors = np.hstack((colors, np.linspace(0.3, 0.7, total_len * 2)[:, None]))
+            colors = np.hstack((colors, np.linspace(0.3, 0.7, total_len)[:, None]))
         elif branch.level > 2:                                   # for each other vessel
             widths = 1. * r / self.sizeX + .5 * self.sizeX / 565.
-            colors = np.hstack((colors, np.linspace(0.2, 0.6, total_len * 2)[:, None]))
+            colors = np.hstack((colors, np.linspace(0.2, 0.6, total_len)[:, None]))
 
         # put points together
         points = np.array([xi, yi]).T.reshape(-1, 1, 2)
