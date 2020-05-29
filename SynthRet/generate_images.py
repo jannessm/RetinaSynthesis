@@ -4,28 +4,31 @@ import os
 import subprocess
 import time
 from multiprocessing import Pool
+import argparse
 
-start = 0
-images = 1
-sizeX = 500
-sizeY = 500
+parser = argparse.ArgumentParser(description='Generate a bunch of synthetic retinal images.')
+parser.add_argument('-N', type=int, dest='N', help='amount of images to generate')
+parser.add_argument('--start', dest='start', default=0, help='start by image number')
+parser.add_argument('--sizeX', type=int, dest='sizeX', help='x dimension of final images', default=565)
+parser.add_argument('--sizeY', type=int, dest='sizeY', help='y dimension of final images', default=565)
+parser.add_argument('--dest', dest='dest', default='.', help='output path for the generated images')
+parser.add_argument('--processes', dest='processes', default=8, help='use N processes')
+
+args = parser.parse_args()
 
 def generateImage(id):
     path = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/main.py")
-    subprocess.check_call("python3 -W ignore \"" + path + "\" " + str(id) + " " + str(images) + " " + str(sizeX) + " " + str(sizeY), shell=True)
+    subprocess.check_call("python3 -W ignore \"" + path + \
+        "\" --imageIndex " + str(id) + \
+        " --lastImageIndex " + str(args.N) + \
+        " --sizeX " + str(args.sizeX) + \
+        " --sizeY " + str(args.sizeY) + \
+        " --dest " + args.dest, shell=True)
 
 if __name__ == '__main__':
 
-    if len(sys.argv) > 4:
-        start = int(sys.argv[1])
-        images = int(sys.argv[2])
-        sizeX = int(sys.argv[3])
-        sizeY = int(sys.argv[4])
-    else:
-        images = int(sys.argv[1])
-
-    pool = Pool(processes=8)
-    with tqdm(total=images) as pbar:
-        for i, _ in tqdm(enumerate(pool.imap_unordered(generateImage, range(start, images)))):
+    pool = Pool(processes=args.processes)
+    with tqdm(total=args.N) as pbar:
+        for _ in enumerate(pool.imap_unordered(generateImage, range(args.start, args.N))):
             pbar.update()
     pool.close()

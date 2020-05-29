@@ -2,14 +2,24 @@ from VesselTree import Tree
 from utils import mergeLayer, addIllumination, showImage, addMaskSupersampled, saveImage
 from OpticDisc import generateOpticDisc
 from Background import generateBackgroundAndFovea
-from IPython.display import clear_output
 from skimage.transform import resize
 from skimage import io
 
 import cProfile
 
 import numpy as np
-import sys
+import argparse
+import os.path as osp
+
+parser = argparse.ArgumentParser(description='Generate a synthetic retinal image.')
+parser.add_argument('--imageIndex', type=int, dest='imageIndex', help='Index of the image to save')
+parser.add_argument('--showImage', type=bool, dest='showImage', default=False, help='Show the generated image at the end.')
+parser.add_argument('--lastImageIndex', type=int, dest='lastImageIndex', help='last image index is used for 0 padding the image name')
+parser.add_argument('--sizeX', type=int, dest='sizeX', help='x dimension of the final image', default=565)
+parser.add_argument('--sizeY', type=int, dest='sizeY', help='y dimension of the final image', default=565)
+parser.add_argument('--dest', dest='dest', default='.', help='output path for the generated images')
+
+args = parser.parse_args()
 
 '''
     generate synthetic images. if you want to save the generated files adjust save and path to your needs.
@@ -88,16 +98,13 @@ def generateImages(i=0, total=1, sizeX=300, sizeY=300, showImages=True, save=Fal
         showImage(gt)
 
 if __name__ == '__main__':
-    if len(sys.argv) != 5:
-        print("Ignoring parameters!")
-        i = 0
-        total = 1
-        sizeX = 565
-        sizeY = 565
-    else:
-        i = int(sys.argv[1])
-        total = int(sys.argv[2])
-        sizeX = int(sys.argv[3])
-        sizeY = int(sys.argv[4])
-
-    generateImages(i, total, sizeX, sizeY, showImages=False, save=True)
+    generateImages(
+        args.imageIndex,
+        args.lastImageIndex,
+        args.sizeX,
+        args.sizeY,
+        args.showImage,
+        True,
+        osp.join(args.dest, 'groundtruths', ''),
+        osp.join(args.dest, 'images', '')
+    )
