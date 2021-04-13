@@ -67,10 +67,54 @@ def saveEvalImg(TP, TN, FP, FN, filename):
     im = Image.fromarray(eval_image.astype('uint8'), 'RGB')
     im.save(filename)
 
-def loadDriveTuple(path, index):
-    input = loadImg("{}/test/images/{:02d}_test.tif".format(path, index))
-    GT = loadBinary("{}/test/1st_manual/{:02d}_manual1.gif".format(path, index))
-    mask = loadBinary("{}/test/mask/{:02d}_test_mask.gif".format(path, index))
+def getIndices(data_type):
+    if data_type == 'drive':
+        return zip(range(1, 21), [{}] * 20)
+    
+    elif data_type == 'chase':
+        return zip(list(range(1, 15)) * 2, [{'chase_side': 'L'}] * 15 + [{'chase_side': 'R'}] * 15)
+    
+    elif data_type == 'hrf':
+        return zip(range(1, 15), [{}] * 15)
+    
+    elif data_type == 'iostar':
+        return zip(['01_OSC', '02_ODC', '03_OSN', '05_ODC', '06_ODN', '08_OSN', '09_OSN', '10_OSN', '13_OSN', '15_OSN', '16_OSN', '17_ODN', '20_ODC', '21_OSC', '24_OSC', '26_ODC', '28_ODN', '30_ODC', '31_ODN', '32_ODC', '34_ODC', '36_OSC', '37_ODN', '38_ODC', '39_ODC', '40_OSC', '43_OSC', '44_OSN', '45_ODC', '48_OSN'], [{}] * 30)
+    
+    elif data_type == 'stare':
+        return zip([1, 2, 3, 4, 5, 44, 77, 81, 82, 139, 162, 163, 235, 236, 239, 240, 255, 291, 319, 324], [{}] * 20)
+    
+    else:
+        return zip([], [])
+
+def loadImageTuple(path, data_type, index, hrf_type='h', chase_side='L'):
+    if data_type == 'drive':
+        input = loadImg("{}/test/images/{:02d}_test.tif".format(path, index))
+        GT = loadBinary("{}/test/1st_manual/{:02d}_manual1.gif".format(path, index))
+        mask = loadBinary("{}/test/mask/{:02d}_test_mask.gif".format(path, index))
+    
+    elif data_type == 'chase':
+        input = loadImg("{}/Image_{:02d}{}.jpg".format(path, index, chase_side))
+        GT = loadBinary("{}/Image_{:02d}{}_1stHO.png".format(path, index, chase_side))
+        mask = np.ones(GT.shape, dtype=GT.dtype)
+    
+    elif data_type == 'hrf':
+        try:
+            input = loadImg("{}/images/{:02d}_{}.JPG".format(path, index, hrf_type))
+        except FileNotFoundError:
+            input = loadImg("{}/images/{:02d}_{}.jpg".format(path, index, hrf_type))
+        GT = loadBinary("{}/manual1/{:02d}_{}.tif".format(path, index, hrf_type))
+        mask = loadBinary("{}/mask/{:02d}_{}_mask.tif".format(path, index, hrf_type))
+    
+    elif data_type == 'iostar':
+        input = loadImg("{}/image/STAR {}.jpg".format(path, index))
+        GT = loadBinary("{}/GT/STAR {}_GT.tif".format(path, index))
+        mask = loadBinary("{}/mask/STAR {}_Mask.tif".format(path, index))
+    
+    elif data_type == 'stare':
+        input = loadImg("{}/images/im{:04d}.ppm".format(path, index))
+        GT = loadBinary("{}/labels-vk/im{:04d}.vk.ppm".format(path, index))
+        mask = np.ones(GT.shape, dtype=GT.dtype)
+
     
     return input, GT, mask
 

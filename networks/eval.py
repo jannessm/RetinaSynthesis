@@ -13,19 +13,21 @@ import utils
 
 
 parser = argparse.ArgumentParser(description='Evaluate across entire DRIVE test dataset.')
-parser.add_argument('--drive', dest='drive', help='Path to DRIVE dataset')
+parser.add_argument('--data', dest='data', help='Path to dataset')
+parser.add_argument('--data_type', dest='data_type', help='Dataset type that determines the specific load paths of the data. One of (drive, chase, hrf, iostar, stare). Default is drive.', default='drive')
+parser.add_argument('--hrf_type', dest='hrf_type', help='Type of hrf data. This argument is only used if data_type is hrf. One of (dr, g, h). Default is h.', default='h')
 parser.add_argument('--network', dest='network', default='combined', help='Which network to use (combined, synthetic, drive_large, drive_small)')
 parser.add_argument('--curveCSV', dest='curveCSV', help='Filename of output .csv file for ROC curve')
-
-parser.print_help()
 
 args = parser.parse_args()
 
 
 net = utils.getNetwork(args.network)
 
-if args.drive != None and net != None:
-    drive_images = range(1, 21)
+device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+
+if args.data != None and net != None and args.data_type != None:
+    images = utils.getIndices(args.data_type)
 
     P_total = 0
     N_total = 0
@@ -34,15 +36,16 @@ if args.drive != None and net != None:
     TP_curve = np.zeros(thresholds.shape, int)
     TN_curve = np.zeros(thresholds.shape, int)
 
-    for img_idx in drive_images:
+    for img_idx, kargs in images:
         print("Running image {}".format(img_idx))
-        input, GT, mask = utils.loadDriveTuple(args.drive, img_idx)
+        input, GT, mask = utils.loadImageTuple(args.data, args.data_type, img_idx, hrf_type=args.hrf_type, **kargs)
 
         padded = utils.padImageMultipleOf(input, 32)
 
+
         padded = torch.from_numpy(padded[np.newaxis,:,:,:]).float()
-        output = net.forward(padded)
-        output = output.detach().numpy()[0,:,:,:]
+        output = net.to(device).forward(padded.to(device))
+        output = output.cpu().detach().numpy()[0,:,:,:]
 
         output = output[0, 0:input.shape[1], 0:input.shape[2]]
 
