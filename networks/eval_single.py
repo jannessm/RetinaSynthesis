@@ -40,7 +40,6 @@ if args.drive != None and args.imageIndex != None and net != None:
 
 
 
-
     prediction = output > args.threshold
 
     TP, TN, FP, FN = utils.evaluate_TP_TN_FP_FN(prediction, GT, mask)
@@ -52,6 +51,15 @@ if args.drive != None and args.imageIndex != None and net != None:
     print("True negative rate: {}%".format(np.sum(TN) * 100.0 / N))
 
     utils.saveEvalImg(TP, TN, FP, FN, args.outputImg)
+
+    #im = (output - output.min()) / (output.max() - output.min()) * 255
+
+    #im = np.concatenate((im[:,:,None], im[:,:,None], im[:,:,None]), axis=2)
+
+    #print(im.shape)
+
+    #im = Image.fromarray(im.astype('uint8'), 'RGB')
+    #im.save(args.outputImg)
 
 
     thresholds = np.arange(-20, 20, 0.1)
