@@ -141,7 +141,18 @@ def accumulateROC(output, thresholds, TP_curve, TN_curve, GT, mask):
         TP_curve[i] = TP_curve[i] + np.sum(TP)
         TN_curve[i] = TN_curve[i] + np.sum(TN)
 
+def accumulateRates(output, thresholds, TP, TN, FP, FN, GT, mask):
+    for i,t in enumerate(thresholds):
+        TP_ = np.logical_and(np.logical_and((output > t), GT), mask)
+        TN_ = np.logical_and(np.logical_and((output <= t), np.logical_not(GT)), mask)
 
+        FP_ = np.logical_and(np.logical_and(output > t, np.logical_not(GT)), mask)
+        FN_ = np.logical_and(np.logical_and(np.logical_not(output <= t), GT), mask)
+
+        TP[i] = TP[i] + np.sum(TP_)
+        TN[i] = TN[i] + np.sum(TN_)
+        FP[i] = FP[i] + np.sum(FP_)
+        FN[i] = FN[i] + np.sum(FN_)
 
 
 def runNetwork(input, net):

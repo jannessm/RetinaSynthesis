@@ -33,8 +33,10 @@ if args.data != None and net != None and args.data_type != None:
     N_total = 0
 
     thresholds = np.arange(-20, 20, 0.1)
-    TP_curve = np.zeros(thresholds.shape, int)
-    TN_curve = np.zeros(thresholds.shape, int)
+    TP = np.zeros(thresholds.shape, int)
+    TN = np.zeros(thresholds.shape, int)
+    FP = np.zeros(thresholds.shape, int)
+    FN = np.zeros(thresholds.shape, int)
 
     for img_idx, kargs in images:
         print("Running image {}".format(img_idx))
@@ -53,10 +55,20 @@ if args.data != None and net != None and args.data_type != None:
         P_total = P_total + P
         N_total = N_total + N
 
-        utils.accumulateROC(output, thresholds, TP_curve, TN_curve, GT, mask)
+        utils.accumulateRates(output, thresholds, TP, TN, FP, FN, GT, mask)
 
-    TP_curve = np.array(TP_curve).astype(float) / P_total
-    TN_curve = np.array(TN_curve).astype(float) / N_total
+    TP_curve = np.array(TP).astype(float) / P_total
+    TN_curve = np.array(TN).astype(float) / N_total
+
+    TP = TP.astype(float)
+    FP = FP.astype(float)
+
+    TP[TP == 0] = 10e-8
+    FP[FP == 0] = 10e-8
+
+    Se = TP.astype(float) / P_total
+    Sp = TN.astype(float) / (TN + FP)
+    Acc = (TP.astype(float) + TN) / (P_total + N_total)
         
     plt.plot(TP_curve, TN_curve)
     plt.xlabel('True Positive')
@@ -65,9 +77,9 @@ if args.data != None and net != None and args.data_type != None:
 
     if args.curveCSV != None:
         f = open(args.curveCSV, 'w')
-        f.write("{};Evaluation on DRIVE test set;;\n".format(args.network))
-        f.write("Threshold;True positive rate;True negative rate;\n")
-        for t,TP,TN in zip(thresholds,TP_curve,TN_curve):
-            f.write("{};{};{};\n".format(t, TP, TN))
+        f.write("{};Evaluation on {} test set;;\n".format(args.network, args.data_type.upper()))
+        f.write("Threshold;True positive rate;True negative rate;Sensitivity;Specificity;Accuracy;\n")
+        for t,TP,TN,Se,Sp,Acc in zip(thresholds,TP_curve,TN_curve,Se,Sp,Acc):
+            f.write("{};{};{};{};{};{};\n".format(t, TP, TN, Se, Sp, Acc))
         f.close()
 
