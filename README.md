@@ -11,7 +11,7 @@ This repository maintains all relevant code for reproducing the results of this 
 * [Citation](#citation)
 
 
-## <a id="usage">Usage</a>
+## Usage
 For running the code in this repo install all dependencies by:
 
 ```python
