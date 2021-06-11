@@ -1,2 +1,2 @@
 tqdm
-scikit-learn
+scikit-image

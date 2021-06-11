@@ -1,11 +1,3 @@
-"""
-Created on Fri Jun  1 11:27:24 2018
-
-@author: chen
-
-This program is intended to plot the 3-D surface image of odb function 
-
-"""
 from matplotlib import pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
@@ -40,8 +32,6 @@ fig = plt.figure()
 ax = Axes3D(fig)
 X = np.arange(217, 263, 0.3)
 Y = np.arange(123, 177, 0.3)
-#X = np.arange(239, 241, 0.3)
-#Y = np.arange(149, 151, 0.3)
 X, Y = np.meshgrid(X, Y)
 
 Z = odb(X,Y)

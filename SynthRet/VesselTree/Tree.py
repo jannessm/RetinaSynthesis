@@ -3,13 +3,15 @@ from Branch import Branch
 from TreeMap import TreeMap
 from utils import showImage, makeBinary, meanCoverage
 
-'''
-    Tree
-    startingPoint   - point where to start the tree at
-    fovea           - position of the fovea
-    This class manages the whole tree.
-'''
+
 class Tree:
+    '''
+        Tree
+        startingPoint   - point where to start the tree at
+        fovea           - position of the fovea
+        This class manages the whole tree.
+    '''
+    
     def __init__(self, sizeX, sizeY, startingPoint, fovea):
         self.branches = []                  # all branches
         self.growingBranches = []           # all branches which are not finished yet
@@ -37,12 +39,12 @@ class Tree:
         self.maxBranches = 400             # max amount of branches that can be added
         self.maxLevel = 5                   # max level of branches to prevent clustering
 
-    '''
-        getRandomGoal
-        i - id of branch
-        get a random goal point
-    '''
     def getRandomGoal(self, i):
+        '''
+            getRandomGoal
+            i - id of branch
+            get a random goal point
+        '''
         switch = {
             0: np.array([[-1, -0.5], [0.167, 0.667]]) * self.sizeX + self.fovea,
             1: np.array([[-1, -0.5], [-.667, -.167]]) * self.sizeY + self.fovea,
@@ -55,11 +57,11 @@ class Tree:
             goal_y = np.random.randint(boundaries[1][0], boundaries[1][1])
         return np.array((goal_x, goal_y))
 
-    '''
-        growTree
-        trigger generation of the tree
-    '''
     def growTree(self):
+        '''
+            growTree
+            trigger generation of the tree
+        '''
         tMap = self.createTreeMap()             # get current binary treeMap
 
         # while the mean coverage is below the wanted threshold and there are non finished branches
@@ -90,34 +92,33 @@ class Tree:
                         break
                     b.addBranch(p)
             meanCoverageValue = meanCoverage(tMap, self.sizeX, self.sizeY)
-        #print('branches: ' + str(len(self.branches)))
 
-    '''
-        createTreeImage
-        get the current tree image
-    '''
     def createTreeImage(self):
+        '''
+            createTreeImage
+            get the current tree image
+        '''
         return self.treeMap.getImg()
 
-    '''
-        createTreeMap
-        get the current binary treemap
-    '''
     def createTreeMap(self):
+        '''
+            createTreeMap
+            get the current binary treemap
+        '''
         return self.treeMap.getMap()
 
-    '''
-        createAliasedTreeImage
-        get the current tree image
-    '''
     def createSupersampledImages(self, supersampling):
+        '''
+            createAliasedTreeImage
+            get the current tree image
+        '''
         return self.treeMap.createSupersampledImages(supersampling)
 
-    '''
-        b2arr
-        collect all points from all branches of this tree
-    '''
     def b2arr(self):
+        '''
+            b2arr
+            collect all points from all branches of this tree
+        '''
         arr = np.array([[0,0]])                 # init array
         for b in self.branches:                 # add points
             arr = np.vstack((arr, np.asarray(b.points)))

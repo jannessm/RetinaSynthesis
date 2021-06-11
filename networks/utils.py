@@ -112,7 +112,7 @@ def loadImageTuple(path, data_type, index, hrf_type='h', chase_side='L'):
     
     elif data_type == 'stare':
         input = loadImg("{}/images/im{:04d}.ppm".format(path, index))
-        GT = loadBinary("{}/labels-vk/im{:04d}.vk.ppm".format(path, index))
+        GT = loadBinary("{}/labels-ah/im{:04d}.ah.ppm".format(path, index))
         mask = np.ones(GT.shape, dtype=GT.dtype)
 
     

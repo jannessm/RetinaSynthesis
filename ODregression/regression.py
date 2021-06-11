@@ -1,16 +1,3 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun  1 11:27:24 2018
-
-@author: chen
-
-This program is intended to get the best parameter of OD clolor value model.
-
-For testing, the image named "22_trainingin.tif" in DRIVE dataset is used.
-
-"""
-
 from skimage import io,transform,color,img_as_ubyte,draw
 import numpy as np
 from scipy import optimize
@@ -56,11 +43,11 @@ def odb(x,zr,xr,yr,a,sr,kb,xb,yb,sb):
     return blue
 
 #do the regression to get best parameters
-poptr,pcovr = optimize.curve_fit(odr,input,outputr,
+poptr, pcovr = optimize.curve_fit(odr,input,outputr,
                                  bounds=([150,150,100,0,0],[255,300,200,0.5,50]))
-poptg,pcovg = optimize.curve_fit(odg,input,outputg,
+poptg, pcovg = optimize.curve_fit(odg,input,outputg,
                                  bounds=([0,150,100,0,5,0,150,100,0],[255,300,200,0.5,50,100,300,200,50]))
-poptb,pcovb = optimize.curve_fit(odb,input,outputb,
+poptb, pcovb = optimize.curve_fit(odb,input,outputb,
                                  bounds=([0,150,100,0,5,0,150,100,0],[255,300,200,0.5,50,100,300,200,50]))
 
-print poptr,poptg,poptb
+print(poptr, poptg, poptb)

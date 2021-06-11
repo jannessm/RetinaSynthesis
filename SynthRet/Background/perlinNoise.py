@@ -2,13 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as colors
-import math
 import random
 from itertools import product, count
 from matplotlib.colors import LinearSegmentedColormap
 
 #generate natural texture by using Perlin noise 
-
 
 # quintic interpolation
 def qz(t):
@@ -96,6 +94,3 @@ def getTexture(size):
 
     
     return img
-
-#img=getTexture(600)
-#plt.imshow(img)

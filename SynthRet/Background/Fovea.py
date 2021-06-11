@@ -1,7 +1,4 @@
 import numpy as np
-import math
-import random
-import time
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from skimage import io, transform, draw, data

@@ -10,73 +10,42 @@ import utils
 
 
 parser = argparse.ArgumentParser(description='Evaluate a single retina image.')
-parser.add_argument('--drive', dest='drive', help='Path to DRIVE dataset')
-parser.add_argument('--imageIndex', type=int, dest='imageIndex', help='1..20 (index of image in DRIVE)')
+parser.add_argument('--data', dest='data', help='Path to dataset')
+parser.add_argument('--data_type', dest='data_type', help='Dataset type that determines the specific load paths of the data. One of (drive, chase, hrf, iostar, stare). Default is drive.', default='drive')
+parser.add_argument('--hrf_type', dest='hrf_type', help='Type of hrf data. This argument is only used if data_type is hrf. One of (dr, g, h). Default is h.', default='h')
+parser.add_argument('--imageIndex', nargs="+", dest='imageIndex', help='list of indecies 1..20 (index of image in dataset)')
 parser.add_argument('--threshold', type=float, dest='threshold', help='Threshold for prediction', default=0.0)
 parser.add_argument('--outputImg', dest='outputImg', help='Filename of generated evaluation image', default='eval.png')
 parser.add_argument('--network', dest='network', default='combined', help='Which network to use (combined, synthetic, drive_large, drive_small)')
-
-parser.print_help()
-
 args = parser.parse_args()
 
 
 net = utils.getNetwork(args.network)
 
 
-if args.drive != None and args.imageIndex != None and net != None:
+if args.data != None and args.imageIndex != None and net != None:
+    for i in [int(j) for j in args.imageIndex]:
+        input, GT, mask = utils.loadImageTuple(args.data, args.data_type, i, hrf_type=args.hrf_type)
 
-    input, GT, mask = utils.loadDriveTuple(args.drive, args.imageIndex)
+        padded = utils.padImageMultipleOf(input, 32)
 
+        padded = torch.from_numpy(padded[np.newaxis,:,:,:]).float()
+        output = net.forward(padded)
+        output = output.detach().numpy()[0,:,:,:]
 
-    padded = utils.padImageMultipleOf(input, 32)
-
-    padded = torch.from_numpy(padded[np.newaxis,:,:,:]).float()
-    output = net.forward(padded)
-    output = output.detach().numpy()[0,:,:,:]
-
-    output = output[0, 0:input.shape[1], 0:input.shape[2]]
-
+        output = output[0, 0:input.shape[1], 0:input.shape[2]]
 
 
 
-    prediction = output > args.threshold
 
-    TP, TN, FP, FN = utils.evaluate_TP_TN_FP_FN(prediction, GT, mask)
+        prediction = output > args.threshold
 
-    P, N = utils.count_P_N(GT, mask)
+        TP, TN, FP, FN = utils.evaluate_TP_TN_FP_FN(prediction, GT, mask)
 
-    print("At threshold {}:".format(args.threshold))
-    print("True positive rate: {}%".format(np.sum(TP) * 100.0 / P))
-    print("True negative rate: {}%".format(np.sum(TN) * 100.0 / N))
+        P, N = utils.count_P_N(GT, mask)
 
-    utils.saveEvalImg(TP, TN, FP, FN, args.outputImg)
+        print("At threshold {}:".format(args.threshold))
+        print("True positive rate: {}%".format(np.sum(TP) * 100.0 / P))
+        print("True negative rate: {}%".format(np.sum(TN) * 100.0 / N))
 
-    #im = (output - output.min()) / (output.max() - output.min()) * 255
-
-    #im = np.concatenate((im[:,:,None], im[:,:,None], im[:,:,None]), axis=2)
-
-    #print(im.shape)
-
-    #im = Image.fromarray(im.astype('uint8'), 'RGB')
-    #im.save(args.outputImg)
-
-
-    thresholds = np.arange(-20, 20, 0.1)
-    TP_curve = np.zeros(thresholds.shape, int)
-    TN_curve = np.zeros(thresholds.shape, int)
-
-    utils.accumulateROC(output, thresholds, TP_curve, TN_curve, GT, mask)
-
-    TP_curve = np.array(TP_curve).astype(float) / P
-    TN_curve = np.array(TN_curve).astype(float) / N
-        
-    print("TP/TN curve:")
-    print(TP_curve, TN_curve)
-
-    plt.plot(TP_curve, TN_curve)
-    plt.xlabel('True Positive')
-    plt.xlabel('True Negative')
-    plt.show()
-
-
+        utils.saveEvalImg(TP, TN, FP, FN, '%d_' % i + args.outputImg)

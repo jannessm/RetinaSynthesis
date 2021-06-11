@@ -1,16 +1,8 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jul  2 11:54:52 2018
-
-@author: chen
-"""
 import numpy as np
-from skimage import io,transform,color,img_as_ubyte,draw
+from skimage import io, transform, img_as_ubyte
 from matplotlib import pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
-import random
 
 X = np.arange(200, 270, 1)
 Y = np.arange(110, 190, 1)

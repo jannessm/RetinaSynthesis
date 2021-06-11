@@ -1,17 +1,16 @@
 import numpy as np
-from utils import showImage, saveImage
 from skimage import measure
 
-'''
-    nextGoalPoint
-    point - starting point for the next branch
-
-    get the coordinates of the next goal point according to some heuristics.
-    if the vessel level is 1 the next goal point should either point towards the fovea or 
-        in the opposite direction.
-    else cluster the area around point and get a cluster center as a new goal point.
-'''
 def nextGoalPoint(self, point):
+    '''
+        nextGoalPoint
+        point - starting point for the next branch
+
+        get the coordinates of the next goal point according to some heuristics.
+        if the vessel level is 1 the next goal point should either point towards the fovea or 
+            in the opposite direction.
+        else cluster the area around point and get a cluster center as a new goal point.
+    '''
     if self.level == 1:
 
         pf = point - self.tree.fovea                # direction from fovea to the point
@@ -115,16 +114,16 @@ def nextGoalPoint(self, point):
         return result
 
 
-'''
-    createLabeledImage
-    size    - width/height of window
-    tmap    - binary treeMap
-    point   - starting point
-    create a labeled window and filter all centers from each region by the size 
-    of the area, if point -> center is crossing any vessels, and if area is a neighbour of the vessel
-    returns labeled image, all centers, and all areasizes
-'''
 def createLabeledImage(self, size, tmap, point, createIdImage=False):
+    '''
+        createLabeledImage
+        size    - width/height of window
+        tmap    - binary treeMap
+        point   - starting point
+        create a labeled window and filter all centers from each region by the size 
+        of the area, if point -> center is crossing any vessels, and if area is a neighbour of the vessel
+        returns labeled image, all centers, and all areasizes
+    '''
 
     img = np.zeros((self.tree.sizeX, self.tree.sizeY,4))                 # init labeled image
     centers = []                                # init list of centers
@@ -169,14 +168,14 @@ def createLabeledImage(self, size, tmap, point, createIdImage=False):
 
     return img, centers, areas
 
-'''
-    crossingVessel
-    center  - goal point
-    point   - starting point
-    tmap    - binary treemap
-    check wheter on the path from point to center is another vessel.
-'''
 def crossingVessel(self, center, point, tmap):
+    '''
+        crossingVessel
+        center  - goal point
+        point   - starting point
+        tmap    - binary treemap
+        check wheter on the path from point to center is another vessel.
+    '''
     # if center is out of the image boundaries get largest point in image on
     # the path from point to center
     if center[0] >= self.tree.sizeX or center[0] < 0 or center[1] >= self.tree.sizeY or center[1] < 0:

@@ -3,9 +3,6 @@ from utils import mergeLayer, addIllumination, showImage, addMaskSupersampled, s
 from OpticDisc import generateOpticDisc
 from Background import generateBackgroundAndFovea
 from skimage.transform import resize
-from skimage import io
-
-import cProfile
 
 import numpy as np
 import argparse
@@ -21,61 +18,35 @@ parser.add_argument('--dest', dest='dest', default='.', help='output path for th
 
 args = parser.parse_args()
 
-'''
-    generate synthetic images. if you want to save the generated files adjust save and path to your needs.
-    path is relative to this file.
-'''
 def _generateImage(sizeX, sizeY, supersample):
+    '''
+        generate synthetic images. if you want to save the generated files adjust save and path to your needs.
+        path is relative to this file.
+    '''
     bkg, fovea = generateBackgroundAndFovea(sizeX,sizeY,supersample)
     assert(bkg.dtype == np.float32)
     
     od_img, od = generateOpticDisc(fovea,sizeX,sizeY,supersample)
     assert(od_img.dtype == np.float32)
     
-#    print(np.mean(bkg[:,:,3]))
-#    io.imshow(bkg)
-#    io.show()
-#    print(np.mean(od_img[:,:,3]))
-#    io.imshow(od_img)
-#    io.show()
-    
     vt, groundTruth = generateVesselsTree(sizeX, sizeY, fovea, od, supersample)
     assert(vt.dtype == np.float32)
     assert(groundTruth.dtype == np.float32)
     
-#    print(np.mean(vt[:,:,3]))
-#    io.imshow(vt)
-#    io.show()
-    
     merged = mergeLayer([bkg, od_img, vt])
-    assert(merged.dtype == np.float32)
-
-#    print(np.mean(merged[:,:,3]))
-#    io.imshow(merged)
-#    io.show()
-    
+    assert(merged.dtype == np.float32)    
     
     image = addMaskSupersampled(merged, sizeX, sizeY, supersample)
     groundTruth = addMaskSupersampled(groundTruth, sizeX, sizeY, supersample)
     assert(image.dtype == np.float32)
     assert(groundTruth.dtype == np.float32)
 
-#    io.imshow(image)
-#    io.show()
-
     image, groundTruth = addIllumination(image, groundTruth)
     assert(image.dtype == np.float32)
     assert(groundTruth.dtype == np.float32)
 
-#    print(np.mean(image[:,:,3]))
-#    io.imshow(image / 255)
-#    io.show()
-
     image = resize(image, (sizeX, sizeY, 4), anti_aliasing=True)
     groundTruth = resize(groundTruth, (sizeX, sizeY, 4), anti_aliasing=True)
-    
-#    io.imshow(image / 255)
-#    io.show()
 
     return image.astype('uint8'), groundTruth.astype('uint8')
 

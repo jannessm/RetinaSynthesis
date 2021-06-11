@@ -1,11 +1,3 @@
-"""
-Created on Fri Jun  1 11:27:24 2018
-
-@author: chen
-
-This program is intended to plot the 3-D surface image of odr function 
-
-"""
 from matplotlib import pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D

@@ -1,5 +1,4 @@
 import numpy as np
-from skimage import io
 import math
 
 def generateOpticDisc(fovea,sizeX,sizeY,supersample):
